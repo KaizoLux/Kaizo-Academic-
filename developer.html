@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kaizo Academic — Developer Panel</title>
+<script src="shared.js"></script>
+<style>
+.dev-layout { display: grid; grid-template-columns: 220px 1fr; gap: 0; min-height: calc(100vh - 64px); }
+.dev-sidebar { background: rgba(2,4,8,0.8); backdrop-filter: blur(20px); border-right: 1px solid rgba(176,0,255,0.15); padding: 24px 12px; position: sticky; top: 64px; height: calc(100vh - 64px); overflow-y: auto; }
+.dev-main { padding: 32px 40px 60px; }
+.dev-nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 9px; cursor: pointer; font-family: var(--font-display); font-size: .62rem; font-weight: 700; letter-spacing: 1px; color: var(--text-muted); transition: .2s; margin-bottom: 4px; border: 1px solid transparent; text-transform: uppercase; }
+.dev-nav-item:hover { color: #c060ff; background: rgba(176,0,255,0.07); }
+.dev-nav-item.active { color: #c060ff; background: rgba(176,0,255,0.1); border-color: rgba(176,0,255,0.25); }
+.dev-section-label { font-family: var(--font-display); font-size: .52rem; letter-spacing: 3px; text-transform: uppercase; color: var(--text-muted); padding: 16px 14px 6px; }
+
+.dev-panel { display: none; }
+.dev-panel.active { display: block; }
+.setting-row { display: flex; align-items: center; gap: 16px; padding: 16px; border: 1px solid var(--border-dim); border-radius: 12px; margin-bottom: 10px; background: rgba(0,200,255,0.02); transition: .2s; }
+.setting-row:hover { border-color: rgba(176,0,255,0.2); }
+.setting-icon { font-size: 1.4rem; flex-shrink: 0; width: 36px; text-align: center; }
+.setting-info { flex: 1; }
+.setting-title { font-weight: 600; color: var(--text-primary); margin-bottom: 3px; font-size: .92rem; }
+.setting-desc { font-size: .78rem; color: var(--text-muted); }
+.color-picker-wrap { position: relative; width: 44px; height: 44px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-dim); cursor: pointer; flex-shrink: 0; }
+.color-picker-wrap input[type=color] { position: absolute; inset: -4px; width: calc(100%+8px); height: calc(100%+8px); cursor: pointer; border: none; padding: 0; }
+.toggle-switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; inset: 0; background: rgba(255,255,255,0.1); border: 1px solid var(--border-dim); border-radius: 999px; cursor: pointer; transition: .2s; }
+.toggle-slider::before { content: ''; position: absolute; height: 18px; width: 18px; left: 2px; bottom: 2px; background: var(--text-muted); border-radius: 50%; transition: .2s; }
+.toggle-switch input:checked + .toggle-slider { background: rgba(0,255,157,0.15); border-color: rgba(0,255,157,0.4); }
+.toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); background: var(--neon-green); box-shadow: 0 0 8px rgba(0,255,157,0.5); }
+
+.font-opt { padding: 10px; border-radius: 8px; border: 1px solid var(--border-dim); background: rgba(0,200,255,0.02); cursor: pointer; text-align: center; font-size: .8rem; color: var(--text-secondary); transition: .2s; }
+.font-opt:hover, .font-opt.active { border-color: rgba(176,0,255,0.4); color: #c060ff; background: rgba(176,0,255,0.07); }
+
+.nav-editor-item { display: flex; align-items: center; gap: 10px; padding: 12px; border: 1px solid var(--border-dim); border-radius: 11px; margin-bottom: 8px; background: rgba(0,200,255,0.02); }
+.stat-mini { background: rgba(176,0,255,0.05); border: 1px solid rgba(176,0,255,0.15); border-radius: 12px; padding: 16px; text-align: center; }
+.stat-mini-val { font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; color: #c060ff; }
+.stat-mini-lbl { font-family: var(--font-display); font-size: .55rem; letter-spacing: 1.5px; color: var(--text-muted); margin-top: 4px; }
+
+@media(max-width:768px) {
+  .dev-layout { grid-template-columns: 1fr; }
+  .dev-sidebar { position: static; height: auto; display: flex; flex-wrap: wrap; gap: 4px; padding: 12px; }
+  .dev-section-label { display: none; }
+  .dev-main { padding: 20px 16px 40px; }
+}
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-orb bg-orb-1"></div>
+<div class="scanlines"></div>
+<div id="navbar-placeholder"></div>
+
+<!-- PASSWORD GATE -->
+<div class="ov" id="password-gate" style="display:flex">
+  <div class="modal" style="border-color:rgba(176,0,255,0.3)">
+    <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#b000ff,#00c8ff)"></div>
+    <div style="font-size:2.8rem;margin-bottom:14px">🛠</div>
+    <div style="font-family:var(--font-display);font-size:.9rem;font-weight:800;letter-spacing:2px;color:#c060ff;margin-bottom:6px">DEVELOPER PANEL</div>
+    <div style="font-size:.85rem;color:var(--text-secondary);margin-bottom:22px">Masukkan password developer untuk akses panel kontrol.</div>
+    <input class="finput" type="password" id="dev-pass" placeholder="Password developer" autofocus onkeydown="if(event.key==='Enter')checkDevPass()"/>
+    <div id="dev-pass-err" style="color:var(--neon-red);font-family:var(--font-display);font-size:.6rem;letter-spacing:1px;margin:8px 0;display:none">PASSWORD SALAH</div>
+    <div class="row mt12" style="gap:8px">
+      <a href="index.html" class="btn btn-ghost" style="flex:1">← Kembali</a>
+      <button class="btn btn-purple" style="flex:1" onclick="checkDevPass()">Masuk →</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN DEV PANEL -->
+<div id="dev-content" style="display:none;position:relative;z-index:2">
+<div class="dev-layout">
+  <!-- SIDEBAR NAV -->
+  <aside class="dev-sidebar">
+    <div style="font-family:var(--font-display);font-size:.7rem;font-weight:800;letter-spacing:2px;color:#c060ff;padding:8px 14px 16px;border-bottom:1px solid rgba(176,0,255,0.15);margin-bottom:12px">⚙ DEV CENTER</div>
+    <div class="dev-section-label">Dashboard</div>
+    <div class="dev-nav-item active" onclick="showPanel('dashboard',this)">📊 Dashboard</div>
+    <div class="dev-section-label">Appearance</div>
+    <div class="dev-nav-item" onclick="showPanel('theme',this)">🎨 Theme Editor</div>
+    <div class="dev-nav-item" onclick="showPanel('layout',this)">🧱 Layout Manager</div>
+    <div class="dev-nav-item" onclick="showPanel('media',this)">🖼 Media & Logo</div>
+    <div class="dev-section-label">Content</div>
+    <div class="dev-nav-item" onclick="showPanel('courses',this)">🎓 Course Manager</div>
+    <div class="dev-nav-item" onclick="showPanel('menu',this)">📋 Menu Manager</div>
+    <div class="dev-nav-item" onclick="showPanel('lobby',this)">🏠 Lobby Manager</div>
+    <div class="dev-section-label">System</div>
+    <div class="dev-nav-item" onclick="showPanel('features',this)">🧩 Feature Toggle</div>
+    <div class="dev-nav-item" onclick="showPanel('data',this)">💾 Data Manager</div>
+    <div class="dev-nav-item" onclick="showPanel('settings',this)">⚙ Global Settings</div>
+  </aside>
+
+  <div class="dev-main">
+    <div id="save-banner" style="display:none;position:sticky;top:72px;z-index:50;background:rgba(0,255,157,0.1);border:1px solid rgba(0,255,157,0.3);border-radius:10px;padding:10px 16px;font-family:var(--font-display);font-size:.65rem;letter-spacing:1px;color:var(--neon-green);margin-bottom:16px;text-align:center">✓ PERUBAHAN TERSIMPAN</div>
+
+    <!-- DASHBOARD -->
+    <div class="dev-panel active" id="panel-dashboard">
+      <div class="section-tag" style="margin-bottom:12px">📊 OVERVIEW</div>
+      <div class="section-title" style="margin-bottom:20px">Developer Dashboard</div>
+      <div class="grid-4" style="margin-bottom:24px" id="dash-stats"></div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="h2" style="margin-bottom:14px">⚡ Quick Actions</div>
+          ${[
+            ['🎨','Theme Editor','showPanel(\'theme\',null)'],
+            ['🎓','Kelola Course','showPanel(\'courses\',null)'],
+            ['📋','Edit Menu','showPanel(\'menu\',null)'],
+            ['💾','Export Data','exportData()'],
+          ].map(([i,l,fn])=>`<button class="btn btn-ghost btn-full" style="margin-bottom:8px;justify-content:flex-start" onclick="${fn}">${i} ${l}</button>`).join('')}
+        </div>
+        <div class="card">
+          <div class="h2" style="margin-bottom:14px">ℹ System Info</div>
+          <div id="sys-info" style="font-family:var(--font-mono);font-size:.78rem;color:var(--text-secondary);line-height:2.2"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- THEME EDITOR -->
+    <div class="dev-panel" id="panel-theme">
+      <div class="section-tag" style="margin-bottom:12px">🎨 APPEARANCE</div>
+      <div class="section-title" style="margin-bottom:6px">Theme Editor</div>
+      <div class="sub" style="margin-bottom:24px">Kustomisasi warna, font, dan ukuran teks platform.</div>
+
+      <div class="card" style="margin-bottom:16px">
+        <div style="font-family:var(--font-display);font-size:.65rem;letter-spacing:2px;color:#c060ff;margin-bottom:16px;border-bottom:1px solid rgba(176,0,255,0.12);padding-bottom:10px">🎨 WARNA</div>
+        ${[
+          ['accentColor','Aksen Utama (Neon Blue)'],
+          ['accent2Color','Aksen 2 (Neon Purple)'],
+          ['bgColor1','Background Utama'],
+          ['bgColor2','Background Sekunder'],
+          ['textColor','Warna Teks'],
+        ].map(([key,label])=>`
+          <div class="setting-row">
+            <div class="setting-info"><div class="setting-title">${label}</div><div class="setting-desc mono" id="colorval-${key}"></div></div>
+            <div class="color-picker-wrap" id="colorwrap-${key}">
+              <input type="color" id="color-${key}" onchange="updateColor('${key}',this.value)"/>
+            </div>
+          </div>`).join('')}
+      </div>
+
+      <div class="card" style="margin-bottom:16px">
+        <div style="font-family:var(--font-display);font-size:.65rem;letter-spacing:2px;color:#c060ff;margin-bottom:16px;border-bottom:1px solid rgba(176,0,255,0.12);padding-bottom:10px">🔤 FONT</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px" id="font-grid"></div>
+        <div>
+          <label class="flabel">Ukuran Teks</label>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px" id="size-grid"></div>
+        </div>
+      </div>
+
+      <button class="btn btn-purple btn-full btn-xl" onclick="saveTheme()">💾 Simpan Theme</button>
+    </div>
+
+    <!-- LAYOUT MANAGER -->
+    <div class="dev-panel" id="panel-layout">
+      <div class="section-tag" style="margin-bottom:12px">🧱 LAYOUT</div>
+      <div class="section-title" style="margin-bottom:6px">Layout Manager</div>
+      <div class="sub" style="margin-bottom:24px">Atur tampilan dan layout halaman.</div>
+      <div class="card">
+        <div style="font-family:var(--font-display);font-size:.65rem;letter-spacing:2px;color:#c060ff;margin-bottom:16px">NAVBAR STYLE</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
+          ${['Default (Sticky Top)','Minimal','Solid'].map(s=>`
+            <div class="font-opt" style="padding:14px">${s}</div>`).join('')}
+        </div>
+        <div class="divider"></div>
+        <div style="font-family:var(--font-display);font-size:.65rem;letter-spacing:2px;color:#c060ff;margin:16px 0">COURSE GRID</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+          ${['2 Kolom','3 Kolom','4 Kolom','Auto'].map(s=>`
+            <div class="font-opt">${s}</div>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- MEDIA -->
+    <div class="dev-panel" id="panel-media">
+      <div class="section-tag" style="margin-bottom:12px">🖼 MEDIA</div>
+      <div class="section-title" style="margin-bottom:6px">Media & Logo</div>
+      <div class="sub" style="margin-bottom:24px">Upload logo, favicon, dan background image.</div>
+      <div class="card">
+        <div class="fgroup">
+          <label class="flabel">Logo Academy</label>
+          <input type="file" accept="image/*" style="display:none" id="logo-upload" onchange="handleLogoUpload(this)"/>
+          <div class="row" style="gap:10px;margin-bottom:8px">
+            <div id="logo-preview" style="width:60px;height:60px;border-radius:12px;background:rgba(0,200,255,0.08);border:1px solid var(--border-dim);display:flex;align-items:center;justify-content:center;font-size:1.5rem;overflow:hidden;flex-shrink:0">K</div>
+            <div>
+              <button class="btn btn-ghost btn-sm" onclick="document.getElementById('logo-upload').click()">📷 Upload Logo</button>
+              <button class="btn btn-danger btn-sm" onclick="removeLogo()" style="margin-left:6px">Hapus</button>
+              <div style="font-size:.75rem;color:var(--text-muted);margin-top:6px">PNG, JPG, SVG — Maks 2MB</div>
+            </div>
+          </div>
+        </div>
+        <div class="fgroup" style="margin-bottom:0">
+          <label class="flabel">Background Image URL</label>
+          <input class="finput" id="bg-image-url" placeholder="https://..." oninput="updateBgImage(this.value)"/>
+          <div style="font-size:.75rem;color:var(--text-muted);margin-top:6px">Kosongkan untuk menggunakan background default</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COURSE MANAGER -->
+    <div class="dev-panel" id="panel-courses">
+      <div class="section-tag" style="margin-bottom:12px">🎓 COURSES</div>
+      <div class="section-title" style="margin-bottom:6px">Course Manager</div>
+      <div class="sub" style="margin-bottom:20px">Tambah, edit, dan hapus course dari platform.</div>
+      <div class="row" style="margin-bottom:16px">
+        <div class="sp"></div>
+        <button class="btn btn-primary btn-sm" onclick="addNewCourse()">+ Tambah Course</button>
+      </div>
+      <div id="courses-list"></div>
+
+      <!-- INLINE COURSE EDITOR -->
+      <div id="course-editor" style="display:none">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+          <button class="btn btn-ghost btn-sm" onclick="closeCourseEditor()">← Kembali</button>
+          <div style="font-family:var(--font-display);font-size:.75rem;font-weight:700;letter-spacing:1px;color:#c060ff" id="editor-title-label">EDIT COURSE</div>
+        </div>
+        <div class="card" style="margin-bottom:12px">
+          <div style="font-family:var(--font-display);font-size:.6rem;letter-spacing:2px;color:#c060ff;margin-bottom:14px;border-bottom:1px solid rgba(176,0,255,0.12);padding-bottom:10px">📋 INFO DASAR</div>
+          <div class="frow">
+            <div class="fgroup">
+              <label class="flabel">Judul Course</label>
+              <input class="finput" id="ec-title" placeholder="Judul course"/>
+            </div>
+            <div class="fgroup">
+              <label class="flabel">Instruktur</label>
+              <input class="finput" id="ec-instructor" placeholder="Nama instruktur"/>
+            </div>
+          </div>
+          <div class="frow">
+            <div class="fgroup">
+              <label class="flabel">Kategori</label>
+              <input class="finput" id="ec-category" placeholder="Ekonomi, Matematika, dll"/>
+            </div>
+            <div class="fgroup">
+              <label class="flabel">Level</label>
+              <select class="fselect" id="ec-level">
+                <option value="Beginner">Beginner</option>
+                <option value="Intermediate">Intermediate</option>
+                <option value="Advanced">Advanced</option>
+              </select>
+            </div>
+          </div>
+          <div class="frow">
+            <div class="fgroup">
+              <label class="flabel">Durasi</label>
+              <input class="finput" id="ec-duration" placeholder="2 jam"/>
+            </div>
+            <div class="fgroup">
+              <label class="flabel">XP Reward</label>
+              <input class="finput" type="number" id="ec-xp" placeholder="200"/>
+            </div>
+          </div>
+          <div class="fgroup" style="margin-bottom:0">
+            <label class="flabel">Deskripsi</label>
+            <textarea class="ftextarea" id="ec-desc" style="min-height:90px" placeholder="Deskripsi singkat course..."></textarea>
+          </div>
+        </div>
+
+        <!-- MODULES & LESSONS EDITOR -->
+        <div class="card" style="margin-bottom:12px">
+          <div style="display:flex;align-items:center;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid rgba(176,0,255,0.12)">
+            <div style="font-family:var(--font-display);font-size:.6rem;letter-spacing:2px;color:#c060ff;flex:1">📚 MODUL & LESSON</div>
+            <button class="btn btn-ghost btn-xs" onclick="addModule()">+ Modul</button>
+          </div>
+          <div id="ec-modules"></div>
+        </div>
+
+        <div class="row" style="gap:10px">
+          <button class="btn btn-ghost" onclick="closeCourseEditor()">Batal</button>
+          <div class="sp"></div>
+          <button class="btn btn-purple btn-xl" onclick="saveCourseEdit()">💾 Simpan Course</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MENU MANAGER -->
+    <div class="dev-panel" id="panel-menu">
+      <div class="section-tag" style="margin-bottom:12px">📋 NAVIGATION</div>
+      <div class="section-title" style="margin-bottom:6px">Menu Manager</div>
+      <div class="sub" style="margin-bottom:20px">Atur item navigasi yang tampil di navbar.</div>
+      <div class="card" style="margin-bottom:16px">
+        <div style="font-family:var(--font-display);font-size:.65rem;letter-spacing:2px;color:#c060ff;margin-bottom:14px">ITEM MENU AKTIF</div>
+        <div id="menu-list"></div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="addMenuItem()">+ Tambah Menu</button>
+      </div>
+      <button class="btn btn-purple btn-full" onclick="saveMenu()">💾 Simpan Menu</button>
+    </div>
+
+    <!-- LOBBY MANAGER -->
+    <div class="dev-panel" id="panel-lobby">
+      <div class="section-tag" style="margin-bottom:12px">🏠 LOBBY</div>
+      <div class="section-title" style="margin-bottom:6px">Lobby Manager</div>
+      <div class="sub" style="margin-bottom:20px">Edit teks dan konten halaman utama.</div>
+      <div class="card">
+        <div class="fgroup">
+          <label class="flabel">Nama Academy</label>
+          <input class="finput" id="lobby-name" placeholder="KAIZO ACADEMIC"/>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Tagline</label>
+          <input class="finput" id="lobby-tagline" placeholder="Level Up Your Knowledge"/>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Hero Description</label>
+          <textarea class="ftextarea" id="lobby-desc" style="min-height:80px" placeholder="Deskripsi singkat academy..."></textarea>
+        </div>
+        <button class="btn btn-purple btn-full" onclick="saveLobby()">💾 Simpan</button>
+      </div>
+    </div>
+
+    <!-- FEATURES -->
+    <div class="dev-panel" id="panel-features">
+      <div class="section-tag" style="margin-bottom:12px">🧩 FEATURES</div>
+      <div class="section-title" style="margin-bottom:6px">Feature Toggle</div>
+      <div class="sub" style="margin-bottom:24px">Aktifkan atau nonaktifkan fitur platform.</div>
+      <div class="card" id="features-list"></div>
+    </div>
+
+    <!-- DATA MANAGER -->
+    <div class="dev-panel" id="panel-data">
+      <div class="section-tag" style="margin-bottom:12px">💾 DATA</div>
+      <div class="section-title" style="margin-bottom:6px">Data Manager</div>
+      <div class="sub" style="margin-bottom:24px">Export, import, dan reset data platform.</div>
+      <div class="grid-2" style="margin-bottom:16px">
+        <div class="card" style="text-align:center">
+          <div style="font-size:2rem;margin-bottom:12px">📤</div>
+          <div class="h3" style="margin-bottom:6px">Export Semua Data</div>
+          <div style="font-size:.8rem;color:var(--text-muted);margin-bottom:16px">Download backup JSON lengkap</div>
+          <button class="btn btn-primary btn-full" onclick="exportData()">Export JSON</button>
+        </div>
+        <div class="card" style="text-align:center">
+          <div style="font-size:2rem;margin-bottom:12px">📥</div>
+          <div class="h3" style="margin-bottom:6px">Import Data</div>
+          <div style="font-size:.8rem;color:var(--text-muted);margin-bottom:16px">Restore dari file backup</div>
+          <input type="file" accept=".json" style="display:none" id="import-file" onchange="importData(this)"/>
+          <button class="btn btn-ghost btn-full" onclick="document.getElementById('import-file').click()">Import JSON</button>
+        </div>
+      </div>
+      <div class="card" style="border-color:rgba(255,0,60,0.2)">
+        <div class="h2" style="color:var(--neon-red);margin-bottom:12px">⚠ Danger Zone</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-danger btn-sm" onclick="if(confirm('Reset semua progress peserta?')){resetProgress();}">🗑 Reset Progress</button>
+          <button class="btn btn-danger btn-sm" onclick="if(confirm('Reset theme ke default?')){resetTheme();}">🗑 Reset Theme</button>
+          <button class="btn btn-danger btn-sm" onclick="if(confirm('HAPUS SEMUA DATA? Ini tidak bisa dibatalkan!')){resetAll();}">💥 Reset Semua</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GLOBAL SETTINGS -->
+    <div class="dev-panel" id="panel-settings">
+      <div class="section-tag" style="margin-bottom:12px">⚙ SETTINGS</div>
+      <div class="section-title" style="margin-bottom:6px">Global Settings</div>
+      <div class="sub" style="margin-bottom:24px">Konfigurasi umum website academy.</div>
+      <div class="card">
+        <div class="fgroup">
+          <label class="flabel">Nama Academy</label>
+          <input class="finput" id="gs-name" placeholder="KAIZO ACADEMIC"/>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Tagline</label>
+          <input class="finput" id="gs-tagline" placeholder="Level Up Your Knowledge"/>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Footer Text</label>
+          <input class="finput" id="gs-footer" placeholder="© 2025 Kaizo Academic"/>
+        </div>
+        <div class="fgroup" style="margin-bottom:0">
+          <label class="flabel">Kontak / Info</label>
+          <input class="finput" id="gs-contact" placeholder="info@kaizoacademic.com"/>
+        </div>
+      </div>
+      <button class="btn btn-purple btn-full btn-xl" style="margin-top:4px" onclick="saveGlobalSettings()">💾 Simpan Pengaturan</button>
+    </div>
+
+  </div><!-- /dev-main -->
+</div><!-- /dev-layout -->
+</div><!-- /dev-content -->
+
+<style id="shared-styles"></style>
+<script>
+document.getElementById('shared-styles').textContent = SHARED_CSS;
+document.getElementById('navbar-placeholder').innerHTML = renderNavbar('developer.html');
+
+// PASSWORD CHECK
+function checkDevPass() {
+  const pass = document.getElementById('dev-pass').value;
+  if(pass === ADMIN_PASS) {
+    document.getElementById('password-gate').style.display = 'none';
+    document.getElementById('dev-content').style.display = 'block';
+    initDevPanel();
+  } else {
+    document.getElementById('dev-pass-err').style.display = 'block';
+    document.getElementById('dev-pass').classList.add('err');
+    setTimeout(()=>document.getElementById('dev-pass').classList.remove('err'),500);
+  }
+}
+document.getElementById('dev-pass').addEventListener('keydown', e => { if(e.key==='Enter') checkDevPass(); });
+
+function showSaveBanner() {
+  const b = document.getElementById('save-banner');
+  b.style.display = 'block';
+  setTimeout(() => b.style.display = 'none', 2000);
+}
+
+function showPanel(name, btn) {
+  document.querySelectorAll('.dev-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.dev-nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById(`panel-${name}`).classList.add('active');
+  if(btn) btn.classList.add('active');
+  else document.querySelectorAll('.dev-nav-item').forEach(b => { if(b.onclick?.toString().includes(`'${name}'`)) b.classList.add('active'); });
+}
+
+let currentTheme = Theme.get();
+
+function initDevPanel() {
+  renderDashboard();
+  renderThemeEditor();
+  renderCourseManager();
+  renderMenuManager();
+  renderFeatureToggles();
+  renderLobbyManager();
+  renderGlobalSettings();
+  renderMediaPanel();
+}
+
+// DASHBOARD
+function renderDashboard() {
+  const courses = KS.get("courses") || DEFAULT_COURSES;
+  const totalLessons = courses.reduce((s,c)=>s+c.modules.flatMap(m=>m.lessons).length,0);
+  const lbEntries = Leaderboard.getAll().length;
+  document.getElementById('dash-stats').innerHTML = [
+    ['🎓', courses.length, 'Courses', '#c060ff'],
+    ['📖', totalLessons, 'Lessons', 'var(--neon-blue)'],
+    ['👥', lbEntries, 'Users', 'var(--neon-green)'],
+    ['🎖', DEFAULT_BADGES.length, 'Badges', 'var(--neon-yellow)'],
+  ].map(([i,v,l,c])=>`<div class="stat-mini">
+    <div style="font-size:1.5rem;margin-bottom:8px">${i}</div>
+    <div class="stat-mini-val" style="color:${c}">${v}</div>
+    <div class="stat-mini-lbl">${l}</div>
+  </div>`).join('');
+
+  const t = currentTheme;
+  document.getElementById('sys-info').innerHTML = [
+    ['Versi','Kaizo Academic v3.0'],
+    ['Storage', typeof supabaseClient !== 'undefined' && supabaseClient ? 'Supabase (Online)' : 'LocalStorage'],
+    ['Courses', (KS.get("courses")||DEFAULT_COURSES).length + ' courses'],
+    ['Theme Font', t.font||'Orbitron'],
+    ['Aksen', t.accentColor||'#00c8ff'],
+  ].map(([k,v])=>`<div><span style="color:var(--text-muted)">${k}:</span> <span style="color:var(--neon-blue)">${v}</span></div>`).join('');
+}
+
+// THEME EDITOR
+function renderThemeEditor() {
+  const t = currentTheme;
+  ['accentColor','accent2Color','bgColor1','bgColor2','textColor'].forEach(key => {
+    const val = t[key]||DEFAULT_THEME[key];
+    const picker = document.getElementById(`color-${key}`);
+    const wrap = document.getElementById(`colorwrap-${key}`);
+    const label = document.getElementById(`colorval-${key}`);
+    if(picker) picker.value = val;
+    if(wrap) wrap.style.background = val;
+    if(label) label.textContent = val;
+  });
+  const fonts = ['Orbitron','Rajdhani','DM Mono','Poppins','Courier New','monospace'];
+  document.getElementById('font-grid').innerHTML = fonts.map(f=>
+    `<div class="font-opt${(t.font||'Orbitron')===f?' active':''}" style="font-family:'${f}'" onclick="selectFont('${f}',this)">${f}</div>`
+  ).join('');
+  const sizes = [['small','Kecil'],['medium','Normal'],['large','Besar'],['xlarge','X-Besar']];
+  document.getElementById('size-grid').innerHTML = sizes.map(([k,l])=>
+    `<div class="font-opt${(t.fontSize||'medium')===k?' active':''}" onclick="selectSize('${k}',this)">${l}</div>`
+  ).join('');
+}
+
+function updateColor(key, val) {
+  currentTheme[key] = val;
+  document.getElementById(`colorwrap-${key}`).style.background = val;
+  document.getElementById(`colorval-${key}`).textContent = val;
+  Theme.apply(currentTheme);
+}
+
+function selectFont(font, el) {
+  currentTheme.font = font;
+  document.querySelectorAll('#font-grid .font-opt').forEach(e=>e.classList.remove('active'));
+  el.classList.add('active');
+  Theme.apply(currentTheme);
+}
+
+function selectSize(size, el) {
+  currentTheme.fontSize = size;
+  document.querySelectorAll('#size-grid .font-opt').forEach(e=>e.classList.remove('active'));
+  el.classList.add('active');
+  Theme.apply(currentTheme);
+}
+
+function saveTheme() {
+  Theme.set(currentTheme);
+  showSaveBanner();
+}
+
+// MEDIA
+function renderMediaPanel() {
+  const t = currentTheme;
+  if(t.logoUrl) {
+    const lp = document.getElementById('logo-preview');
+    lp.innerHTML = `<img src="${t.logoUrl}" style="width:100%;height:100%;object-fit:contain">`;
+  }
+  if(t.bgImageUrl) document.getElementById('bg-image-url').value = t.bgImageUrl;
+}
+
+async function handleLogoUpload(input) {
+  const file = input.files[0]; if(!file) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    currentTheme.logoUrl = ev.target.result;
+    document.getElementById('logo-preview').innerHTML = `<img src="${ev.target.result}" style="width:100%;height:100%;object-fit:contain">`;
+    Theme.set(currentTheme);
+    showSaveBanner();
+  };
+  r.readAsDataURL(file);
+}
+
+function removeLogo() {
+  currentTheme.logoUrl = '';
+  document.getElementById('logo-preview').innerHTML = 'K';
+  Theme.set(currentTheme);
+  showSaveBanner();
+}
+
+function updateBgImage(url) {
+  currentTheme.bgImageUrl = url;
+  Theme.apply(currentTheme);
+}
+
+// COURSE MANAGER
+let editingCourseIdx = -1;
+let editingModules = [];
+
+function renderCourseManager() {
+  const courses = KS.get("courses") || DEFAULT_COURSES;
+  const catIcons = {Ekonomi:'📊',Matematika:'🧮',Bahasa:'✍️',Sains:'🔬',default:'📚'};
+  document.getElementById('courses-list').style.display = 'block';
+  document.getElementById('course-editor').style.display = 'none';
+  document.getElementById('courses-list').innerHTML = courses.length === 0
+    ? `<div style="text-align:center;padding:40px;color:var(--text-muted)"><div style="font-size:2.5rem;margin-bottom:12px;opacity:.4">📭</div><div style="font-family:var(--font-display);font-size:.7rem;letter-spacing:2px">BELUM ADA COURSE</div></div>`
+    : courses.map((c,i) => `
+    <div class="card" style="margin-bottom:12px;padding:18px">
+      <div class="row" style="gap:12px;flex-wrap:wrap">
+        <div style="font-size:2rem;flex-shrink:0">${catIcons[c.category]||catIcons.default}</div>
+        <div style="flex:1;min-width:160px">
+          <div style="font-family:var(--font-display);font-size:.78rem;font-weight:700;letter-spacing:.5px;color:var(--text-primary);margin-bottom:3px">${c.title}</div>
+          <div style="font-size:.78rem;color:var(--text-muted)">${c.category} · ${c.level}</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">
+            <span style="font-family:var(--font-display);font-size:.58rem;color:var(--neon-blue)">📖 ${c.modules.flatMap(m=>m.lessons).length} Lessons</span>
+            <span style="font-family:var(--font-display);font-size:.58rem;color:var(--neon-yellow)">⚡ +${c.xpReward} XP</span>
+            <span style="font-family:var(--font-display);font-size:.58rem;color:var(--text-muted)">⏱ ${c.duration}</span>
+          </div>
+        </div>
+        <div class="row" style="gap:6px;flex-shrink:0">
+          <button class="btn btn-ghost btn-sm" onclick="openCourseEditor(${i})">✏ Edit</button>
+          <button class="btn btn-danger btn-xs" onclick="deleteCourse(${i})">🗑</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function openCourseEditor(i) {
+  const courses = KS.get("courses") || DEFAULT_COURSES;
+  editingCourseIdx = i;
+  const c = i === -1 ? {
+    id: 'c'+Date.now(), title:'', instructor:'Tim Kaizo', category:'Umum', level:'Beginner',
+    duration:'1 jam', xpReward:100, description:'', rating:4.5, students:0,
+    modules:[{id:'m'+Date.now(), title:'Modul 1', lessons:[{id:'l'+Date.now(), title:'Lesson 1', type:'text', duration:'10 min', content:''}]}]
+  } : courses[i];
+
+  editingModules = JSON.parse(JSON.stringify(c.modules || []));
+
+  document.getElementById('ec-title').value = c.title || '';
+  document.getElementById('ec-instructor').value = c.instructor || '';
+  document.getElementById('ec-category').value = c.category || '';
+  document.getElementById('ec-level').value = c.level || 'Beginner';
+  document.getElementById('ec-duration').value = c.duration || '';
+  document.getElementById('ec-xp').value = c.xpReward || 100;
+  document.getElementById('ec-desc').value = c.description || '';
+  document.getElementById('editor-title-label').textContent = i === -1 ? 'TAMBAH COURSE BARU' : 'EDIT COURSE';
+
+  document.getElementById('courses-list').style.display = 'none';
+  document.getElementById('course-editor').style.display = 'block';
+  renderModulesEditor();
+  document.querySelector('#panel-courses').scrollTop = 0;
+  window.scrollTo(0,0);
+}
+
+function closeCourseEditor() {
+  document.getElementById('course-editor').style.display = 'none';
+  document.getElementById('courses-list').style.display = 'block';
+}
+
+function renderModulesEditor() {
+  const typeIcon = {text:'📄',video:'🎥',quiz:'⚡',pdf:'📑',assignment:'📝'};
+  document.getElementById('ec-modules').innerHTML = editingModules.map((m, mi) => `
+    <div style="border:1px solid rgba(176,0,255,0.2);border-radius:12px;margin-bottom:12px;overflow:hidden">
+      <div style="background:rgba(176,0,255,0.07);padding:12px 14px;display:flex;align-items:center;gap:10px">
+        <div style="font-family:var(--font-display);font-size:.6rem;letter-spacing:1px;color:#c060ff;flex-shrink:0">MODUL ${mi+1}</div>
+        <input class="finput" style="flex:1;padding:7px 10px;font-size:.82rem" value="${m.title}"
+          placeholder="Nama modul" oninput="editingModules[${mi}].title=this.value"/>
+        <button class="btn btn-danger btn-xs" onclick="deleteModule(${mi})">🗑</button>
+      </div>
+      <div style="padding:10px 14px">
+        ${m.lessons.map((l, li) => `
+          <div style="border:1px solid var(--border-dim);border-radius:9px;padding:10px 12px;margin-bottom:8px;background:rgba(0,0,0,0.2)">
+            <div class="row" style="gap:8px;margin-bottom:8px;flex-wrap:wrap">
+              <div style="font-size:.85rem;flex-shrink:0">${typeIcon[l.type]||'📄'}</div>
+              <input class="finput" style="flex:2;min-width:120px;padding:6px 10px;font-size:.82rem" value="${l.title}"
+                placeholder="Judul lesson" oninput="editingModules[${mi}].lessons[${li}].title=this.value"/>
+              <select class="fselect" style="width:auto;padding:6px 10px;font-size:.78rem;flex-shrink:0"
+                onchange="editingModules[${mi}].lessons[${li}].type=this.value;renderModulesEditor()">
+                ${['text','video','quiz','pdf','assignment'].map(t=>`<option value="${t}"${l.type===t?' selected':''}>${t}</option>`).join('')}
+              </select>
+              <input class="finput" style="width:80px;flex-shrink:0;padding:6px 10px;font-size:.78rem" value="${l.duration||'10 min'}"
+                placeholder="Durasi" oninput="editingModules[${mi}].lessons[${li}].duration=this.value"/>
+              <button class="btn btn-danger btn-xs" onclick="deleteLesson(${mi},${li})">✕</button>
+            </div>
+            ${l.type !== 'quiz' ? `
+            <textarea class="ftextarea" style="min-height:70px;font-size:.82rem;font-family:var(--font-mono)" 
+              placeholder="Konten lesson (support **bold**, ## heading, - list)"
+              oninput="editingModules[${mi}].lessons[${li}].content=this.value">${l.content||''}</textarea>` : `
+            <div style="font-family:var(--font-display);font-size:.58rem;letter-spacing:1px;color:var(--neon-orange);padding:8px;background:rgba(255,140,0,0.06);border-radius:7px">⚡ Quiz akan menggunakan soal dari database quiz utama</div>`}
+          </div>`).join('')}
+        <button class="btn btn-ghost btn-xs btn-full" onclick="addLesson(${mi})" style="margin-top:4px">+ Tambah Lesson</button>
+      </div>
+    </div>`).join('');
+}
+
+function addModule() {
+  editingModules.push({id:'m'+Date.now(), title:'Modul Baru', lessons:[{id:'l'+Date.now(), title:'Lesson 1', type:'text', duration:'10 min', content:''}]});
+  renderModulesEditor();
+}
+
+function deleteModule(mi) {
+  if(!confirm('Hapus modul ini beserta semua lesson-nya?')) return;
+  editingModules.splice(mi, 1);
+  renderModulesEditor();
+}
+
+function addLesson(mi) {
+  editingModules[mi].lessons.push({id:'l'+Date.now(), title:'Lesson Baru', type:'text', duration:'10 min', content:''});
+  renderModulesEditor();
+}
+
+function deleteLesson(mi, li) {
+  editingModules[mi].lessons.splice(li, 1);
+  renderModulesEditor();
+}
+
+function addNewCourse() {
+  openCourseEditor(-1);
+}
+
+function saveCourseEdit() {
+  const title = document.getElementById('ec-title').value.trim();
+  if(!title) { alert('Judul course tidak boleh kosong!'); return; }
+
+  const courses = KS.get("courses") || DEFAULT_COURSES;
+  const updated = {
+    id: editingCourseIdx === -1 ? 'c'+Date.now() : courses[editingCourseIdx].id,
+    title,
+    instructor: document.getElementById('ec-instructor').value || 'Tim Kaizo',
+    category: document.getElementById('ec-category').value || 'Umum',
+    level: document.getElementById('ec-level').value,
+    duration: document.getElementById('ec-duration').value || '1 jam',
+    xpReward: parseInt(document.getElementById('ec-xp').value) || 100,
+    description: document.getElementById('ec-desc').value,
+    rating: editingCourseIdx === -1 ? 4.5 : courses[editingCourseIdx].rating,
+    students: editingCourseIdx === -1 ? 0 : courses[editingCourseIdx].students,
+    thumbnail: editingCourseIdx === -1 ? '' : courses[editingCourseIdx].thumbnail,
+    modules: editingModules,
+    totalLessons: editingModules.flatMap(m=>m.lessons).length
+  };
+
+  if(editingCourseIdx === -1) courses.push(updated);
+  else courses[editingCourseIdx] = updated;
+
+  KS.set("courses", courses);
+  renderCourseManager();
+  closeCourseEditor();
+  showSaveBanner();
+}
+
+function deleteCourse(i) {
+  if(!confirm('Hapus course ini? Data progress peserta akan ikut hilang.')) return;
+  const courses = KS.get("courses") || DEFAULT_COURSES;
+  courses.splice(i,1);
+  KS.set("courses", courses);
+  renderCourseManager();
+  showSaveBanner();
+}
+
+// MENU MANAGER
+let menuItems = [...(currentTheme.navItems || DEFAULT_THEME.navItems)];
+
+function renderMenuManager() {
+  document.getElementById('menu-list').innerHTML = menuItems.map((item,i) => `
+    <div class="nav-editor-item">
+      <input class="finput" style="width:50px;padding:7px 10px;flex-shrink:0" value="${item.icon||''}" placeholder="🏠" oninput="menuItems[${i}].icon=this.value"/>
+      <input class="finput" style="flex:1;padding:7px 10px" value="${item.label}" placeholder="Label" oninput="menuItems[${i}].label=this.value"/>
+      <input class="finput" style="flex:2;padding:7px 10px" value="${item.href}" placeholder="link.html" oninput="menuItems[${i}].href=this.value"/>
+      <button class="btn btn-danger btn-xs" onclick="menuItems.splice(${i},1);renderMenuManager()">✕</button>
+    </div>`).join('');
+}
+
+function addMenuItem() {
+  menuItems.push({label:'Menu Baru', icon:'🔗', href:'#'});
+  renderMenuManager();
+}
+
+function saveMenu() {
+  currentTheme.navItems = menuItems;
+  Theme.set(currentTheme);
+  showSaveBanner();
+}
+
+// LOBBY MANAGER
+function renderLobbyManager() {
+  const t = currentTheme;
+  document.getElementById('lobby-name').value = t.academyName||DEFAULT_THEME.academyName;
+  document.getElementById('lobby-tagline').value = t.academyTagline||DEFAULT_THEME.academyTagline;
+}
+
+function saveLobby() {
+  currentTheme.academyName = document.getElementById('lobby-name').value;
+  currentTheme.academyTagline = document.getElementById('lobby-tagline').value;
+  Theme.set(currentTheme);
+  showSaveBanner();
+}
+
+// GLOBAL SETTINGS
+function renderGlobalSettings() {
+  const t = currentTheme;
+  document.getElementById('gs-name').value = t.academyName||'';
+  document.getElementById('gs-tagline').value = t.academyTagline||'';
+  document.getElementById('gs-footer').value = t.footerText||'';
+  document.getElementById('gs-contact').value = t.contact||'';
+}
+
+function saveGlobalSettings() {
+  currentTheme.academyName = document.getElementById('gs-name').value;
+  currentTheme.academyTagline = document.getElementById('gs-tagline').value;
+  currentTheme.footerText = document.getElementById('gs-footer').value;
+  currentTheme.contact = document.getElementById('gs-contact').value;
+  Theme.set(currentTheme);
+  showSaveBanner();
+}
+
+// FEATURE TOGGLES
+function renderFeatureToggles() {
+  const t = currentTheme;
+  const feats = t.features || DEFAULT_THEME.features;
+  const list = [
+    ['certificates','🎓','Sertifikat Digital','Peserta mendapat sertifikat setelah menyelesaikan course'],
+    ['gamification','🎮','Sistem Gamifikasi','XP, badge, leaderboard aktif'],
+    ['community','💬','Forum Komunitas','Fitur diskusi & komunitas'],
+    ['darkMode','🌙','Dark Mode Toggle','Tombol toggle dark/light mode'],
+  ];
+  document.getElementById('features-list').innerHTML = list.map(([key,icon,title,desc])=>`
+    <div class="setting-row">
+      <div class="setting-icon">${icon}</div>
+      <div class="setting-info"><div class="setting-title">${title}</div><div class="setting-desc">${desc}</div></div>
+      <label class="toggle-switch">
+        <input type="checkbox" ${feats[key]!==false?'checked':''} onchange="toggleFeature('${key}',this.checked)"/>
+        <span class="toggle-slider"></span>
+      </label>
+    </div>`).join('');
+}
+
+function toggleFeature(key, val) {
+  if(!currentTheme.features) currentTheme.features = {...DEFAULT_THEME.features};
+  currentTheme.features[key] = val;
+  Theme.set(currentTheme);
+  showSaveBanner();
+}
+
+// DATA MANAGER
+function exportData() {
+  const data = {
+    theme: Theme.get(),
+    courses: KS.get("courses")||DEFAULT_COURSES,
+    leaderboard: Leaderboard.getAll(),
+    exportedAt: new Date().toISOString(),
+    version: APP_VERSION
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `kaizo_backup_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+}
+
+function importData(input) {
+  const file = input.files[0]; if(!file) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    try {
+      const d = JSON.parse(ev.target.result);
+      if(d.theme) { KS.set("theme",d.theme); currentTheme=d.theme; Theme.apply(d.theme); }
+      if(d.courses) KS.set("courses",d.courses);
+      initDevPanel();
+      showSaveBanner();
+      alert('✓ Data berhasil diimport!');
+    } catch { alert('File tidak valid!'); }
+  };
+  r.readAsText(file);
+}
+
+function resetProgress() {
+  KS.keys("lb:").forEach(k => KS.del(k));
+  KS.del("user");
+  showSaveBanner();
+  alert('✓ Progress direset.');
+}
+function resetTheme() {
+  KS.del("theme");
+  currentTheme = {...DEFAULT_THEME};
+  Theme.apply(currentTheme);
+  renderThemeEditor();
+  showSaveBanner();
+}
+function resetAll() {
+  for(let i=localStorage.length-1;i>=0;i--) {
+    const k = localStorage.key(i);
+    if(k?.startsWith('kaizo:')) localStorage.removeItem(k);
+  }
+  location.reload();
+}
+</script>
+</body>
+</html>
