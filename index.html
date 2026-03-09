@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kaizo Academic</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ═══════════════════════════════════════════════
+// KONFIGURASI SUPABASE — ISI DI SINI
+// ═══════════════════════════════════════════════
+const SUPABASE_URL = "https://kjcifrrkfpifdrwjufau.supabase.co";
+const SUPABASE_KEY = "sb_publishable_8sk82afIl_YihEiIFkvCwQ_LDz1I5C6";
+// ═══════════════════════════════════════════════
+
+let supabaseClient = null;
+try {
+  if (SUPABASE_URL !== "https://kjcifrrkfpifdrwjufau.supabase.co") {
+    supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  }
+} catch(e) { console.warn("Supabase not configured:", e); }
+
+// Storage API — pakai Supabase kalau ada, fallback ke localStorage
+window.storage = {
+  async get(key, shared) {
+    if (shared && supabaseClient) {
+      const { data, error } = await supabaseClient
+        .from('kaizo_storage')
+        .select('value')
+        .eq('key', key)
+        .single();
+      if (error || !data) throw new Error('Key not found: ' + key);
+      return { key, value: data.value, shared: true };
+    }
+    const val = localStorage.getItem((shared?'s:':'l:') + key);
+    if (val === null) throw new Error('Key not found');
+    return { key, value: val, shared: !!shared };
+  },
+  async set(key, value, shared) {
+    if (shared && supabaseClient) {
+      const { error } = await supabaseClient
+        .from('kaizo_storage')
+        .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: 'key' });
+      if (error) throw error;
+      return { key, value, shared: true };
+    }
+    localStorage.setItem((shared?'s:':'l:') + key, value);
+    return { key, value, shared: !!shared };
+  },
+  async delete(key, shared) {
+    if (shared && supabaseClient) {
+      await supabaseClient.from('kaizo_storage').delete().eq('key', key);
+      return { key, deleted: true, shared: true };
+    }
+    localStorage.removeItem((shared?'s:':'l:') + key);
+    return { key, deleted: true, shared: !!shared };
+  },
+  async list(prefix, shared) {
+    if (shared && supabaseClient) {
+      const { data, error } = await supabaseClient
+        .from('kaizo_storage')
+        .select('key')
+        .like('key', (prefix||'') + '%');
+      if (error) throw error;
+      return { keys: (data||[]).map(d => d.key), prefix, shared: true };
+    }
+    const p = (shared?'s:':'l:') + (prefix||'');
+    const keys = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(p)) keys.push(k.replace(shared?'s:':'l:', ''));
+    }
+    return { keys, prefix, shared: !!shared };
+  }
+};
+</script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef } = React;
+
+
+const LOGO_B64 = "iVBORw0KGgoAAAANSUhEUgAAAFAAAABQCAYAAACOEfKtAAAFpElEQVR4nNVcMXbiSBD91QKzs3uGvYWTyexL+DpwjjkChPOeU5E5weEmJBPsHTYBqTZQtaZpWkICtapciW3AUumrq/6v6hLEzIwvYkREzOyIqAYAZl4Q0VnzGpzWicfa5+fnkzXwAGChefKhJiuP/N9lWZoAj4jIPIC7zWbFzA4ANziyswIeMy9I25Fb5pyjuq4dEdWyCglApelTCx7R2XQOJKIYvMLnQE2fPHiAYRIRR0PACu3Q/We3WzFzgSACTIYwEVFZlovX19czYIdxYxkFGGThOERkFVoBryCii/xrKoSJiA6HwzIAzxFRZQS8RQweYGgFipNLIjoBgGfc7Xb7pO2X3NRT6n0TAAZ3OHTSh+7ZgF+dPqiHsHcSAbNZIQ0R8BWATj9UAdw1ssABqIiIATvgERHJz14/VGVMWGUALeNaIY0rxk2ZWg4kItput62TshJrI+D15r3QVACM77AwrpcsGi61fvUxbspmB7DjDquLZSJyUqaNYv1ZSSQFnhXSkNPzLdKIbTYAA6Ecgqe+8rxvaFLI6E7PLACmhPJXKNOGWHYAUw769rwF8MLa+x7LSiJBYm7VfNAYPWszbqJ8HG3ZVuDHbvenAFRHiVmdNDabzTJujN5r2SqRVPPRCuPGFdAjliWEG/C2RZT3zDDu0DJtiE0OYMpBg4w7WYts0hzYw7j0/v6+mvJcYy0HeMCEK7CnjjTTGEWG/eRJAIzb8d4skMbnz59/xT3HKe1hFu4KDQvgAWk1MKU9lAO7QsMg42abZrgbwN1ut/BiNAwNg43RrHM0j4Swg4yv+BeCxmjNzGozLF05OYfdtQKl/UOJ0PB7GtrgLTCyMXqvjQawK69YIQ1mdths4vo76wkHm3y+SByjGHusHAYA2+32yj8TAMpnr3QjN6RhAryyLGff4xl0wq4qg5lJCMMK485e7dwEkIiID7yk5ySj0fF4VB/+0QIPuCFj+pxjA1MEntBw3bSdzTpZ+FYBLuAVAOZN2oFxk0MqTR+SAH7++PHEwwrwGs1eKvV8JqsJiGdOENxsDsRGRC273rL1eu2Y2eXj12Em1zL/Skw50qeluAHLxa+ljjW3hb7MZgkHesHzv8dR6zWYCnKX5ni9nm/igrkB7pYc4KhU8302BPMk8Wc0bG5mdsFJXQ94V/09Zmaph9sVS0RnEdzapDIvM3NP3vD5sCte5L1l8C9e/qiGs5w/PzNz8Bhp4r1B5AAAh8NhGR6TmV1ZrheZcbrpFyvKG2Jm96ss/7jHWW7YmvLBM8zEl2zhnFx9fDlyOzgRx5vqbKDcC/zKsrF0lfsY7fTU6AtnbhK4v+Py+0KTVADgeDyuxL/J/bg6IE8gReI7PsUxH7Wwtp9S3sQVxXKKCz3KGIe/43JMC/LmjInlTXtBh8Nh+fz8fJpqlcR3nC8HK9VX4lT9Qz9qmyXEYmcFRPr342P19/fv/015rkf8euhYufNTvEfrc6MRZn54TjD7V4hI7jl5oS3gFdrMLNdc84PdGzfHSmBmlvy6AOzIm/1+X6CJwrv9mPVpzYTQNiNvxKfRfszafPRC2zcofCvegry5t9zTel64HUz66vJG5Yl1yT1+Y94nc3VSuWclqgD48vJy8s1YAbFGswgsgFiNma9RfeQ/IbRNdG+QmH3s+6CaBWHjNaIJeSOnd0PSivrXnnihHWhEC42HemjjQR1A4Hq6wANqRN70bgmYABBIsmDFzMV+v1/2/uM8PnWCaO7r78JmLDM751xd17XZxoM5AMVCoW2Cmbv2VcyEcGhvb28OUuQTUSXf2quuEYFmmCp83eoKTHW0zTQeEOyrmFyBwPUehhF5431qScUsgMBvh4OpByvdm1a3mgYQuGzGSthUzOz2+/03TZ/aVpzVHBhbLG+s7Kt8GQDFzMkb8yEcmvQR/YBnZWFz6n/kfiyeqpHvUQAAAABJRU5ErkJggg==";
+
+const ADMIN_PASS = "Kaizzo24$";
+const MAX_VIOLATIONS = 2;
+const MEDAL = ["🥇","🥈","🥉"];
+
+const DEFAULT_QUESTIONS = [{"text": "Kelangkaan dalam ilmu ekonomi menunjukkan bahwa …", "options": ["semua kebutuhan manusia dapat terpenuhi", "alat pemuas kebutuhan tidak terbatas", "kebutuhan manusia lebih banyak daripada alat pemuas kebutuhan", "manusia tidak membutuhkan barang ekonomi"], "answer": 2, "image": ""}, {"text": "Perhatikan pernyataan berikut: 1. Pendapatan masyarakat meningkat 2. Jumlah pembeli bertambah 3. Harga barang naik 4. Barang di pasar berkurang. Faktor yang dapat meningkatkan permintaan adalah …", "options": ["1 dan 2", "1 dan 3", "2 dan 4", "3 dan 4"], "answer": 0, "image": ""}, {"text": "Jika harga suatu barang tetap tinggi karena dianggap menunjukkan status sosial pemiliknya, barang tersebut termasuk …", "options": ["barang bebas", "barang inferior", "barang prestise", "barang komplementer"], "answer": 2, "image": ""}, {"text": "Perhatikan kegiatan berikut: 1. Petani menanam padi 2. Pedagang menjual beras 3. Sopir mengangkut beras ke kota 4. Ibu memasak nasi. Yang termasuk kegiatan distribusi adalah …", "options": ["1 dan 2", "2 dan 3", "1 dan 4", "3 dan 4"], "answer": 1, "image": ""}, {"text": "Jika penawaran meningkat sementara permintaan tetap, maka harga barang kemungkinan akan …", "options": ["naik", "turun", "tetap", "sangat mahal"], "answer": 1, "image": ""}, {"text": "Berikut yang termasuk faktor produksi asli adalah …", "options": ["tanah dan tenaga kerja", "modal dan kewirausahaan", "teknologi dan distribusi", "produksi dan konsumsi"], "answer": 0, "image": ""}, {"text": "Kemampuan seseorang menggabungkan faktor produksi untuk memperoleh keuntungan disebut …", "options": ["distribusi", "konsumsi", "kewirausahaan", "investasi"], "answer": 2, "image": ""}, {"text": "Jika pendapatan masyarakat meningkat, permintaan terhadap barang normal biasanya akan …", "options": ["menurun", "tetap", "meningkat", "hilang"], "answer": 2, "image": ""}, {"text": "Contoh kegiatan produksi di bidang jasa adalah …", "options": ["pabrik membuat sepatu", "petani menanam jagung", "dokter memeriksa pasien", "pedagang menjual pakaian"], "answer": 2, "image": ""}, {"text": "Bank yang memiliki hak untuk mencetak dan mengedarkan uang di Indonesia adalah …", "options": ["bank umum", "bank swasta", "Bank Indonesia", "koperasi"], "answer": 2, "image": ""}, {"text": "Salah satu fungsi bank bagi masyarakat adalah …", "options": ["memproduksi barang", "menyimpan uang dan memberikan pinjaman", "menentukan harga pasar", "mengatur perdagangan"], "answer": 1, "image": ""}, {"text": "Pada masa awal sebelum mengenal uang, masyarakat melakukan kegiatan ekonomi dengan sistem …", "options": ["kredit", "barter", "deposito", "investasi"], "answer": 1, "image": ""}, {"text": "Kelemahan utama sistem barter adalah …", "options": ["barang terlalu banyak", "sulit menemukan orang yang membutuhkan barang kita", "barang tidak memiliki nilai", "semua barang memiliki harga sama"], "answer": 1, "image": ""}, {"text": "Salah satu syarat suatu benda dapat dijadikan uang adalah …", "options": ["mudah rusak", "tidak diterima masyarakat", "tahan lama dan mudah dibawa", "jumlahnya tidak terbatas"], "answer": 2, "image": ""}, {"text": "Inflasi yang tinggi biasanya menyebabkan …", "options": ["nilai uang meningkat", "harga barang turun", "daya beli masyarakat menurun", "jumlah barang meningkat"], "answer": 2, "image": ""}, {"text": "Lembaga yang mengawasi jasa keuangan di Indonesia saat ini adalah …", "options": ["Bank Indonesia", "Otoritas Jasa Keuangan", "Kementerian Perdagangan", "BPS"], "answer": 1, "image": ""}, {"text": "Literasi finansial penting bagi masyarakat karena dapat membantu …", "options": ["mengurangi kebutuhan manusia", "memahami cara mengelola keuangan dengan baik", "menghilangkan inflasi", "menghapus sistem perbankan"], "answer": 1, "image": ""}, {"text": "Jika seseorang menggunakan uang secara bijak, menabung, dan menghindari utang berlebihan, hal tersebut menunjukkan …", "options": ["distribusi ekonomi", "perilaku konsumsi berlebihan", "literasi finansial yang baik", "produksi ekonomi"], "answer": 2, "image": ""}, {"text": "Salah satu tujuan pembangunan ekonomi Indonesia adalah …", "options": ["memperkecil kesempatan kerja", "meningkatkan kesejahteraan masyarakat", "mengurangi produksi", "membatasi perdagangan"], "answer": 1, "image": ""}, {"text": "Jika pembangunan ekonomi berjalan baik, maka biasanya akan terjadi …", "options": ["meningkatnya pengangguran", "meningkatnya kesejahteraan masyarakat", "menurunnya produksi", "berkurangnya kegiatan ekonomi"], "answer": 1, "image": ""}, {"text": "Perhatikan pernyataan berikut: 1. Krisis ekonomi besar yang menyebabkan perubahan sistem pemerintahan 2. Diterapkannya reformasi di bidang politik dan ekonomi 3. Terjadi hiperinflasi hingga ratusan persen 4. Pemerintah menjalankan program pembangunan lima tahun (Pelita). Urutan perkembangan kondisi ekonomi Indonesia dari masa Orde Lama → Orde Baru → Reformasi yang benar adalah …", "options": ["3 → 4 → 1 → 2", "4 → 3 → 1 → 2", "3 → 1 → 4 → 2", "4 → 1 → 3 → 2"], "answer": 0, "image": ""}];
+
+const DEFAULT_CONFIG = { title:"Ujian IPS Ekonomi Kelas 9", duration:30, maxViolations:2 };
+
+// ─── CSS ─────────────────────────────────────────────────────────────────────
+const STYLES = `
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f5f6fa;--white:#fff;--sf:#f0f1f7;--bd:#e4e6f0;
+  --ac:#0061ff;--acd:#e8f0ff;
+  --gn:#00b96b;--gnd:#e6f9f2;
+  --rd:#ff3b5c;--rdd:#fff0f3;
+  --or:#ff8c00;--ord:#fff5e6;
+  --tx:#0d0e1a;--sb:#4a4d6a;--mt:#9496b0;
+  --sh:0 4px 24px rgba(0,97,255,.08);
+  --shl:0 16px 56px rgba(0,97,255,.12);
+}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;user-select:none}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,97,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,97,255,.03) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0}
+.wrap{max-width:860px;margin:0 auto;padding:36px 20px 60px;position:relative;z-index:1}
+.card{background:var(--white);border-radius:16px;border:1.5px solid var(--bd);box-shadow:var(--sh);padding:28px;margin-bottom:16px;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--ac),#00c6ff);opacity:0;transition:.3s}
+.card:hover::before{opacity:1}
+/* topbar */
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:38px}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-box{width:42px;height:42px;border-radius:10px;background:#0d0e1a;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(0,97,255,.2);flex-shrink:0}
+.logo-box img{width:36px;height:36px;object-fit:contain}
+.logo-title{font-size:1.2rem;font-weight:800;letter-spacing:-.4px;line-height:1}
+.logo-sub{font-size:.68rem;font-weight:600;color:var(--mt);letter-spacing:1.2px;text-transform:uppercase}
+.pill{display:flex;align-items:center;gap:6px;background:var(--white);border:1.5px solid var(--bd);border-radius:999px;padding:6px 14px;font-size:.75rem;font-weight:600;color:var(--sb);box-shadow:var(--sh)}
+.pill-dot{width:7px;height:7px;border-radius:50%}
+/* form */
+.flabel{display:block;font-size:.72rem;font-weight:700;letter-spacing:.9px;text-transform:uppercase;color:var(--mt);margin-bottom:7px}
+.finput,.fselect,.ftextarea{width:100%;padding:11px 14px;border:1.5px solid var(--bd);border-radius:10px;font-family:'Outfit',sans-serif;font-size:.9rem;font-weight:500;background:var(--sf);color:var(--tx);outline:none;transition:.2s}
+.finput:focus,.fselect:focus,.ftextarea:focus{border-color:var(--ac);background:var(--white);box-shadow:0 0 0 3px rgba(0,97,255,.08)}
+.finput.err{border-color:var(--rd);background:var(--rdd)}
+.ftextarea{resize:vertical;min-height:70px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fgroup{margin-bottom:16px}
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 20px;border-radius:10px;font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;border:none;transition:.18s}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important}
+.btnP{background:var(--ac);color:#fff;box-shadow:0 4px 18px rgba(0,97,255,.28)}
+.btnP:hover{background:#0052d6;transform:translateY(-1px)}
+.btnG{background:var(--sf);color:var(--sb);border:1.5px solid var(--bd)}
+.btnG:hover{border-color:var(--ac);color:var(--ac);background:var(--acd)}
+.btnD{background:var(--rd);color:#fff}
+.btnD:hover{background:#e0002e}
+.btnS{background:var(--gn);color:#fff}
+.btnO{background:var(--or);color:#fff}
+.btnFull{width:100%}
+.btnXl{padding:14px 28px;font-size:.95rem;border-radius:14px}
+.btnSm{padding:7px 13px;font-size:.78rem;border-radius:8px}
+/* tabs */
+.tabs{display:flex;gap:4px;background:var(--sf);border-radius:10px;padding:4px;margin-bottom:22px;border:1.5px solid var(--bd)}
+.tab{flex:1;padding:9px;border:none;background:transparent;border-radius:8px;font-family:'Outfit',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;color:var(--mt);transition:.2s}
+.tab.on{background:var(--white);color:var(--ac);box-shadow:var(--sh)}
+/* progress */
+.prog{height:4px;background:var(--bd);border-radius:999px;overflow:hidden;margin-bottom:20px}
+.progf{height:100%;background:linear-gradient(90deg,var(--ac),#00c6ff);border-radius:999px;transition:width .4s cubic-bezier(.22,1,.36,1)}
+/* timer */
+.timer{font-family:'DM Mono',monospace;font-size:1.5rem;font-weight:500;letter-spacing:1px;transition:.3s}
+.tw{color:var(--or)}
+.tc{color:var(--rd);animation:blink .8s infinite alternate}
+@keyframes blink{from{opacity:1}to{opacity:.4}}
+/* ac */
+.acbar{display:flex;align-items:center;gap:9px;background:linear-gradient(135deg,#fffbf0,#fff8e8);border:1.5px solid #ffe0a0;border-radius:10px;padding:10px 15px;margin-bottom:14px;font-size:.8rem;font-weight:600;color:var(--or)}
+.acdot{width:7px;height:7px;border-radius:50%;background:var(--or);flex-shrink:0;animation:ap 1.4s infinite}
+@keyframes ap{0%,100%{box-shadow:0 0 0 0 rgba(255,140,0,.5)}50%{box-shadow:0 0 0 5px rgba(255,140,0,0)}}
+.vb{margin-left:auto;font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:999px}
+.vb0{background:var(--gnd);color:var(--gn)}
+.vb1{background:var(--ord);color:var(--or)}
+.vb2{background:var(--rdd);color:var(--rd)}
+/* overlay */
+.ov{position:fixed;inset:0;background:rgba(13,14,26,.55);backdrop-filter:blur(10px);z-index:9999;display:flex;align-items:center;justify-content:center}
+.modal{background:var(--white);border-radius:20px;padding:38px 32px;max-width:420px;width:92%;text-align:center;box-shadow:var(--shl);border:1.5px solid var(--bd);position:relative;overflow:hidden;animation:fu .25s ease}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--rd),#ff8c00)}
+.modal.green::before{background:linear-gradient(90deg,var(--gn),#00c6ff)}
+@keyframes fu{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+.shake{animation:shake .45s ease}
+/* opt btn */
+.optb{display:flex;align-items:center;gap:13px;width:100%;padding:13px 17px;border:1.5px solid var(--bd);border-radius:10px;background:var(--sf);cursor:pointer;font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:500;color:var(--tx);text-align:left;transition:.18s;margin-bottom:10px}
+.optb:hover{border-color:var(--ac);background:var(--acd);transform:translateX(3px)}
+.optb.sel{border-color:var(--ac);background:var(--acd);color:var(--ac);font-weight:700}
+.optb.cor{border-color:var(--gn);background:var(--gnd);color:var(--gn);font-weight:700}
+.optb.wrg{border-color:var(--rd);background:var(--rdd);color:var(--rd);font-weight:700}
+.optk{width:30px;height:30px;border-radius:8px;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800;background:rgba(255,255,255,.7);flex-shrink:0}
+/* leaderboard */
+.lbrow{display:flex;align-items:center;gap:13px;padding:13px 15px;border-radius:12px;border:1.5px solid var(--bd);background:var(--sf);margin-bottom:9px;transition:.2s}
+.lbrow:hover{border-color:var(--ac);background:var(--acd)}
+.lbrow.me{border-color:var(--ac);background:var(--acd)}
+.lbrank{font-family:'DM Mono',monospace;font-size:.85rem;font-weight:700;width:28px;text-align:center;color:var(--mt)}
+.lbav{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--ac),#00c6ff);display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:800;color:#fff;flex-shrink:0}
+.lbname{font-weight:700;font-size:.9rem;flex:1}
+.lbmail{font-size:.72rem;color:var(--mt)}
+.lbsc{font-family:'DM Mono',monospace;font-size:1.1rem;font-weight:500;color:var(--ac)}
+/* score ring */
+.ringwrap{position:relative;width:148px;height:148px;margin:0 auto 20px}
+.ringwrap svg{transform:rotate(-90deg)}
+.ringin{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ringsc{font-family:'DM Mono',monospace;font-size:2.1rem;font-weight:500;letter-spacing:-1px;line-height:1}
+.ringlb{font-size:.68rem;color:var(--mt);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-top:2px}
+/* stats */
+.sgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:20px 0}
+.sbox{background:var(--sf);border:1.5px solid var(--bd);border-radius:12px;padding:15px;text-align:center}
+.sval{font-family:'DM Mono',monospace;font-size:1.5rem;font-weight:500;margin-bottom:3px}
+.slbl{font-size:.68rem;color:var(--mt);font-weight:700;text-transform:uppercase;letter-spacing:.7px}
+/* review */
+.rvit{padding:14px;border-radius:12px;margin-bottom:10px;border:1.5px solid}
+.rvit.ok{border-color:var(--gn);background:var(--gnd)}
+.rvit.fl{border-color:var(--rd);background:var(--rdd)}
+/* admin */
+.adtable{width:100%;border-collapse:collapse}
+.adtable th{text-align:left;font-size:.72rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--mt);padding:10px 12px;border-bottom:2px solid var(--bd)}
+.adtable td{padding:12px;border-bottom:1px solid var(--bd);font-size:.87rem;vertical-align:middle}
+.adtable tr:last-child td{border-bottom:none}
+.adtable tr:hover td{background:var(--sf)}
+.qedit{border:1.5px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px;background:var(--sf)}
+.qedit:hover{border-color:var(--ac)}
+.qnum{display:inline-flex;align-items:center;font-size:.7rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--ac);background:var(--acd);padding:3px 10px;border-radius:999px}
+/* image preview */
+.imgprev{width:100%;max-height:160px;object-fit:contain;border-radius:10px;border:1.5px solid var(--bd);margin-top:8px;background:var(--sf)}
+/* misc */
+.cgn{color:var(--gn)} .crd{color:var(--rd)} .cor{color:var(--or)} .cac{color:var(--ac)}
+.mono{font-family:'DM Mono',monospace}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.sp{flex:1}
+.mb14{margin-bottom:14px} .mb20{margin-bottom:20px} .mt12{margin-top:12px} .mt20{margin-top:20px}
+.div{height:1px;background:var(--bd);margin:18px 0}
+.tc{text-align:center} .muted{color:var(--mt);font-size:.85rem}
+.h2{font-size:1.1rem;font-weight:700;letter-spacing:-.3px;margin-bottom:5px}
+.h3{font-size:.95rem;font-weight:700;margin-bottom:4px}
+.sub{font-size:.84rem;color:var(--mt);margin-bottom:22px;line-height:1.6}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;font-size:.72rem;font-weight:700}
+.badgeG{background:var(--gnd);color:var(--gn)}
+.badgeR{background:var(--rdd);color:var(--rd)}
+.badgeA{background:var(--acd);color:var(--ac)}
+@media(max-width:580px){.sgrid{grid-template-columns:1fr 1fr}.frow{grid-template-columns:1fr}}
+`;
+
+// ── utils ─────────────────────────────────────────────────────────────────────
+const fmt = s => `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
+const initials = n => n.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase() || "?";
+const toBase64 = file => new Promise((res,rej) => { const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
+
+// ── Logo ─────────────────────────────────────────────────────────────────────
+function Logo() {
+  return (
+    <div className="logo">
+      <div className="logo-box"><img src={`data:image/png;base64,${LOGO_B64}`} alt="K"/></div>
+      <div><div className="logo-title">Kaizo Academic</div><div className="logo-sub">Exam Platform</div></div>
+    </div>
+  );
+}
+
+// ── Main ──────────────────────────────────────────────────────────────────────
+function App() {
+  const [screen, setScreen] = useState("register");
+  const [questions, setQuestions] = useState(DEFAULT_QUESTIONS);
+  const [config, setConfig] = useState(DEFAULT_CONFIG);
+  const [regData, setRegData] = useState({ name:"", nim:"", email:"" });
+  const [regErr, setRegErr] = useState("");
+  const [regLoad, setRegLoad] = useState(false);
+  const [curQ, setCurQ] = useState(0);
+  const [answers, setAnswers] = useState([]);
+  const [timeLeft, setTimeLeft] = useState(600);
+  const [violations, setViolations] = useState(0);
+  const [cheatModal, setCheatModal] = useState(false);
+  const [resetModal, setResetModal] = useState(false);
+  const [result, setResult] = useState(null);
+  const [leaderboard, setLb] = useState([]);
+  const [lbLoad, setLbLoad] = useState(false);
+  const [resultTab, setResultTab] = useState("result");
+  const [adminModal, setAdminModal] = useState(false);
+  const [adminPass, setAdminPass] = useState("");
+  const [adminErr, setAdminErr] = useState("");
+  const [adminScreen, setAdminScreen] = useState("dash");
+  const [adminTab, setAdminTab] = useState("soal");
+  const [editQ, setEditQ] = useState(null);
+  const [saveMsg, setSaveMsg] = useState("");
+  const examActive = useRef(false);
+  const timerRef = useRef(null);
+  const violRef = useRef(0);
+  const warnOpen = useRef(false);
+  const lastCheatTime = useRef(0);
+
+  useEffect(() => {
+    const s = document.createElement("style"); s.textContent = STYLES; document.head.appendChild(s);
+    loadConfig();
+    return () => document.head.removeChild(s);
+  }, []);
+
+  // ── storage ──────────────────────────────────────────────────────────────────
+  async function loadConfig() {
+    try {
+      const r = await window.storage.get("kaizo:config", true);
+      if (r) { const c = JSON.parse(r.value); setConfig(c.config||DEFAULT_CONFIG); setQuestions(c.questions||DEFAULT_QUESTIONS); }
+    } catch {}
+  }
+
+  async function saveConfig(newConfig, newQuestions) {
+    try {
+      await window.storage.set("kaizo:config", JSON.stringify({ config: newConfig, questions: newQuestions }), true);
+      setSaveMsg("✓ Tersimpan");
+      setTimeout(() => setSaveMsg(""), 2000);
+    } catch { setSaveMsg("✗ Gagal simpan"); }
+  }
+
+  async function loadLeaderboard() {
+    setLbLoad(true);
+    try {
+      const keys = await window.storage.list("lb:", true);
+      const entries = [];
+      for (const key of keys.keys) {
+        try { const r = await window.storage.get(key, true); if (r) entries.push(JSON.parse(r.value)); } catch {}
+      }
+      entries.sort((a,b) => b.score - a.score || a.time - b.time);
+      setLb(entries.slice(0,10));
+    } catch {}
+    setLbLoad(false);
+  }
+
+  async function checkEmail(email) {
+    try { await window.storage.get(`lb:${email.toLowerCase()}`, true); return true; } catch { return false; }
+  }
+
+  async function saveScore(entry) {
+    try { await window.storage.set(`lb:${entry.email.toLowerCase()}`, JSON.stringify(entry), true); } catch {}
+  }
+
+  async function clearLeaderboard() {
+    try {
+      const keys = await window.storage.list("lb:", true);
+      for (const key of keys.keys) { try { await window.storage.delete(key, true); } catch {} }
+      setLb([]);
+    } catch {}
+  }
+
+  // ── register ─────────────────────────────────────────────────────────────────
+  async function handleRegister() {
+    const { name, email } = regData;
+    if (!name.trim()) return setRegErr("Nama wajib diisi");
+    if (!email.trim() || !email.includes("@")) return setRegErr("Email tidak valid");
+    setRegLoad(true); setRegErr("");
+    const exists = await checkEmail(email);
+    if (exists) { setRegErr("Email ini sudah pernah mengerjakan. 1 email = 1 kesempatan."); setRegLoad(false); return; }
+    setRegLoad(false);
+    startExam();
+  }
+
+  // ── exam ─────────────────────────────────────────────────────────────────────
+  function startExam() {
+    setScreen("exam"); setAnswers(new Array(questions.length).fill(null));
+    setCurQ(0); setTimeLeft(config.duration * 60); setViolations(0);
+    violRef.current = 0; examActive.current = true;
+    startTimer(); setTimeout(bindAC, 300);
+  }
+
+  function startTimer() {
+    clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setTimeLeft(t => { if (t <= 1) { clearInterval(timerRef.current); if (examActive.current) doSubmit(); return 0; } return t-1; });
+    }, 1000);
+  }
+  function stopTimer() { clearInterval(timerRef.current); }
+
+  function bindAC() {
+    document.addEventListener("visibilitychange", onVis);
+  }
+  function unbindAC() {
+    document.removeEventListener("visibilitychange", onVis);
+  }
+  function onVis() {
+    if (!examActive.current) return;
+    if (document.visibilityState !== "hidden") return;
+    // Debounce: ignore jika kurang dari 1 detik dari pelanggaran terakhir
+    const now = Date.now();
+    if (now - lastCheatTime.current < 1000) return;
+    lastCheatTime.current = now;
+    // Delay 500ms untuk pastikan benar-benar pindah tab, bukan animasi UI
+    setTimeout(() => {
+      if (document.hidden && examActive.current) cheat();
+    }, 500);
+  }
+
+  function cheat() {
+    if (warnOpen.current) return;
+    violRef.current += 1; setViolations(violRef.current);
+    if (violRef.current > (config.maxViolations||2)) { warnOpen.current=true; stopTimer(); setResetModal(true); }
+    else { warnOpen.current=true; stopTimer(); setCheatModal(true); }
+  }
+
+  function closeCheat() { setCheatModal(false); warnOpen.current=false; startTimer(); }
+  function doResetExam() {
+    setResetModal(false); warnOpen.current=false;
+    setAnswers(new Array(questions.length).fill(null));
+    setCurQ(0); setTimeLeft(config.duration*60); violRef.current=0; setViolations(0); startTimer();
+  }
+
+  async function doSubmit() {
+    examActive.current=false; stopTimer(); unbindAC();
+    let benar=0;
+    questions.forEach((q,i) => { if (answers[i]===q.answer) benar++; });
+    const score = Math.round(benar/questions.length*100);
+    const entry = { name:regData.name, nim:regData.nim, email:regData.email, score, benar, violations:violRef.current, time:Date.now() };
+    setResult({ ...entry, answers:[...answers] });
+    await saveScore(entry);
+    loadLeaderboard();
+    setScreen("result");
+  }
+
+  function confirmSubmit() {
+    const un = answers.filter(a=>a===null).length;
+    if (un>0 && !window.confirm(`${un} soal belum dijawab. Kumpulkan?`)) return;
+    doSubmit();
+  }
+
+  // ── grade ─────────────────────────────────────────────────────────────────────
+  function gradeInfo(score) {
+    if (score>=90) return { grade:"A — Sangat Baik 🎯", color:"#00b96b", msg:"Luar biasa!" };
+    if (score>=80) return { grade:"B — Baik 👍", color:"#0061ff", msg:"Bagus! Hampir sempurna." };
+    if (score>=70) return { grade:"C — Cukup 📖", color:"#ff8c00", msg:"Cukup baik, terus tingkatkan." };
+    return { grade:"D — Perlu Belajar ❌", color:"#ff3b5c", msg:"Jangan menyerah, pelajari lagi!" };
+  }
+
+  // ── admin ─────────────────────────────────────────────────────────────────────
+  function tryAdmin() {
+    if (adminPass === ADMIN_PASS) { setAdminModal(false); setAdminErr(""); setAdminPass(""); setScreen("admin"); loadLeaderboard(); }
+    else setAdminErr("Password salah");
+  }
+
+  // ── RENDER ────────────────────────────────────────────────────────────────────
+
+  // REGISTER
+  if (screen === "register") return (
+    <div className="wrap">
+      {adminModal && (
+        <div className="ov">
+          <div className="modal green">
+            <div style={{fontSize:"2.4rem",marginBottom:12}}>🔐</div>
+            <div style={{fontSize:"1.2rem",fontWeight:800,marginBottom:8}}>Admin Login</div>
+            <div style={{color:"var(--mt)",fontSize:".85rem",marginBottom:20}}>Masukkan password admin untuk lanjut.</div>
+            <input className={`finput ${adminErr?"err":""}`} type="password" placeholder="Password admin"
+              value={adminPass} onChange={e=>{setAdminPass(e.target.value);setAdminErr("");}}
+              onKeyDown={e=>e.key==="Enter"&&tryAdmin()} autoFocus/>
+            {adminErr && <div style={{color:"var(--rd)",fontSize:".8rem",marginTop:6,fontWeight:600}}>{adminErr}</div>}
+            <div className="row mt12" style={{gap:8}}>
+              <button className="btn btnG" style={{flex:1}} onClick={()=>{setAdminModal(false);setAdminPass("");setAdminErr("");}}>Batal</button>
+              <button className="btn btnP" style={{flex:1}} onClick={tryAdmin}>Masuk →</button>
+            </div>
+          </div>
+        </div>
+      )}
+      <div className="topbar">
+        <Logo />
+        <div className="row" style={{gap:8}}>
+          <div className="pill"><div className="pill-dot" style={{background:"#00b96b",boxShadow:"0 0 6px #00b96b"}}/>v1.0 Anti-Cheat</div>
+          <button className="btn btnG btnSm" onClick={()=>setAdminModal(true)}>⚙ Admin</button>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="h2">Daftar & Mulai Ujian</div>
+        <div className="sub">Isi data diri sebelum mengerjakan. 1 email hanya bisa submit 1 kali.</div>
+        <div className="fgroup">
+          <label className="flabel">Nama Lengkap *</label>
+          <input className="finput" placeholder="Nama lengkap" value={regData.name} onChange={e=>setRegData(p=>({...p,name:e.target.value}))}/>
+        </div>
+        <div className="fgroup">
+          <label className="flabel">NIM / Nomor Peserta</label>
+          <input className="finput" placeholder="Opsional" value={regData.nim} onChange={e=>setRegData(p=>({...p,nim:e.target.value}))}/>
+        </div>
+        <div className="fgroup" style={{marginBottom:0}}>
+          <label className="flabel">Email *</label>
+          <input className={`finput${regErr?" err":""}`} type="email" placeholder="nama@email.com"
+            value={regData.email} onChange={e=>{setRegData(p=>({...p,email:e.target.value}));setRegErr("");}}/>
+          {regErr && <div style={{color:"var(--rd)",fontSize:".8rem",marginTop:6,fontWeight:600}}>{regErr}</div>}
+        </div>
+      </div>
+
+      <div className="card" style={{background:"linear-gradient(135deg,#fffbf2,#fff)",borderColor:"#ffe0a0"}}>
+        <div className="row" style={{alignItems:"flex-start",gap:12}}>
+          <div style={{fontSize:"1.3rem",marginTop:2}}>🛡</div>
+          <div>
+            <div style={{fontWeight:700,marginBottom:4,fontSize:".92rem"}}>Anti-Cheat Aktif — {config.title}</div>
+            <div style={{fontSize:".82rem",color:"var(--sb)",lineHeight:1.65}}>
+              {questions.length} soal · {config.duration} menit · Maks. {config.maxViolations}× pelanggaran sebelum reset
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button className="btn btnP btnFull btnXl" onClick={handleRegister} disabled={regLoad} style={{marginTop:6}}>
+        {regLoad ? "Memeriksa..." : "Mulai Ujian →"}
+      </button>
+      <button className="btn btnG btnFull mt20" onClick={()=>{loadLeaderboard();setScreen("lbonly");}}>🏆 Lihat Leaderboard</button>
+    </div>
+  );
+
+  // LEADERBOARD ONLY
+  if (screen === "lbonly") return (
+    <div className="wrap">
+      <div className="topbar"><Logo /><button className="btn btnG btnSm" onClick={()=>setScreen("register")}>← Kembali</button></div>
+      <LbPanel lb={leaderboard} loading={lbLoad} myEmail={null} onRefresh={loadLeaderboard}/>
+    </div>
+  );
+
+  // EXAM
+  if (screen === "exam") {
+    const q = questions[curQ];
+    const vc = Math.min(violations, 2);
+    return (
+      <div className="wrap">
+        {cheatModal && (
+          <div className="ov"><div className="modal shake">
+            <div style={{fontSize:"2.6rem",marginBottom:12}}>⚠️</div>
+            <div style={{fontSize:"1.25rem",fontWeight:800,color:"var(--rd)",marginBottom:8}}>Tab Switching Terdeteksi</div>
+            <div style={{display:"inline-block",fontFamily:"'DM Mono',monospace",background:"var(--rdd)",color:"var(--rd)",fontWeight:700,padding:"4px 14px",borderRadius:999,fontSize:".88rem",marginBottom:14}}>
+              Pelanggaran {violations} / {config.maxViolations}
+            </div>
+            <div style={{color:"var(--sb)",fontSize:".86rem",lineHeight:1.7,marginBottom:22}}>
+              {violations>=config.maxViolations ? "Ini pelanggaran terakhir! Keluar lagi = ujian direset." : `Pelanggaran ke-${violations} dari ${config.maxViolations}.`}
+            </div>
+            <button className="btn btnD btnFull" onClick={closeCheat}>Saya Mengerti — Kembali</button>
+          </div></div>
+        )}
+        {resetModal && (
+          <div className="ov"><div className="modal">
+            <div style={{fontSize:"2.6rem",marginBottom:12}}>🚫</div>
+            <div style={{fontSize:"1.25rem",fontWeight:800,color:"var(--rd)",marginBottom:8}}>Ujian Direset!</div>
+            <div style={{color:"var(--sb)",fontSize:".86rem",lineHeight:1.7,marginBottom:22}}>Melebihi batas pelanggaran. Semua jawaban dihapus.</div>
+            <button className="btn btnD btnFull" onClick={doResetExam}>Mulai Ulang</button>
+          </div></div>
+        )}
+        <div className="acbar">
+          <div className="acdot"/>Anti-Cheat Aktif — Jangan berpindah tab
+          <div className="sp"/>
+          <div className={`vb vb${vc}`}>{violations} Pelanggaran</div>
+        </div>
+        <div className="card" style={{padding:"13px 20px",marginBottom:14}}>
+          <div className="row">
+            <div><div style={{fontSize:".65rem",color:"var(--mt)",fontWeight:600,textTransform:"uppercase",letterSpacing:1,marginBottom:1}}>Sesi Ujian</div>
+            <div style={{fontWeight:800,fontSize:".93rem"}}>{config.title}</div></div>
+            <div className="sp"/>
+            <div className="row" style={{gap:18}}>
+              <div className="tc"><div className="mono cac" style={{fontSize:"1.05rem",fontWeight:500}}>{curQ+1}/{questions.length}</div><div style={{fontSize:".62rem",color:"var(--mt)",fontWeight:600,textTransform:"uppercase",letterSpacing:.5}}>Soal</div></div>
+              <div style={{width:1,height:28,background:"var(--bd)"}}/>
+              <div className="tc"><div className="mono cac" style={{fontSize:"1.05rem",fontWeight:500}}>{answers.filter(a=>a!==null).length}</div><div style={{fontSize:".62rem",color:"var(--mt)",fontWeight:600,textTransform:"uppercase",letterSpacing:.5}}>Dijawab</div></div>
+              <div style={{width:1,height:28,background:"var(--bd)"}}/>
+              <div className={`timer${timeLeft<=60?" tc":timeLeft<=120?" tw":""}`}>{fmt(timeLeft)}</div>
+            </div>
+          </div>
+        </div>
+        <div className="prog"><div className="progf" style={{width:`${(curQ/questions.length)*100}%`}}/></div>
+        <div className="card">
+          <div style={{display:"inline-flex",alignItems:"center",gap:6,background:"var(--acd)",color:"var(--ac)",fontSize:".7rem",fontWeight:800,textTransform:"uppercase",letterSpacing:1,padding:"4px 12px",borderRadius:999,marginBottom:13}}>◈ Soal {curQ+1} dari {questions.length}</div>
+          {q.image && <img src={q.image} alt="soal" className="imgprev" style={{marginBottom:14}}/>}
+          <div style={{fontSize:"1.04rem",fontWeight:600,lineHeight:1.75,marginBottom:20}}>{q.text}</div>
+          {q.options.map((opt,oi)=>(
+            <button key={oi} className={`optb${answers[curQ]===oi?" sel":""}`} onClick={()=>{const a=[...answers];a[curQ]=oi;setAnswers(a);}}>
+              <div className="optk">{["A","B","C","D"][oi]}</div>{opt}
+            </button>
+          ))}
+        </div>
+        <div className="row mb14">
+          <button className="btn btnG" disabled={curQ===0} onClick={()=>setCurQ(c=>c-1)}>← Sebelumnya</button>
+          <div className="sp"/>
+          <button className="btn btnP" onClick={()=>curQ<questions.length-1?setCurQ(c=>c+1):confirmSubmit()}>
+            {curQ===questions.length-1?"Selesai ✓":"Selanjutnya →"}
+          </button>
+        </div>
+        <button className="btn btnS btnFull" style={{borderRadius:12,padding:14}} onClick={confirmSubmit}>✓ Kumpulkan Jawaban</button>
+      </div>
+    );
+  }
+
+  // RESULT
+  if (screen === "result" && result) {
+    const { grade, color, msg } = gradeInfo(result.score);
+    const circ = 2*Math.PI*62;
+    const off = circ - (result.score/100)*circ;
+    const myRank = leaderboard.findIndex(e=>e.email===result.email)+1;
+    return (
+      <div className="wrap">
+        <div className="topbar" style={{marginBottom:22}}>
+          <Logo />
+          {myRank>0 && <div className="pill" style={{borderColor:color,color}}>{myRank<=3?MEDAL[myRank-1]:`#${myRank}`} Peringkat {myRank}</div>}
+        </div>
+        <div className="tabs">
+          <button className={`tab${resultTab==="result"?" on":""}`} onClick={()=>setResultTab("result")}>📋 Hasil</button>
+          <button className={`tab${resultTab==="lb"?" on":""}`} onClick={()=>{setResultTab("lb");loadLeaderboard();}}>🏆 Leaderboard</button>
+        </div>
+        {resultTab==="result" && (
+          <>
+            <div className="card tc">
+              <div className="ringwrap">
+                <svg width="148" height="148" viewBox="0 0 148 148">
+                  <circle cx="74" cy="74" r="62" fill="none" stroke="#e4e6f0" strokeWidth="10"/>
+                  <circle cx="74" cy="74" r="62" fill="none" stroke={color} strokeWidth="10" strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={off} style={{transition:"stroke-dashoffset 1.2s cubic-bezier(.22,1,.36,1)"}}/>
+                </svg>
+                <div className="ringin"><div className="ringsc" style={{color}}>{result.score}</div><div className="ringlb">NILAI</div></div>
+              </div>
+              <div style={{fontSize:"1.25rem",fontWeight:800,marginBottom:5}}>{grade}</div>
+              <div style={{color:"var(--mt)",fontSize:".85rem"}}>{msg}</div>
+              <div style={{marginTop:7,fontSize:".82rem",color:"var(--sb)"}}>Halo, <strong>{result.name}</strong>{result.nim?` (${result.nim})`:""}</div>
+              <div className="sgrid">
+                <div className="sbox"><div className="sval cgn">{result.benar}</div><div className="slbl">Benar</div></div>
+                <div className="sbox"><div className="sval crd">{questions.length-result.benar}</div><div className="slbl">Salah</div></div>
+                <div className="sbox"><div className="sval cor">{result.violations}</div><div className="slbl">Pelanggaran</div></div>
+              </div>
+            </div>
+            <div className="card">
+              <div className="h2" style={{marginBottom:14}}>Pembahasan</div>
+              {questions.map((q,i)=>{
+                const ua=result.answers[i]; const ok=ua===q.answer;
+                return (
+                  <div key={i} className={`rvit ${ok?"ok":"fl"}`}>
+                    <div style={{fontWeight:700,marginBottom:7,fontSize:".87rem"}}>{i+1}. {q.text}</div>
+                    {q.image && <img src={q.image} alt="" style={{maxHeight:80,borderRadius:8,marginBottom:7}}/>}
+                    <div style={{display:"flex",gap:14,flexWrap:"wrap",fontSize:".8rem",color:"var(--sb)"}}>
+                      <span>Jawabanmu: <strong style={{color:ok?"var(--gn)":"var(--rd)"}}>{ua!==null?`${["A","B","C","D"][ua]}. ${q.options[ua]}`:"(tidak dijawab)"}</strong></span>
+                      {!ok && <span>Benar: <strong style={{color:"var(--gn)"}}>{["A","B","C","D"][q.answer]}. {q.options[q.answer]}</strong></span>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+        {resultTab==="lb" && <LbPanel lb={leaderboard} loading={lbLoad} myEmail={result.email} onRefresh={loadLeaderboard}/>}
+      </div>
+    );
+  }
+
+  // ADMIN
+  if (screen === "admin") {
+    return (
+      <div className="wrap">
+        <div className="topbar">
+          <Logo />
+          <div className="row" style={{gap:8}}>
+            {saveMsg && <div className="badge badgeG">{saveMsg}</div>}
+            <button className="btn btnG btnSm" onClick={()=>setScreen("register")}>← Keluar Admin</button>
+          </div>
+        </div>
+
+        <div className="card" style={{background:"linear-gradient(135deg,#f0f4ff,#fff)",borderColor:"#c0d0ff",marginBottom:20}}>
+          <div className="row">
+            <div style={{fontSize:"1.8rem"}}>⚙️</div>
+            <div><div style={{fontWeight:800,fontSize:"1rem"}}>Panel Admin</div><div style={{fontSize:".8rem",color:"var(--mt)"}}>Kelola soal, pengaturan, dan data peserta</div></div>
+          </div>
+        </div>
+
+        <div className="tabs">
+          <button className={`tab${adminTab==="soal"?" on":""}`} onClick={()=>setAdminTab("soal")}>📝 Soal</button>
+          <button className={`tab${adminTab==="setting"?" on":""}`} onClick={()=>setAdminTab("setting")}>⚙ Pengaturan</button>
+          <button className={`tab${adminTab==="peserta"?" on":""}`} onClick={()=>{setAdminTab("peserta");loadLeaderboard();}}>👥 Peserta</button>
+        </div>
+
+        {/* ── TAB SOAL ── */}
+        {adminTab==="soal" && (
+          <div>
+            <div className="row mb20">
+              <div><div className="h2" style={{marginBottom:2}}>Daftar Soal</div><div style={{fontSize:".8rem",color:"var(--mt)"}}>{questions.length} soal tersimpan</div></div>
+              <div className="sp"/>
+              <button className="btn btnP btnSm" onClick={()=>{
+                const nq=[...questions,{text:"Pertanyaan baru...",options:["Opsi A","Opsi B","Opsi C","Opsi D"],answer:0,image:""}];
+                setQuestions(nq); saveConfig(config,nq);
+              }}>+ Tambah Soal</button>
+            </div>
+
+            {questions.map((q,qi)=>(
+              <div key={qi} className="qedit">
+                <div className="row mb14">
+                  <span className="qnum">Soal {qi+1}</span>
+                  <div className="sp"/>
+                  <button className="btn btnSm" style={{background:"var(--rdd)",color:"var(--rd)",border:"none"}} onClick={()=>{
+                    const nq=questions.filter((_,i)=>i!==qi); setQuestions(nq); saveConfig(config,nq);
+                  }}>Hapus</button>
+                </div>
+
+                <div className="fgroup">
+                  <label className="flabel">Pertanyaan</label>
+                  <textarea className="ftextarea" value={q.text} onChange={e=>{
+                    const nq=[...questions]; nq[qi]={...nq[qi],text:e.target.value}; setQuestions(nq);
+                  }} onBlur={()=>saveConfig(config,questions)}/>
+                </div>
+
+                <div className="fgroup">
+                  <label className="flabel">Foto / Gambar (opsional)</label>
+                  <input type="file" accept="image/*" style={{display:"none"}} id={`img-${qi}`}
+                    onChange={async e=>{
+                      const file=e.target.files[0]; if(!file) return;
+                      const b64=await toBase64(file);
+                      const nq=[...questions]; nq[qi]={...nq[qi],image:b64}; setQuestions(nq); saveConfig(config,nq);
+                    }}/>
+                  <div className="row" style={{gap:8}}>
+                    <button className="btn btnG btnSm" onClick={()=>document.getElementById(`img-${qi}`).click()}>📷 Upload Foto</button>
+                    {q.image && <button className="btn btnSm" style={{background:"var(--rdd)",color:"var(--rd)",border:"none"}} onClick={()=>{
+                      const nq=[...questions]; nq[qi]={...nq[qi],image:""}; setQuestions(nq); saveConfig(config,nq);
+                    }}>Hapus Foto</button>}
+                  </div>
+                  {q.image && <img src={q.image} alt="preview" className="imgprev"/>}
+                </div>
+
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+                  {["A","B","C","D"].map((lbl,oi)=>(
+                    <div key={oi} style={{display:"flex",alignItems:"center",gap:8}}>
+                      <div onClick={()=>{const nq=[...questions];nq[qi]={...nq[qi],answer:oi};setQuestions(nq);saveConfig(config,nq);}}
+                        style={{width:30,height:30,borderRadius:8,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:".75rem",fontWeight:800,cursor:"pointer",transition:".18s",
+                          background:q.answer===oi?"var(--gn)":"var(--white)",
+                          border:`1.5px solid ${q.answer===oi?"var(--gn)":"var(--bd)"}`,
+                          color:q.answer===oi?"#fff":"var(--sb)"}}>
+                        {lbl}
+                      </div>
+                      <input className="finput" style={{padding:"7px 11px",fontSize:".83rem"}} value={q.options[oi]||""} placeholder={`Opsi ${lbl}`}
+                        onChange={e=>{const nq=[...questions];nq[qi]={...nq[qi],options:nq[qi].options.map((o,i)=>i===oi?e.target.value:o)};setQuestions(nq);}}
+                        onBlur={()=>saveConfig(config,questions)}/>
+                    </div>
+                  ))}
+                </div>
+                <div style={{marginTop:9,fontSize:".73rem",color:"var(--mt)"}}>Klik A/B/C/D untuk set jawaban benar · Sekarang: <strong style={{color:"var(--gn)"}}>{["A","B","C","D"][q.answer]}</strong></div>
+              </div>
+            ))}
+
+            <button className="btn btnP btnFull" style={{marginTop:4}} onClick={()=>saveConfig(config,questions)}>💾 Simpan Semua Soal</button>
+          </div>
+        )}
+
+        {/* ── TAB SETTING ── */}
+        {adminTab==="setting" && (
+          <div className="card">
+            <div className="h2" style={{marginBottom:4}}>Pengaturan Ujian</div>
+            <div className="sub">Perubahan akan langsung berlaku untuk peserta berikutnya.</div>
+            <div className="fgroup">
+              <label className="flabel">Judul Ujian</label>
+              <input className="finput" value={config.title} onChange={e=>setConfig(p=>({...p,title:e.target.value}))} onBlur={()=>saveConfig(config,questions)}/>
+            </div>
+            <div className="frow">
+              <div className="fgroup">
+                <label className="flabel">Durasi (menit)</label>
+                <input className="finput" type="number" min="1" max="180" value={config.duration}
+                  onChange={e=>setConfig(p=>({...p,duration:parseInt(e.target.value)||10}))} onBlur={()=>saveConfig(config,questions)}/>
+              </div>
+              <div className="fgroup">
+                <label className="flabel">Maks. Pelanggaran</label>
+                <select className="fselect" value={config.maxViolations} onChange={e=>{const nc={...config,maxViolations:parseInt(e.target.value)};setConfig(nc);saveConfig(nc,questions);}}>
+                  <option value="1">1× langsung reset</option>
+                  <option value="2">2× baru reset</option>
+                  <option value="3">3× baru reset</option>
+                </select>
+              </div>
+            </div>
+            <button className="btn btnP btnFull" style={{marginTop:4}} onClick={()=>saveConfig(config,questions)}>💾 Simpan Pengaturan</button>
+          </div>
+        )}
+
+        {/* ── TAB PESERTA ── */}
+        {adminTab==="peserta" && (
+          <div>
+            <div className="row mb20">
+              <div><div className="h2" style={{marginBottom:2}}>Data Peserta</div><div style={{fontSize:".8rem",color:"var(--mt)"}}>{leaderboard.length} peserta terdaftar</div></div>
+              <div className="sp"/>
+              <button className="btn btnSm" style={{background:"var(--rdd)",color:"var(--rd)",border:"none"}} onClick={()=>{if(window.confirm("Reset semua data peserta?")) clearLeaderboard();}}>🗑 Reset Semua</button>
+              <button className="btn btnG btnSm" onClick={loadLeaderboard}>↻ Refresh</button>
+            </div>
+            {lbLoad ? <div className="tc muted" style={{padding:"30px 0"}}>Memuat...</div> :
+            leaderboard.length === 0 ? <div className="tc muted" style={{padding:"36px 0"}}><div style={{fontSize:"2rem",opacity:.4,marginBottom:8}}>📭</div>Belum ada peserta</div> :
+            <div className="card" style={{padding:0,overflow:"hidden"}}>
+              <table className="adtable">
+                <thead><tr>
+                  <th>#</th><th>Nama</th><th>Email</th><th>NIM</th><th>Nilai</th><th>Benar</th><th>Pelanggaran</th>
+                </tr></thead>
+                <tbody>
+                  {leaderboard.map((e,i)=>(
+                    <tr key={e.email}>
+                      <td style={{fontWeight:700}}>{i<3?MEDAL[i]:`#${i+1}`}</td>
+                      <td style={{fontWeight:600}}>{e.name}</td>
+                      <td style={{color:"var(--mt)",fontSize:".82rem"}}>{e.email}</td>
+                      <td style={{color:"var(--mt)",fontSize:".82rem"}}>{e.nim||"—"}</td>
+                      <td><span className="badge badgeA mono">{e.score}</span></td>
+                      <td style={{color:"var(--gn)",fontWeight:700,fontFamily:"'DM Mono',monospace"}}>{e.benar}/{questions.length}</td>
+                      <td><span className={`badge ${e.violations>0?"badgeR":"badgeG"}`}>{e.violations}×</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return null;
+}
+
+// ── Leaderboard Panel ─────────────────────────────────────────────────────────
+function LbPanel({ lb, loading, myEmail, onRefresh }) {
+  return (
+    <div className="card">
+      <div className="row mb20">
+        <div><div className="h2" style={{marginBottom:2}}>🏆 Top 10 Leaderboard</div><div style={{fontSize:".78rem",color:"var(--mt)"}}>Update otomatis setiap peserta selesai</div></div>
+        <div className="sp"/>
+        <button className="btn btnG btnSm" onClick={onRefresh}>↻ Refresh</button>
+      </div>
+      {loading && <div className="tc muted" style={{padding:"28px 0"}}>⏳ Memuat...</div>}
+      {!loading && lb.length===0 && (
+        <div className="tc" style={{padding:"36px 0",color:"var(--mt)"}}>
+          <div style={{fontSize:"2rem",marginBottom:8,opacity:.4}}>📭</div>
+          <div style={{fontWeight:600,fontSize:".9rem"}}>Belum ada peserta</div>
+          <div style={{fontSize:".8rem",marginTop:5}}>Jadilah yang pertama!</div>
+        </div>
+      )}
+      {!loading && lb.map((e,i)=>{
+        const isMe = myEmail && e.email===myEmail;
+        return (
+          <div key={e.email} className={`lbrow${isMe?" me":""}`}>
+            <div className="lbrank">{i<3?MEDAL[i]:`#${i+1}`}</div>
+            <div className="lbav">{initials(e.name)}</div>
+            <div style={{flex:1,minWidth:0}}>
+              <div className="lbname">{e.name}
+                {isMe && <span style={{fontSize:".68rem",marginLeft:6,background:"var(--acd)",color:"var(--ac)",padding:"2px 7px",borderRadius:999,fontWeight:700}}>Kamu</span>}
+              </div>
+              <div className="lbmail">{e.nim?`${e.nim} · `:""}{e.email}</div>
+            </div>
+            <div className="tc">
+              <div className="lbsc">{e.score}</div>
+              <div style={{fontSize:".62rem",color:"var(--mt)",fontWeight:600}}>NILAI</div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(React.createElement(App));
+</script>
+</body>
+</html>
