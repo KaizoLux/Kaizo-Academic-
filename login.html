@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Masuk - Kaizo Academic</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:sans-serif;background:#f1f5f9;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.box{background:#fff;border-radius:16px;padding:32px 28px;width:100%;max-width:380px;box-shadow:0 4px 20px rgba(0,0,0,.08)}
+.logo{width:44px;height:44px;background:#2563eb;border-radius:10px;color:#fff;font-size:1.2rem;font-weight:800;display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+h2{font-size:1.3rem;font-weight:800;color:#111;margin-bottom:4px}
+.gray{font-size:.85rem;color:#777;margin-bottom:20px}
+.red{background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 12px;font-size:.82rem;color:#dc2626;margin-bottom:10px;display:none}
+.green{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 12px;font-size:.82rem;color:#166534;margin-bottom:10px;display:none}
+label{display:block;font-size:.8rem;font-weight:600;color:#333;margin-top:12px;margin-bottom:4px}
+input{width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:.9rem;outline:none}
+input:focus{border-color:#2563eb}
+.btn{width:100%;margin-top:16px;padding:12px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:.95rem;font-weight:700;cursor:pointer}
+.btn:disabled{opacity:.5}
+.link{text-align:center;margin-top:12px;font-size:.83rem;color:#777}
+.link a{color:#2563eb;font-weight:600;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="logo">K</div>
+  <h2>Masuk</h2>
+  <div class="gray">Masuk ke akun Kaizo Academic kamu</div>
+  <div class="red" id="er"></div>
+  <div class="green" id="ok"></div>
+  <label>Email</label><input id="a" type="email" placeholder="email@kamu.com">
+  <label>Password</label><input id="b" type="password" placeholder="Password kamu">
+  <button class="btn" id="btn" onclick="go()">Masuk</button>
+  <div class="link">Belum punya akun? <a href="register.html">Daftar</a></div>
+</div>
+<script>
+try{if(localStorage.getItem('kaizo:session'))location.href='index.html';}catch(e){}
+
+function h(s){var n=0;for(var i=0;i<s.length;i++)n=(n*31+s.charCodeAt(i))&0xffffffff;return'k'+n.toString(16);}
+
+function er(s){var e=document.getElementById('er');e.textContent=s;e.style.display='block';document.getElementById('ok').style.display='none';}
+function ok(s){var e=document.getElementById('ok');e.textContent=s;e.style.display='block';document.getElementById('er').style.display='none';}
+
+function go(){
+  var a=document.getElementById('a').value.trim().toLowerCase();
+  var b=document.getElementById('b').value;
+  var btn=document.getElementById('btn');
+
+  if(!a||a.indexOf('@')<0)return er('Masukkan email yang valid!');
+  if(!b)return er('Password wajib diisi!');
+
+  btn.disabled=true;btn.textContent='Memproses...';
+
+  try{
+    var users=JSON.parse(localStorage.getItem('kaizo:users')||'[]');
+    var found=null;
+    var ph=h(b);
+    for(var i=0;i<users.length;i++){
+      if(users[i].email===a && users[i].password===ph){found=users[i];break;}
+    }
+    if(!found){
+      btn.disabled=false;btn.textContent='Masuk';
+      return er('Email atau password salah!');
+    }
+    var s=JSON.parse(JSON.stringify(found));delete s.password;
+    localStorage.setItem('kaizo:session',JSON.stringify(s));
+    ok('Berhasil! Mengalihkan...');
+    setTimeout(function(){location.href='index.html';},800);
+  }catch(e){
+    btn.disabled=false;btn.textContent='Masuk';
+    er('Error: '+e.message);
+  }
+}
+
+document.addEventListener('keydown',function(e){if(e.key==='Enter')go();});
+</script>
+</body>
+</html>

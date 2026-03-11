@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Daftar - Kaizo Academic</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:sans-serif;background:#f1f5f9;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.box{background:#fff;border-radius:16px;padding:32px 28px;width:100%;max-width:380px;box-shadow:0 4px 20px rgba(0,0,0,.08)}
+.logo{width:44px;height:44px;background:#2563eb;border-radius:10px;color:#fff;font-size:1.2rem;font-weight:800;display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+h2{font-size:1.3rem;font-weight:800;color:#111;margin-bottom:4px}
+.gray{font-size:.85rem;color:#777;margin-bottom:20px}
+.yellow{background:#fef9c3;border:1px solid #fde68a;border-radius:8px;padding:10px 12px;font-size:.82rem;color:#854d0e;margin-bottom:14px;display:none}
+.red{background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 12px;font-size:.82rem;color:#dc2626;margin-bottom:10px;display:none}
+.green{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 12px;font-size:.82rem;color:#166534;margin-bottom:10px;display:none}
+label{display:block;font-size:.8rem;font-weight:600;color:#333;margin-top:12px;margin-bottom:4px}
+input{width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:.9rem;outline:none}
+input:focus{border-color:#2563eb}
+.btn{width:100%;margin-top:16px;padding:12px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:.95rem;font-weight:700;cursor:pointer}
+.btn:disabled{opacity:.5}
+.link{text-align:center;margin-top:12px;font-size:.83rem;color:#777}
+.link a{color:#2563eb;font-weight:600;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="logo">K</div>
+  <h2>Buat Akun</h2>
+  <div class="gray">Bergabung dengan Kaizo Academic</div>
+  <div class="yellow" id="yw">&#128081; Kamu pengguna pertama, otomatis jadi Developer Owner!</div>
+  <div class="red" id="er"></div>
+  <div class="green" id="ok"></div>
+  <label>Nama</label><input id="a" placeholder="Nama kamu">
+  <label>Email</label><input id="b" type="email" placeholder="email@kamu.com">
+  <label>Password</label><input id="c" type="password" placeholder="Min. 6 karakter">
+  <label>Ulangi Password</label><input id="d" type="password" placeholder="Sama seperti di atas">
+  <button class="btn" id="btn" onclick="go()">Daftar Sekarang</button>
+  <div class="link">Sudah punya akun? <a href="login.html">Masuk</a></div>
+</div>
+<script>
+try{if(localStorage.getItem('kaizo:session'))location.href='index.html';}catch(e){}
+try{var u=JSON.parse(localStorage.getItem('kaizo:users')||'[]');if(!u.length)document.getElementById('yw').style.display='block';}catch(e){}
+
+function h(s){var n=0;for(var i=0;i<s.length;i++)n=(n*31+s.charCodeAt(i))&0xffffffff;return'k'+n.toString(16);}
+
+function er(s){var e=document.getElementById('er');e.textContent=s;e.style.display='block';document.getElementById('ok').style.display='none';}
+function ok(s){var e=document.getElementById('ok');e.textContent=s;e.style.display='block';document.getElementById('er').style.display='none';}
+
+function go(){
+  var a=document.getElementById('a').value.trim();
+  var b=document.getElementById('b').value.trim().toLowerCase();
+  var c=document.getElementById('c').value;
+  var d=document.getElementById('d').value;
+  var btn=document.getElementById('btn');
+
+  if(!a)return er('Nama wajib diisi!');
+  if(!b||b.indexOf('@')<0)return er('Email tidak valid!');
+  if(c.length<6)return er('Password min. 6 karakter!');
+  if(c!==d)return er('Password tidak cocok!');
+
+  btn.disabled=true;btn.textContent='Memproses...';
+
+  try{
+    var users=JSON.parse(localStorage.getItem('kaizo:users')||'[]');
+    for(var i=0;i<users.length;i++){
+      if(users[i].email===b){
+        btn.disabled=false;btn.textContent='Daftar Sekarang';
+        return er('Email sudah terdaftar!');
+      }
+    }
+    var user={id:'u'+Date.now(),name:a,email:b,password:h(c),role:users.length===0?'owner':'user',xp:0,badges:[],completedLessons:[],completedCourses:[],quizResults:[],gamesPlayed:0,posts:0,joinDate:new Date().toISOString(),avatar:''};
+    users.push(user);
+    localStorage.setItem('kaizo:users',JSON.stringify(users));
+    var s=JSON.parse(JSON.stringify(user));delete s.password;
+    localStorage.setItem('kaizo:session',JSON.stringify(s));
+    ok('Berhasil! Mengalihkan...');
+    setTimeout(function(){location.href='index.html';},1000);
+  }catch(e){
+    btn.disabled=false;btn.textContent='Daftar Sekarang';
+    er('Error: '+e.message);
+  }
+}
+</script>
+</body>
+</html>
