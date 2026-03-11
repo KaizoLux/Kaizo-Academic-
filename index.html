@@ -218,7 +218,8 @@ try{
 
     // Nav right
     var initials=(sess.name||'?').split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2);
-    document.getElementById('nav-right').innerHTML='<a href="leaderboard.html" style="display:flex;align-items:center;gap:6px;text-decoration:none;font-size:.82rem;font-weight:600;color:#6B7280;padding:4px 8px;border-radius:8px;background:#EFF6FF;color:#2563EB">⚡ '+(xp||0)+' XP</a><a href="leaderboard.html"><div class="avatar">'+initials+'</div></a><button class="btn-sm btn-ghost" onclick="logout()">Keluar</button>';
+    var devBtn=(sess.role==='developer'||sess.role==='owner')?'<a href="developer.html" style="padding:6px 12px;border-radius:8px;font-size:.8rem;font-weight:600;text-decoration:none;background:#F5F3FF;color:#7C3AED;border:1px solid #DDD6FE">⚙️ Dev</a>':'';
+    document.getElementById('nav-right').innerHTML='<a href="leaderboard.html" style="display:flex;align-items:center;gap:6px;text-decoration:none;font-size:.82rem;font-weight:600;padding:4px 8px;border-radius:8px;background:#EFF6FF;color:#2563EB">⚡ '+(xp||0)+' XP</a><a href="leaderboard.html"><div class="avatar">'+initials+'</div></a>'+devBtn+'<button class="btn-sm btn-ghost" onclick="logout()">Keluar</button>';
   }
 }catch(e){}
 
