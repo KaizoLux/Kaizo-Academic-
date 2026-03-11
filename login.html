@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Masuk — Kaizo Academic</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#F8FAFC;display:flex;min-height:100vh}
+.wrap{display:grid;grid-template-columns:1fr 1fr;min-height:100vh;width:100%;max-width:1100px;margin:0 auto;box-shadow:0 10px 40px rgba(0,0,0,0.12)}
+.left{background:linear-gradient(145deg,#1D4ED8,#7C3AED);padding:60px 48px;color:#fff;display:flex;flex-direction:column;position:relative;overflow:hidden}
+.left::before{content:'';position:absolute;top:-100px;right:-100px;width:400px;height:400px;background:rgba(255,255,255,0.05);border-radius:50%}
+.left-inner{position:relative;z-index:1;flex:1;display:flex;flex-direction:column}
+.brand{font-size:1.6rem;font-weight:800}
+.sub-brand{font-size:.88rem;opacity:.7;margin-top:4px;margin-bottom:48px}
+.quote-box{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:16px;padding:28px;flex:1}
+.quote-text{font-size:1.15rem;font-weight:700;line-height:1.65;margin-bottom:12px}
+.quote-by{font-size:.82rem;opacity:.65}
+.stats{display:flex;gap:28px;margin-top:36px;padding-top:28px;border-top:1px solid rgba(255,255,255,0.15)}
+.stat-v{font-size:1.8rem;font-weight:800}
+.stat-l{font-size:.75rem;opacity:.6;margin-top:2px}
+.right{background:#fff;padding:0 48px;display:flex;align-items:center;justify-content:center}
+.form{max-width:380px;width:100%;padding:60px 0}
+.logo-box{width:52px;height:52px;background:#2563EB;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:800;color:#fff;margin-bottom:20px}
+h1{font-size:1.7rem;font-weight:800;color:#111827;letter-spacing:-.5px;margin-bottom:4px}
+.sub{font-size:.9rem;color:#6B7280;margin-bottom:28px}
+.first-note{background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:11px 14px;font-size:.83rem;color:#1D4ED8;margin-bottom:16px;display:none;line-height:1.6}
+.err{background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;padding:11px 14px;font-size:.84rem;color:#DC2626;margin-bottom:14px;display:none}
+.label{display:block;font-size:.82rem;font-weight:600;color:#111827;margin-bottom:6px;margin-top:14px}
+.input{width:100%;padding:11px 14px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:.9rem;color:#111827;outline:none;font-family:'Inter',sans-serif;transition:.18s;background:#fff}
+.input:focus{border-color:#2563EB;box-shadow:0 0 0 3px rgba(37,99,235,0.1)}
+.input.bad{border-color:#DC2626;box-shadow:0 0 0 3px rgba(239,68,68,0.1)}
+.pass-wrap{position:relative}
+.eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:.9rem;color:#9CA3AF;padding:4px}
+.btn{width:100%;padding:13px;background:#2563EB;color:#fff;border:none;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;margin-top:20px;transition:.18s}
+.btn:hover{background:#1D4ED8}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.footer-note{text-align:center;margin-top:18px;font-size:.86rem;color:#6B7280}
+.footer-note a{color:#2563EB;font-weight:600;text-decoration:none}
+@media(max-width:700px){.wrap{grid-template-columns:1fr}.left{display:none}.right{padding:0 24px;min-height:100vh}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="left">
+    <div class="left-inner">
+      <div class="brand" id="brand-name">Kaizo Academic</div>
+      <div class="sub-brand">Learn · Play · Grow</div>
+      <div class="quote-box">
+        <div class="quote-text">"Belajar bukan beban, tapi petualangan menuju versi terbaik dirimu."</div>
+        <div class="quote-by">— Kaizo Academic Platform</div>
+      </div>
+      <div class="stats">
+        <div><div class="stat-v" id="s-courses">3</div><div class="stat-l">Courses</div></div>
+        <div><div class="stat-v">10</div><div class="stat-l">Games</div></div>
+        <div><div class="stat-v" id="s-users">0</div><div class="stat-l">Students</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="right">
+    <div class="form">
+      <div class="logo-box" id="logo-char">K</div>
+      <h1>Selamat Datang</h1>
+      <div class="sub">Masuk ke akun Kaizo Academic-mu</div>
+      <div class="first-note" id="first-note">💡 Belum ada akun? User pertama yang daftar otomatis jadi <strong>Developer Owner</strong>!</div>
+      <div class="err" id="err-box"></div>
+      <label class="label">Email</label>
+      <input class="input" type="email" id="f-email" placeholder="email@kamu.com" autocomplete="email" autofocus/>
+      <label class="label">Password</label>
+      <div class="pass-wrap">
+        <input class="input" type="password" id="f-pass" placeholder="••••••••" style="padding-right:42px" autocomplete="current-password"/>
+        <button class="eye" onclick="toggleEye()" tabindex="-1" type="button">👁</button>
+      </div>
+      <button class="btn" id="login-btn" onclick="doLogin()" type="button">Masuk →</button>
+      <div class="footer-note">Belum punya akun? <a href="register.html">Daftar sekarang</a></div>
+      <div class="footer-note" style="margin-top:8px"><a href="index.html" style="color:#9CA3AF">← Kembali ke Beranda</a></div>
+    </div>
+  </div>
+</div>
+<script>
+function ks_get(k){try{var v=localStorage.getItem("kaizo:"+k);return v?JSON.parse(v):null;}catch(e){return null;}}
+function ks_set(k,v){try{localStorage.setItem("kaizo:"+k,JSON.stringify(v));return true;}catch(e){return false;}}
+function hashPass(p){var h=0,s=String(p);for(var i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;}return'h'+Math.abs(h).toString(36)+s.length.toString(36);}
+
+try{var t=ks_get("theme")||{};var nm=t.academyName||"Kaizo Academic";document.getElementById('brand-name').textContent=nm;document.getElementById('logo-char').textContent=nm.charAt(0);document.title='Masuk — '+nm;}catch(e){}
+try{if(ks_get("session")){window.location.href='index.html';}}catch(e){}
+try{var us=ks_get("users")||[];document.getElementById('s-users').textContent=us.length;if(us.length===0)document.getElementById('first-note').style.display='block';}catch(e){}
+
+function toggleEye(){var p=document.getElementById('f-pass');p.type=p.type==='password'?'text':'password';}
+function showErr(m){var b=document.getElementById('err-box');b.textContent=m;b.style.display='block';}
+function hideErr(){document.getElementById('err-box').style.display='none';}
+['f-email','f-pass'].forEach(function(id){
+  var el=document.getElementById(id);
+  if(el){el.addEventListener('input',function(){el.classList.remove('bad');hideErr();});el.addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});}
+});
+
+function doLogin(){
+  hideErr();
+  var email=(document.getElementById('f-email').value||'').trim().toLowerCase();
+  var pass=document.getElementById('f-pass').value||'';
+  var btn=document.getElementById('login-btn');
+  if(!email){showErr('Email wajib diisi.');document.getElementById('f-email').classList.add('bad');return;}
+  if(!pass){showErr('Password wajib diisi.');document.getElementById('f-pass').classList.add('bad');return;}
+  btn.disabled=true;btn.textContent='Memproses...';
+  setTimeout(function(){
+    try{
+      var users=ks_get("users")||[];
+      var ph=hashPass(pass);
+      var found=null;
+      for(var i=0;i<users.length;i++){if(users[i].email===email&&users[i].password===ph){found=users[i];break;}}
+      if(!found){
+        // Try legacy btoa for old accounts
+        try{var oldHash=btoa(unescape(encodeURIComponent(pass)));found=null;for(var i=0;i<users.length;i++){if(users[i].email===email&&users[i].password===oldHash){found=users[i];// upgrade password hash
+        users[i].password=ph;ks_set("users",users);break;}}}catch(e2){}
+      }
+      if(!found){showErr('Email atau password salah.');['f-email','f-pass'].forEach(function(id){document.getElementById(id).classList.add('bad');});btn.disabled=false;btn.textContent='Masuk →';return;}
+      var sess={};for(var k in found){if(k!=='password')sess[k]=found[k];}
+      ks_set("session",sess);
+      var redir=new URLSearchParams(location.search).get('redirect')||'index.html';
+      window.location.href=redir;
+    }catch(err){showErr('Terjadi kesalahan: '+(err.message||'coba lagi'));btn.disabled=false;btn.textContent='Masuk →';}
+  },300);
+}
+</script>
+</body>
+</html>
