@@ -1,237 +1,256 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Kaizo Academic — Home</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kaizo Academic</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="shared.js"></script>
-<style id="ss"></style>
 <style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#fff;color:#111827}
+/* NAVBAR */
+nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border-bottom:1px solid #E5E7EB;padding:0 24px}
+.nav-in{max-width:1100px;margin:0 auto;height:60px;display:flex;align-items:center;gap:8px}
+.nav-logo{font-size:.95rem;font-weight:800;color:#111;text-decoration:none;display:flex;align-items:center;gap:8px}
+.nav-logo-box{width:32px;height:32px;background:#2563EB;border-radius:8px;color:#fff;font-weight:800;font-size:.85rem;display:flex;align-items:center;justify-content:center}
+.nav-links{display:flex;gap:2px;margin-left:10px}
+.nav-links a{padding:6px 12px;border-radius:7px;text-decoration:none;font-size:.83rem;font-weight:500;color:#6B7280;transition:.15s}
+.nav-links a:hover{background:#F3F4F6;color:#111}
+.sp{flex:1}
+.nav-right{display:flex;gap:8px;align-items:center}
+.btn-sm{padding:7px 16px;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;border:none;font-family:'Inter',sans-serif;text-decoration:none;display:inline-flex;align-items:center}
+.btn-ghost{background:transparent;border:1px solid #E5E7EB;color:#6B7280}
+.btn-ghost:hover{background:#F3F4F6}
+.btn-blue{background:#2563EB;color:#fff}
+.btn-blue:hover{background:#1D4ED8}
+.nav-user{display:flex;align-items:center;gap:8px}
+.avatar{width:32px;height:32px;border-radius:50%;background:#2563EB;color:#fff;font-size:.75rem;font-weight:700;display:flex;align-items:center;justify-content:center}
 /* HERO */
-.hero{padding:80px 0 64px;text-align:center;position:relative;overflow:hidden}
-.hero-bg{position:absolute;inset:0;background:linear-gradient(180deg,#EFF6FF 0%,#FFFFFF 100%);z-index:0}
-.hero-circle{position:absolute;border-radius:50%;background:linear-gradient(135deg,rgba(37,99,235,.06),rgba(124,58,237,.06))}
-.hero-circle-1{width:600px;height:600px;top:-200px;left:50%;transform:translateX(-50%)}
-.hero-circle-2{width:900px;height:900px;top:-350px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,rgba(37,99,235,.03),rgba(124,58,237,.03))}
-.hero-content{position:relative;z-index:1}
-.hero-badge{display:inline-flex;align-items:center;gap:7px;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:999px;padding:6px 16px;font-size:.78rem;font-weight:600;color:#1D4ED8;margin-bottom:22px}
-.hero-title{font-size:clamp(2.2rem,5vw,3.8rem);font-weight:800;letter-spacing:-1.5px;color:var(--c-text);line-height:1.05;margin-bottom:18px}
-.hero-title .blue{color:var(--c-primary)}
-.hero-sub{font-size:1.05rem;color:var(--c-text-sub);max-width:520px;margin:0 auto 36px;line-height:1.75}
-.hero-cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:56px}
-.hero-stats{display:flex;gap:40px;justify-content:center;flex-wrap:wrap;padding:24px 0;border-top:1px solid var(--c-border);border-bottom:1px solid var(--c-border);max-width:500px;margin:0 auto}
-.hero-stat-v{font-size:1.6rem;font-weight:800;color:var(--c-text)}
-.hero-stat-l{font-size:.78rem;color:var(--c-text-sub);margin-top:3px}
-/* PROGRESS CARD */
-.progress-banner{background:linear-gradient(135deg,#1D4ED8,#7C3AED);border-radius:20px;padding:28px 32px;color:#fff;margin-bottom:48px;position:relative;overflow:hidden}
-.progress-banner::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;background:rgba(255,255,255,0.07);border-radius:50%}
+.hero{padding:72px 24px 60px;text-align:center;background:linear-gradient(180deg,#EFF6FF 0%,#fff 100%)}
+.hero h1{font-size:clamp(2rem,5vw,3.4rem);font-weight:800;letter-spacing:-1.5px;line-height:1.1;margin-bottom:16px}
+.hero h1 span{color:#2563EB}
+.hero p{font-size:1rem;color:#6B7280;max-width:480px;margin:0 auto 32px;line-height:1.7}
+.hero-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:48px}
+.btn-xl{padding:13px 28px;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;border:none;font-family:'Inter',sans-serif;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.stats-row{display:flex;gap:40px;justify-content:center;flex-wrap:wrap;padding:24px 0;border-top:1px solid #E5E7EB}
+.stat-v{font-size:1.6rem;font-weight:800;color:#111}
+.stat-l{font-size:.75rem;color:#9CA3AF;margin-top:2px}
+/* WELCOME BANNER */
+.welcome{background:linear-gradient(135deg,#1D4ED8,#7C3AED);border-radius:16px;padding:24px 28px;color:#fff;margin-bottom:40px;display:none}
+.xp-bar-bg{background:rgba(255,255,255,.2);border-radius:999px;height:8px;margin:10px 0 4px}
+.xp-bar-fg{background:#fff;border-radius:999px;height:8px;transition:width .5s}
+/* WRAP */
+.wrap{max-width:1100px;margin:0 auto;padding:48px 24px 80px}
 /* SECTION */
-.section{margin-bottom:64px}
-.section-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px}
-/* GAME CARDS */
-.game-card{background:var(--c-card);border:1px solid var(--c-border);border-radius:16px;padding:22px;cursor:pointer;transition:all .22s;text-decoration:none;display:block;box-shadow:var(--shadow-sm);position:relative;overflow:hidden}
-.game-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-3px)}
-.game-top-bar{position:absolute;top:0;left:0;right:0;height:4px;border-radius:16px 16px 0 0}
-.game-icon{font-size:2.2rem;margin-bottom:12px}
-.game-name{font-size:.92rem;font-weight:700;color:var(--c-text);margin-bottom:4px}
-.game-desc{font-size:.8rem;color:var(--c-text-sub);line-height:1.5;margin-bottom:12px}
-/* BADGE GRID */
-.badge-mini{background:var(--c-card);border:1px solid var(--c-border);border-radius:12px;padding:16px;text-align:center;transition:.2s}
-.badge-mini.earned{border-color:#FCD34D;background:#FFFBEB}
-.badge-mini:hover{box-shadow:var(--shadow)}
+.sec{margin-bottom:56px}
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.sec-title{font-size:1.1rem;font-weight:800;color:#111}
+.sec-link{font-size:.82rem;color:#2563EB;font-weight:600;text-decoration:none}
+/* COURSE CARD */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+.c-card{background:#fff;border:1px solid #E5E7EB;border-radius:14px;overflow:hidden;text-decoration:none;display:block;transition:all .2s}
+.c-card:hover{box-shadow:0 8px 24px rgba(0,0,0,.09);transform:translateY(-2px)}
+.c-thumb{height:90px;background:#EFF6FF;display:flex;align-items:center;justify-content:center;font-size:2.5rem}
+.c-body{padding:14px}
+.c-cat{font-size:.72rem;font-weight:600;color:#2563EB;text-transform:uppercase;margin-bottom:4px}
+.c-title{font-size:.9rem;font-weight:700;color:#111;margin-bottom:8px}
+.c-meta{font-size:.75rem;color:#9CA3AF}
+/* GAME CARD */
+.g-card{background:#fff;border:1px solid #E5E7EB;border-radius:14px;padding:20px;text-decoration:none;display:block;transition:all .2s;position:relative;overflow:hidden}
+.g-card:hover{box-shadow:0 8px 24px rgba(0,0,0,.09);transform:translateY(-2px)}
+.g-bar{position:absolute;top:0;left:0;right:0;height:4px}
+.g-icon{font-size:2rem;margin-bottom:10px}
+.g-name{font-size:.9rem;font-weight:700;color:#111;margin-bottom:4px}
+.g-desc{font-size:.78rem;color:#9CA3AF;line-height:1.5}
+/* BADGE */
+.b-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}
+.b-card{background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:16px;text-align:center}
+.b-card.earned{border-color:#FCD34D;background:#FFFBEB}
 /* FOOTER */
-.footer{background:var(--c-bg2);border-top:1px solid var(--c-border);padding:36px 0;margin-top:40px}
-.footer-inner{max-width:1100px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px}
-.footer-links{display:flex;gap:20px}
-.footer-link{font-size:.82rem;color:var(--c-text-sub);text-decoration:none;transition:.15s}
-.footer-link:hover{color:var(--c-primary)}
-@media(max-width:640px){.hero{padding:48px 0 40px}.hero-stats{gap:24px}}
+footer{background:#F9FAFB;border-top:1px solid #E5E7EB;padding:28px 24px;text-align:center;font-size:.82rem;color:#9CA3AF}
+footer a{color:#6B7280;text-decoration:none;margin:0 10px}
+@media(max-width:600px){.nav-links{display:none}.stats-row{gap:20px}}
 </style>
 </head>
 <body>
-<div id="nav"></div>
-<main>
-  <!-- HERO -->
-  <div class="hero">
-    <div class="hero-bg"></div>
-    <div class="hero-circle hero-circle-2"></div>
-    <div class="hero-circle hero-circle-1"></div>
-    <div class="hero-content page-wrap">
-      <div class="hero-badge">⚡ Platform Belajar Generasi Baru</div>
-      <h1 class="hero-title" id="hero-title">Belajar Lebih Cerdas,<br><span class="blue">Bukan Lebih Keras</span></h1>
-      <p class="hero-sub" id="hero-sub">Platform akademi modern dengan course interaktif, 10 game edukatif, sistem XP, dan sertifikat digital.</p>
-      <div class="hero-cta" id="hero-cta">
-        <a href="register.html" class="btn btn-primary btn-xl">Mulai Gratis →</a>
-        <a href="courses.html" class="btn btn-ghost btn-xl">Lihat Courses</a>
+
+<nav>
+  <div class="nav-in">
+    <a href="index.html" class="nav-logo">
+      <div class="nav-logo-box" id="nav-logo-char">K</div>
+      <span id="nav-name">KAIZO ACADEMIC</span>
+    </a>
+    <div class="nav-links">
+      <a href="index.html">🏠 Home</a>
+      <a href="courses.html">🎓 Courses</a>
+      <a href="games.html">🎮 Games</a>
+      <a href="community.html">💬 Community</a>
+      <a href="leaderboard.html">🏆 Leaderboard</a>
+    </div>
+    <div class="sp"></div>
+    <div class="nav-right" id="nav-right">
+      <a href="login.html" class="btn-sm btn-ghost">Masuk</a>
+      <a href="register.html" class="btn-sm btn-blue">Daftar</a>
+    </div>
+  </div>
+</nav>
+
+<div class="hero">
+  <h1>Belajar Lebih Cerdas,<br><span>Bukan Lebih Keras</span></h1>
+  <p>Platform akademi modern dengan course interaktif, 10 game edukatif, sistem XP, dan sertifikat digital.</p>
+  <div class="hero-btns" id="hero-btns">
+    <a href="register.html" class="btn-xl btn-blue">Mulai Gratis →</a>
+    <a href="courses.html" class="btn-xl btn-ghost btn-sm" style="padding:13px 28px;font-size:.95rem">Lihat Courses</a>
+  </div>
+  <div class="stats-row">
+    <div><div class="stat-v" id="s-courses">3</div><div class="stat-l">Courses</div></div>
+    <div><div class="stat-v">10</div><div class="stat-l">Games</div></div>
+    <div><div class="stat-v" id="s-users">0</div><div class="stat-l">Students</div></div>
+    <div><div class="stat-v">8</div><div class="stat-l">Badges</div></div>
+  </div>
+</div>
+
+<div class="wrap">
+  <!-- WELCOME BANNER -->
+  <div class="welcome" id="welcome">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:.75rem;opacity:.75;margin-bottom:2px">Selamat datang kembali!</div>
+        <div style="font-size:1.1rem;font-weight:800" id="wb-name">-</div>
+        <div style="font-size:.8rem;opacity:.8;margin-top:2px" id="wb-level">-</div>
       </div>
-      <div class="hero-stats">
-        <div class="tc"><div class="hero-stat-v" id="hs-courses">3</div><div class="hero-stat-l">Courses</div></div>
-        <div class="tc"><div class="hero-stat-v">10</div><div class="hero-stat-l">Games</div></div>
-        <div class="tc"><div class="hero-stat-v" id="hs-users">0</div><div class="hero-stat-l">Students</div></div>
-        <div class="tc"><div class="hero-stat-v">8</div><div class="hero-stat-l">Badges</div></div>
+      <div style="text-align:right">
+        <div style="font-size:1.4rem;font-weight:800" id="wb-xp">0 XP</div>
+        <div style="font-size:.75rem;opacity:.75">Total XP</div>
       </div>
+    </div>
+    <div class="xp-bar-bg"><div class="xp-bar-fg" id="wb-bar" style="width:0%"></div></div>
+    <div style="display:flex;justify-content:space-between;font-size:.75rem;opacity:.7">
+      <span id="wb-xp-txt">0 XP</span>
+      <span id="wb-next">-</span>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+      <a href="courses.html" class="btn-xl btn-blue" style="padding:9px 20px;font-size:.83rem">🎓 Lanjutkan Belajar</a>
+      <a href="games.html" class="btn-xl" style="padding:9px 20px;font-size:.83rem;background:rgba(255,255,255,.15);color:#fff;border-radius:10px">🎮 Main Game</a>
+      <a href="leaderboard.html" class="btn-xl" style="padding:9px 20px;font-size:.83rem;background:rgba(255,255,255,.15);color:#fff;border-radius:10px">🏆 Profil</a>
     </div>
   </div>
 
-  <div class="page-wrap">
-    <!-- LOGGED IN BANNER -->
-    <div id="progress-banner" style="display:none" class="progress-banner fadein">
-      <div class="row" style="gap:20px;flex-wrap:nowrap;align-items:flex-start;position:relative;z-index:1">
-        <div style="flex:1;min-width:0">
-          <div style="font-size:.78rem;opacity:.75;margin-bottom:4px" id="pb-greeting">Selamat datang kembali!</div>
-          <div style="font-size:1.3rem;font-weight:800;margin-bottom:4px" id="pb-name"></div>
-          <div style="font-size:.88rem;opacity:.8;margin-bottom:14px" id="pb-level"></div>
-          <div style="background:rgba(255,255,255,0.2);border-radius:999px;height:7px;overflow:hidden;max-width:280px">
-            <div id="pb-bar" style="height:100%;background:#fff;border-radius:999px;transition:width .5s ease"></div>
-          </div>
-          <div style="font-size:.75rem;opacity:.7;margin-top:6px" id="pb-xp"></div>
-        </div>
-        <div style="display:flex;gap:16px;flex-shrink:0;flex-wrap:wrap">
-          <div class="tc"><div style="font-size:1.5rem;font-weight:800" id="pb-lessons">0</div><div style="font-size:.72rem;opacity:.7">Lessons</div></div>
-          <div class="tc"><div style="font-size:1.5rem;font-weight:800" id="pb-badges">0</div><div style="font-size:.72rem;opacity:.7">Badges</div></div>
-        </div>
-      </div>
+  <!-- COURSES -->
+  <div class="sec">
+    <div class="sec-head">
+      <div class="sec-title">📚 Courses</div>
+      <a href="courses.html" class="sec-link">Lihat semua →</a>
     </div>
-
-    <!-- CONTINUE LEARNING -->
-    <div id="continue-section" style="display:none" class="section">
-      <div class="section-header">
-        <div><div class="section-label">LANJUTKAN</div><div class="h2">Belajar Hari Ini</div></div>
-        <a href="courses.html" style="font-size:.85rem;color:var(--c-primary);text-decoration:none;font-weight:600">Lihat semua →</a>
-      </div>
-      <div class="grid-3" id="continue-list"></div>
-    </div>
-
-    <!-- COURSES SECTION -->
-    <div class="section fadein fadein-d1">
-      <div class="section-header">
-        <div><div class="section-label">COURSES</div><div class="h2">Mulai Belajar Sekarang</div></div>
-        <a href="courses.html" style="font-size:.85rem;color:var(--c-primary);text-decoration:none;font-weight:600">Lihat semua →</a>
-      </div>
-      <div class="grid-auto" id="course-grid"></div>
-    </div>
-
-    <!-- GAMES SECTION -->
-    <div class="section fadein fadein-d2">
-      <div class="section-header">
-        <div><div class="section-label">GAME HUB</div><div class="h2">Belajar Sambil Bermain</div></div>
-        <a href="games.html" style="font-size:.85rem;color:var(--c-primary);text-decoration:none;font-weight:600">Lihat semua →</a>
-      </div>
-      <div class="grid-4" id="games-preview"></div>
-    </div>
-
-    <!-- BADGES -->
-    <div class="section fadein fadein-d3">
-      <div class="section-header">
-        <div><div class="section-label">GAMIFIKASI</div><div class="h2">Kumpulkan Badge & XP</div></div>
-        <a href="leaderboard.html" style="font-size:.85rem;color:var(--c-primary);text-decoration:none;font-weight:600">Leaderboard →</a>
-      </div>
-      <div class="grid-4" id="badges-preview"></div>
-    </div>
+    <div class="grid" id="course-grid"></div>
   </div>
-</main>
 
-<footer class="footer">
-  <div class="footer-inner">
-    <div style="font-size:.85rem;color:var(--c-text-sub)" id="footer-copy">© 2025 Kaizo Academic</div>
-    <div class="footer-links">
-      <a href="courses.html" class="footer-link">Courses</a>
-      <a href="games.html" class="footer-link">Games</a>
-      <a href="leaderboard.html" class="footer-link">Leaderboard</a>
-      <a href="community.html" class="footer-link">Community</a>
+  <!-- GAMES -->
+  <div class="sec">
+    <div class="sec-head">
+      <div class="sec-title">🎮 Game Hub</div>
+      <a href="games.html" class="sec-link">Lihat semua →</a>
     </div>
+    <div class="grid" id="game-grid"></div>
   </div>
+
+  <!-- BADGES -->
+  <div class="sec">
+    <div class="sec-head">
+      <div class="sec-title">🏅 Badges</div>
+      <a href="leaderboard.html" class="sec-link">Lihat semua →</a>
+    </div>
+    <div class="b-grid" id="badge-grid"></div>
+  </div>
+</div>
+
+<footer>
+  <div style="margin-bottom:10px">
+    <a href="courses.html">Courses</a>
+    <a href="games.html">Games</a>
+    <a href="leaderboard.html">Leaderboard</a>
+    <a href="community.html">Community</a>
+  </div>
+  © 2025 Kaizo Academic
 </footer>
 
 <script>
-document.getElementById('ss').textContent = SHARED_CSS;
-document.getElementById('nav').innerHTML = renderNavbar('index.html');
-Theme.init();
-const theme = Theme.get();
-document.title = (theme.academyName||'Kaizo Academic') + ' — Home';
-document.getElementById('footer-copy').textContent = '© 2025 ' + (theme.academyName||'Kaizo Academic');
+// Storage
+function kg(k){try{var v=localStorage.getItem('kaizo:'+k);return v?JSON.parse(v):null;}catch(e){return null;}}
 
-const user = Auth.getCurrent();
-const courses = getCourses();
-const allUsers = Auth.getUsers();
-document.getElementById('hs-courses').textContent = courses.length;
-document.getElementById('hs-users').textContent = allUsers.length;
+// Load theme name
+try{var t=kg('theme')||{};var nm=t.academyName||'KAIZO ACADEMIC';document.getElementById('nav-name').textContent=nm;document.getElementById('nav-logo-char').textContent=nm.charAt(0);}catch(e){}
 
-// Logged in: show banner & continue
-if(user) {
-  document.getElementById('hero-cta').innerHTML = `<a href="courses.html" class="btn btn-primary btn-xl">🎓 Lanjutkan Belajar</a><a href="games.html" class="btn btn-ghost btn-xl">🎮 Main Game</a>`;
-  const lvl = getLevel(user.xp||0);
-  const nextLvl = XP_LEVELS[lvl.level]||lvl;
-  const pct = Math.min(100,Math.round(((user.xp||0)-lvl.minXP)/(nextLvl.maxXP-lvl.minXP)*100));
-  const fullUser = allUsers.find(u=>u.id===user.id)||user;
-  document.getElementById('progress-banner').style.display='block';
-  document.getElementById('pb-name').textContent = user.name;
-  document.getElementById('pb-level').textContent = lvl.icon+' '+lvl.title+' · Level '+lvl.level;
-  document.getElementById('pb-bar').style.width = pct+'%';
-  document.getElementById('pb-xp').textContent = (user.xp||0).toLocaleString()+' / '+nextLvl.maxXP.toLocaleString()+' XP';
-  document.getElementById('pb-lessons').textContent = (fullUser.completedLessons||[]).length;
-  document.getElementById('pb-badges').textContent = (fullUser.badges||[]).length;
-  // Continue learning
-  const inProgress = courses.filter(c=>{const p=getCourseProgress(c.id);return p>0&&p<100;});
-  if(inProgress.length) {
-    document.getElementById('continue-section').style.display='block';
-    document.getElementById('continue-list').innerHTML = inProgress.slice(0,3).map(c=>`
-      <a href="learn.html?course=${c.id}" class="course-card">
-        <div class="course-thumb">${CAT_ICONS[c.category]||'📚'}</div>
-        <div class="course-body">
-          <div class="course-cat">${c.category}</div>
-          <div class="course-title">${escHtml(c.title)}</div>
-          <div class="prog" style="margin-top:8px"><div class="progf" style="width:${getCourseProgress(c.id)}%"></div></div>
-          <div style="font-size:.75rem;color:var(--c-primary);font-weight:600;margin-top:5px">${getCourseProgress(c.id)}% Selesai → Lanjutkan</div>
-        </div>
-      </a>`).join('');
+// User count
+try{var allUsers=kg('users')||[];document.getElementById('s-users').textContent=allUsers.length;}catch(e){}
+
+// Nav: logged in state
+try{
+  var sess=kg('session');
+  if(sess){
+    // Show welcome banner
+    document.getElementById('welcome').style.display='block';
+    document.getElementById('wb-name').textContent=sess.name||'-';
+    document.getElementById('wb-xp').textContent=(sess.xp||0)+' XP';
+
+    // Level calc
+    var xp=sess.xp||0;
+    var levels=[{l:1,t:'Novice',min:0,max:200},{l:2,t:'Learner',min:200,max:500},{l:3,t:'Scholar',min:500,max:1000},{l:4,t:'Expert',min:1000,max:2000},{l:5,t:'Master',min:2000,max:4000},{l:6,t:'Legend',min:4000,max:9999}];
+    var lvl=levels[0];
+    for(var i=0;i<levels.length;i++){if(xp>=levels[i].min)lvl=levels[i];}
+    var pct=Math.min(100,Math.round((xp-lvl.min)/(lvl.max-lvl.min)*100));
+    document.getElementById('wb-level').textContent='Level '+lvl.l+' — '+lvl.t;
+    document.getElementById('wb-bar').style.width=pct+'%';
+    document.getElementById('wb-xp-txt').textContent=xp+' XP';
+    document.getElementById('wb-next').textContent='Next: '+lvl.max+' XP';
+
+    // Change hero buttons
+    document.getElementById('hero-btns').innerHTML='<a href="courses.html" class="btn-xl btn-blue">🎓 Lanjutkan Belajar</a><a href="games.html" class="btn-xl btn-ghost btn-sm" style="padding:13px 28px;font-size:.95rem">🎮 Main Game</a>';
+
+    // Nav right
+    var initials=(sess.name||'?').split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2);
+    document.getElementById('nav-right').innerHTML='<a href="leaderboard.html" style="display:flex;align-items:center;gap:6px;text-decoration:none;font-size:.82rem;font-weight:600;color:#6B7280;padding:4px 8px;border-radius:8px;background:#EFF6FF;color:#2563EB">⚡ '+(xp||0)+' XP</a><a href="leaderboard.html"><div class="avatar">'+initials+'</div></a><button class="btn-sm btn-ghost" onclick="logout()">Keluar</button>';
   }
-}
+}catch(e){}
 
-// Courses grid
-document.getElementById('course-grid').innerHTML = courses.slice(0,4).map(c=>`
-  <a href="learn.html?course=${c.id}" class="course-card fadein">
-    <div class="course-thumb">${c.thumbnail?`<img src="${escHtml(c.thumbnail)}">`:`<span>${CAT_ICONS[c.category]||'📚'}</span>`}</div>
-    <div class="course-body">
-      <div class="course-cat">${escHtml(c.category)}</div>
-      <div class="course-title">${escHtml(c.title)}</div>
-      <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:10px">
-        <span class="course-level level-${(c.level||'beginner').toLowerCase()}">${c.level}</span>
-        <span style="font-size:.78rem;color:var(--c-text-sub)">📖 ${c.modules.flatMap(m=>m.lessons).length} lessons</span>
-      </div>
-      <div style="display:flex;align-items:center;justify-content:space-between">
-        <span style="font-size:.78rem;color:var(--c-text-sub)">⚡ +${c.xpReward} XP</span>
-        <span style="font-size:.78rem;color:var(--c-text-sub)">⭐ ${c.rating}</span>
-      </div>
-      ${user&&getCourseProgress(c.id)>0?`<div class="prog" style="margin-top:10px"><div class="progf" style="width:${getCourseProgress(c.id)}%"></div></div>`:''}
-    </div>
-  </a>`).join('');
+function logout(){try{localStorage.removeItem('kaizo:session');location.reload();}catch(e){}}
 
-// Games preview
-const GAMES_PREVIEW=[
-  {id:'quiz-arena',name:'Quiz Arena',icon:'⚡',desc:'Tantang dirimu dengan soal berwaktu',color:'#2563EB'},
-  {id:'flashcard',name:'Flashcard',icon:'🃏',desc:'Hafal konsep dengan kartu flip',color:'#7C3AED'},
-  {id:'memory',name:'Memory Match',icon:'🧠',desc:'Cocokkan pasangan konsep',color:'#059669'},
-  {id:'speed-quiz',name:'Speed Quiz',icon:'🚀',desc:'Jawab secepat mungkin sebelum waktu habis',color:'#D97706'},
+// Courses
+var COURSES=[
+  {id:'c1',title:'IPS Ekonomi Dasar',cat:'Ekonomi',icon:'📊',level:'Beginner',lessons:6,xp:200,rating:4.8},
+  {id:'c2',title:'Matematika Kelas 9',cat:'Matematika',icon:'🧮',level:'Beginner',lessons:4,xp:250,rating:4.6},
+  {id:'c3',title:'Bahasa Indonesia',cat:'Bahasa',icon:'✍️',level:'Beginner',lessons:5,xp:180,rating:4.7},
 ];
-document.getElementById('games-preview').innerHTML = GAMES_PREVIEW.map(g=>`
-  <a href="games.html#${g.id}" class="game-card fadein">
-    <div class="game-top-bar" style="background:${g.color}"></div>
-    <div class="game-icon">${g.icon}</div>
-    <div class="game-name">${g.name}</div>
-    <div class="game-desc">${g.desc}</div>
-    <span class="chip chip-blue" style="background:${g.color}22;color:${g.color}">Main Sekarang →</span>
-  </a>`).join('');
+try{var cg=document.getElementById('course-grid');cg.innerHTML=COURSES.map(function(c){return'<a href="courses.html" class="c-card"><div class="c-thumb">'+c.icon+'</div><div class="c-body"><div class="c-cat">'+c.cat+'</div><div class="c-title">'+c.title+'</div><div class="c-meta">'+c.lessons+' lessons · ⚡ '+c.xp+' XP · ⭐ '+c.rating+'</div></div></a>';}).join('');document.getElementById('s-courses').textContent=COURSES.length;}catch(e){}
 
-// Badges preview
-document.getElementById('badges-preview').innerHTML = DEFAULT_BADGES.slice(0,8).map(b=>{
-  const fullUser = user ? Auth.getUsers().find(u=>u.id===user.id)||user : null;
-  const earned = fullUser?.badges?.includes(b.id);
-  return `<div class="badge-mini fadein${earned?' earned':''}">
-    <div style="font-size:1.8rem;margin-bottom:8px;filter:${earned?'none':'grayscale(1) opacity(.4)'}">${b.icon}</div>
-    <div style="font-size:.82rem;font-weight:700;color:${earned?'#D97706':'var(--c-text-sub)'};margin-bottom:3px">${b.name}</div>
-    <div style="font-size:.72rem;color:var(--c-text-sub)">${b.desc}</div>
-  </div>`;
-}).join('');
+// Games
+var GAMES=[
+  {id:'quiz-arena',name:'Quiz Arena',icon:'⚡',color:'#2563EB',desc:'Quiz berwaktu 10 soal'},
+  {id:'flashcard',name:'Flashcard',icon:'🃏',color:'#7C3AED',desc:'Hafal konsep dengan kartu flip'},
+  {id:'memory-match',name:'Memory Match',icon:'🧠',color:'#059669',desc:'Cocokkan pasangan konsep'},
+  {id:'speed-quiz',name:'Speed Quiz',icon:'🚀',color:'#D97706',desc:'Jawab secepat mungkin!'},
+];
+try{document.getElementById('game-grid').innerHTML=GAMES.map(function(g){return'<a href="games.html" class="g-card"><div class="g-bar" style="background:'+g.color+'"></div><div class="g-icon">'+g.icon+'</div><div class="g-name">'+g.name+'</div><div class="g-desc">'+g.desc+'</div></a>';}).join('');}catch(e){}
+
+// Badges
+var BADGES=[
+  {id:'b1',icon:'🌟',name:'First Step',desc:'Selesaikan 1 lesson'},
+  {id:'b2',icon:'🎯',name:'Quiz Taker',desc:'Ikuti quiz pertama'},
+  {id:'b3',icon:'📚',name:'Bookworm',desc:'10 lessons selesai'},
+  {id:'b4',icon:'🏅',name:'Graduate',desc:'Selesaikan 1 course'},
+  {id:'b5',icon:'💯',name:'Perfect Score',desc:'Nilai 100 di quiz'},
+  {id:'b6',icon:'🎮',name:'Gamer',desc:'Main 5 game'},
+  {id:'b7',icon:'👑',name:'Champion',desc:'Selesaikan 3 course'},
+  {id:'b8',icon:'🔥',name:'On Fire',desc:'Login 7 hari berturut'},
+];
+try{
+  var userBadges=[];
+  try{var s2=kg('session');if(s2)userBadges=s2.badges||[];}catch(e){}
+  document.getElementById('badge-grid').innerHTML=BADGES.map(function(b){
+    var earned=userBadges.indexOf(b.id)>=0;
+    return'<div class="b-card'+(earned?' earned':'')+'"><div style="font-size:1.8rem;margin-bottom:6px;filter:'+(earned?'none':'grayscale(1) opacity(.4)')+'">'+b.icon+'</div><div style="font-size:.8rem;font-weight:700;color:'+(earned?'#D97706':'#6B7280')+'">'+b.name+'</div><div style="font-size:.7rem;color:#9CA3AF;margin-top:2px">'+b.desc+'</div></div>';
+  }).join('');
+}catch(e){}
 </script>
-</body></html>
+</body>
+</html>
