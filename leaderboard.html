@@ -1,206 +1,196 @@
 <!DOCTYPE html>
-<html lang="id"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Leaderboard — Kaizo Academic</title>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Leaderboard - Kaizo Academic</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="shared.js"></script>
-<style id="ss"></style>
 <style>
-.lb-row{display:flex;align-items:center;gap:14px;padding:14px 18px;border-radius:14px;border:1px solid var(--c-border);background:var(--c-card);margin-bottom:8px;transition:.18s}
-.lb-row:hover{box-shadow:var(--shadow);border-color:#D1D5DB}
-.lb-row.top1{border-color:#FCD34D;background:linear-gradient(90deg,#FFFBEB,#FFFFFF)}
-.lb-row.top2{border-color:#D1D5DB;background:linear-gradient(90deg,#F9FAFB,#FFFFFF)}
-.lb-row.top3{border-color:#FCA97E;background:linear-gradient(90deg,#FFF7ED,#FFFFFF)}
-.lb-row.me{border-color:#93C5FD;background:#EFF6FF}
-.lb-rank{font-size:1rem;font-weight:800;width:36px;text-align:center;flex-shrink:0}
-.lb-av{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;color:#fff;flex-shrink:0}
-.lb-xp{font-size:1.1rem;font-weight:800;color:var(--c-primary)}
-.badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}
-.badge-item{border:1px solid var(--c-border);border-radius:14px;padding:16px;text-align:center;transition:.18s}
-.badge-item:hover{box-shadow:var(--shadow)}
-.badge-item.earned{border-color:#FCD34D;background:#FFFBEB}
-.level-row{display:flex;align-items:center;gap:14px;padding:13px;border-radius:12px;border:1px solid var(--c-border);margin-bottom:7px}
-.level-row.current{border-color:var(--c-primary);background:#EFF6FF}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#f1f5f9;color:#111}
+nav{background:#fff;border-bottom:1px solid #E5E7EB;padding:0 24px;position:sticky;top:0;z-index:10}
+.nav-in{max-width:1000px;margin:0 auto;height:60px;display:flex;align-items:center;gap:8px}
+.nav-logo{font-weight:800;color:#111;text-decoration:none;display:flex;align-items:center;gap:8px}
+.nav-logo-box{width:32px;height:32px;background:#2563EB;border-radius:8px;color:#fff;font-weight:800;font-size:.85rem;display:flex;align-items:center;justify-content:center}
+.sp{flex:1}
+.nav-links{display:flex;gap:2px}
+.nav-links a{padding:6px 12px;border-radius:7px;text-decoration:none;font-size:.83rem;font-weight:500;color:#6B7280}
+.nav-links a:hover{background:#F3F4F6;color:#111}
+.wrap{max-width:700px;margin:0 auto;padding:40px 20px 80px}
+.hero{text-align:center;margin-bottom:32px}
+.hero h1{font-size:1.6rem;font-weight:800;margin-bottom:6px}
+.hero p{color:#777;font-size:.9rem}
+.tabs{display:flex;gap:4px;background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:4px;margin-bottom:24px}
+.tab{flex:1;padding:9px;border:none;background:transparent;border-radius:9px;font-size:.83rem;font-weight:600;color:#6B7280;cursor:pointer;font-family:'Inter',sans-serif;transition:.15s}
+.tab.active{background:#2563EB;color:#fff}
+.panel{display:none}
+.panel.active{display:block}
+/* LEADERBOARD */
+.lb-row{background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:14px;margin-bottom:8px}
+.lb-row.me{border-color:#2563EB;background:#EFF6FF}
+.lb-rank{font-size:1.2rem;font-weight:800;color:#9CA3AF;width:32px;text-align:center;flex-shrink:0}
+.lb-rank.gold{color:#F59E0B}
+.lb-rank.silver{color:#9CA3AF}
+.lb-rank.bronze{color:#CD7C2F}
+.avatar{width:40px;height:40px;border-radius:50%;background:#2563EB;color:#fff;font-size:.85rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.lb-name{font-weight:700;font-size:.92rem;color:#111}
+.lb-sub{font-size:.75rem;color:#9CA3AF;margin-top:2px}
+.lb-xp{margin-left:auto;font-weight:800;color:#2563EB;font-size:.95rem}
+.lb-xp span{font-size:.72rem;font-weight:500;color:#9CA3AF}
+/* PROFILE */
+.prof-card{background:linear-gradient(135deg,#1D4ED8,#7C3AED);border-radius:16px;padding:28px;color:#fff;margin-bottom:20px;text-align:center}
+.prof-av{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,.2);color:#fff;font-size:1.5rem;font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+.xp-bar{background:rgba(255,255,255,.2);border-radius:999px;height:8px;margin:12px 0 4px}
+.xp-fill{background:#fff;border-radius:999px;height:8px}
+.role-chip{display:inline-block;background:rgba(255,255,255,.2);border-radius:999px;padding:3px 12px;font-size:.75rem;font-weight:600;margin-top:6px}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.info-card{background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:16px;text-align:center}
+.info-v{font-size:1.4rem;font-weight:800;color:#2563EB}
+.info-l{font-size:.75rem;color:#9CA3AF;margin-top:2px}
+/* LOADING */
+.loading{text-align:center;padding:32px;color:#9CA3AF;font-size:.9rem}
+.empty{text-align:center;padding:32px;color:#9CA3AF}
 </style>
 </head>
 <body>
-<div id="nav"></div>
-<main>
-  <div class="page-wrap">
-    <div class="row fadein" style="margin-bottom:24px">
-      <div><div class="section-label">GAMIFIKASI</div><div class="section-title" style="margin-bottom:0">Leaderboard & Profil</div></div>
-      <div class="sp"></div>
-      <div id="my-level-badge"></div>
+<nav>
+  <div class="nav-in">
+    <a href="index.html" class="nav-logo">
+      <div class="nav-logo-box">K</div>
+      <span>KAIZO ACADEMIC</span>
+    </a>
+    <div class="sp"></div>
+    <div class="nav-links">
+      <a href="index.html">🏠</a>
+      <a href="courses.html">🎓</a>
+      <a href="games.html">🎮</a>
+      <a href="community.html">💬</a>
+      <a href="leaderboard.html">🏆</a>
     </div>
-    <div class="tabs fadein fadein-d1" id="main-tabs">
-      <button class="tab on" onclick="switchTab('profile',this)">👤 Profil</button>
-      <button class="tab" onclick="switchTab('leaderboard',this)">🏆 Ranking</button>
-      <button class="tab" onclick="switchTab('badges',this)">🎖 Badges</button>
-      <button class="tab" onclick="switchTab('levels',this)">⭐ Levels</button>
-    </div>
-    <div id="tab-profile"></div>
-    <div id="tab-leaderboard" style="display:none"></div>
-    <div id="tab-badges" style="display:none"></div>
-    <div id="tab-levels" style="display:none"></div>
   </div>
-</main>
-<style id="shared-styles"></style>
+</nav>
+
+<div class="wrap">
+  <div class="hero">
+    <h1>🏆 Leaderboard</h1>
+    <p>Ranking semua siswa berdasarkan XP</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('lb')">🏆 Ranking</button>
+    <button class="tab" onclick="switchTab('prof')">👤 Profil Saya</button>
+  </div>
+
+  <!-- LEADERBOARD TAB -->
+  <div class="panel active" id="tab-lb">
+    <div class="loading" id="lb-loading">⏳ Memuat data...</div>
+    <div id="lb-list"></div>
+  </div>
+
+  <!-- PROFILE TAB -->
+  <div class="panel" id="tab-prof">
+    <div id="prof-content">
+      <div class="empty">Silakan <a href="login.html" style="color:#2563EB;font-weight:600">masuk</a> untuk melihat profil.</div>
+    </div>
+  </div>
+</div>
+
 <script>
-document.getElementById('ss').textContent = SHARED_CSS;
-document.getElementById('nav').innerHTML = renderNavbar('leaderboard.html');
-Theme.init();
+var SB_URL='https://kjcifrrkfpifdrwjufau.supabase.co';
+var SB_KEY='sb_publishable_8sk82afIl_YihEiIFkvCwQ_LDz1I5C6';
 
-const user = Auth.getCurrent();
-
-function switchTab(tab, btn) {
-  ['profile','leaderboard','badges','levels'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'block':'none');
-  document.querySelectorAll('#main-tabs .tab').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  if(tab==='leaderboard') renderLeaderboard();
-  if(tab==='badges') renderBadges();
-  if(tab==='levels') renderLevels();
+async function sbGet(path){
+  var r=await fetch(SB_URL+'/rest/v1/'+path,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+  return r.json();
 }
 
-function renderProfile() {
-  const tab = document.getElementById('tab-profile');
-  if(!user) {
-    tab.innerHTML=`<div style="text-align:center;padding:60px 0">
-      <div style="font-size:3.5rem;margin-bottom:16px">👤</div>
-      <div style="font-size:1.1rem;font-weight:700;color:var(--c-text);margin-bottom:6px">Belum Login</div>
-      <div style="color:var(--c-text-sub);margin-bottom:24px">Login untuk melihat profil dan progress kamu</div>
-      <div style="display:flex;gap:10px;justify-content:center">
-        <a href="login.html" class="btn btn-ghost">Masuk</a>
-        <a href="register.html" class="btn btn-primary">Daftar</a>
-      </div></div>`;
-    return;
+function initials(n){return(n||'?').split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2);}
+
+var sess=null;
+try{sess=JSON.parse(localStorage.getItem('kaizo:session'));}catch(e){}
+
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach(function(el,i){el.classList.toggle('active',['lb','prof'][i]===t);});
+  document.querySelectorAll('.panel').forEach(function(el,i){el.classList.toggle('active',['tab-lb','tab-prof'][i]==='tab-'+t);});
+}
+
+// Load leaderboard
+(async function(){
+  try{
+    var users=await sbGet('users?select=id,name,xp,role,badges,completed_courses&order=xp.desc&limit=50');
+    document.getElementById('lb-loading').style.display='none';
+
+    if(!users||users.length===0){
+      document.getElementById('lb-list').innerHTML='<div class="empty">Belum ada siswa terdaftar.</div>';
+      return;
+    }
+
+    var medals=['🥇','🥈','🥉'];
+    var rankClass=['gold','silver','bronze'];
+    document.getElementById('lb-list').innerHTML=users.map(function(u,i){
+      var isMe=sess&&sess.id===u.id;
+      var rank=i<3?medals[i]:''+(i+1);
+      var rc=i<3?rankClass[i]:'';
+      return '<div class="lb-row'+(isMe?' me':'')+'">'+
+        '<div class="lb-rank '+rc+'">'+rank+'</div>'+
+        '<div class="avatar">'+initials(u.name)+'</div>'+
+        '<div><div class="lb-name">'+u.name+(isMe?' <span style="font-size:.72rem;background:#2563EB;color:#fff;border-radius:999px;padding:1px 8px">Kamu</span>':'')+'</div>'+
+        '<div class="lb-sub">Level '+(getLevel(u.xp||0))+' · '+(u.badges||[]).length+' badges</div></div>'+
+        '<div class="lb-xp">'+(u.xp||0)+' <span>XP</span></div>'+
+      '</div>';
+    }).join('');
+  }catch(e){
+    document.getElementById('lb-loading').innerHTML='⚠️ Gagal memuat: '+e.message;
   }
-  const fullUser = Auth.getUsers().find(u=>u.id===user.id)||user;
-  const lvl = getLevel(fullUser.xp||0);
-  const nextLvl = XP_LEVELS[lvl.level]||lvl;
-  const pct = Math.min(100,Math.round(((fullUser.xp||0)-lvl.minXP)/(nextLvl.maxXP-lvl.minXP)*100));
-  const courses = getCourses();
-  const role = ROLES[fullUser.role]||ROLES.user;
-  document.getElementById('my-level-badge').innerHTML=`<span class="chip" style="background:${lvl.color}22;color:${lvl.color}">${lvl.icon} ${lvl.title}</span>`;
-  tab.innerHTML=`
-    <div style="background:linear-gradient(135deg,#1D4ED8,#7C3AED);border-radius:20px;padding:28px;color:#fff;margin-bottom:20px">
-      <div class="row" style="gap:18px;flex-wrap:wrap;align-items:flex-start">
-        <div style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.2);border:3px solid rgba(255,255,255,0.4);display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:800;flex-shrink:0">${initials(fullUser.name)}</div>
-        <div style="flex:1;min-width:140px">
-          <div style="font-size:1.3rem;font-weight:800;margin-bottom:3px">${escHtml(fullUser.name)}</div>
-          <div style="opacity:.8;font-size:.85rem;margin-bottom:3px">${escHtml(fullUser.email)}</div>
-          <span style="background:rgba(255,255,255,0.15);padding:3px 10px;border-radius:999px;font-size:.75rem;font-weight:600">${role.icon} ${role.label}</span>
-          <div style="margin-top:12px;max-width:260px">
-            <div style="display:flex;justify-content:space-between;font-size:.72rem;opacity:.75;margin-bottom:5px">
-              <span>${lvl.title} · Lv.${lvl.level}</span><span>${(fullUser.xp||0).toLocaleString()} / ${nextLvl.maxXP.toLocaleString()} XP</span>
-            </div>
-            <div style="background:rgba(255,255,255,0.2);border-radius:999px;height:7px;overflow:hidden">
-              <div style="width:${pct}%;height:100%;background:#fff;border-radius:999px"></div>
-            </div>
-          </div>
-        </div>
-        <div style="display:flex;gap:14px;flex-wrap:wrap">
-          ${[[(fullUser.completedLessons||[]).length,'Lessons'],[(fullUser.completedCourses||[]).length,'Courses'],[(fullUser.badges||[]).length,'Badges']].map(([v,l])=>`
-            <div class="tc" style="background:rgba(255,255,255,0.1);border-radius:12px;padding:12px 16px">
-              <div style="font-size:1.3rem;font-weight:800">${v}</div>
-              <div style="font-size:.7rem;opacity:.7">${l}</div>
-            </div>`).join('')}
-        </div>
-      </div>
-    </div>
-    <div style="background:var(--c-card);border:1px solid var(--c-border);border-radius:16px;padding:20px;margin-bottom:16px">
-      <div style="font-weight:700;margin-bottom:14px">📊 Progress Courses</div>
-      ${courses.map(c=>{const p=getCourseProgress(c.id);return `
-        <div style="margin-bottom:14px">
-          <div class="row" style="margin-bottom:6px">
-            <div style="font-size:.88rem;color:var(--c-text)">${escHtml(c.title)}</div>
-            <div class="sp"></div>
-            <div style="font-size:.8rem;font-weight:600;color:${p===100?'#059669':'var(--c-primary)'}">${p===100?'✓ Selesai':p+'%'}</div>
-          </div>
-          <div class="prog"><div class="progf" style="width:${p}%;${p===100?'background:#059669':''}"></div></div>
-        </div>`}).join('')}
-    </div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <a href="courses.html" class="btn btn-primary">🎓 Lanjut Belajar</a>
-      <a href="games.html" class="btn btn-ghost">🎮 Main Game</a>
-      <button class="btn btn-danger btn-sm" onclick="Auth.logout()">Keluar</button>
-    </div>`;
+})();
+
+function getLevel(xp){
+  if(xp>=4000)return 6;if(xp>=2000)return 5;if(xp>=1000)return 4;
+  if(xp>=500)return 3;if(xp>=200)return 2;return 1;
+}
+function getLevelName(xp){
+  var names=['','Novice','Learner','Scholar','Expert','Master','Legend'];
+  return names[getLevel(xp)]||'Novice';
 }
 
-function renderLeaderboard() {
-  const users = getLeaderboard();
-  const tab = document.getElementById('tab-leaderboard');
-  tab.innerHTML=`<div style="background:var(--c-card);border:1px solid var(--c-border);border-radius:16px;padding:20px">
-    <div style="font-weight:700;font-size:1.1rem;margin-bottom:16px">🏆 Top Learners</div>
-    ${users.length===0?`<div style="text-align:center;padding:40px;color:var(--c-text-sub)">Belum ada data. Jadilah yang pertama!</div>`:
-    users.map((u,i)=>{
-      const lvl=getLevel(u.xp||0),role=ROLES[u.role]||ROLES.user;
-      const isMe=user&&u.id===user.id;
-      const rowClass=i===0?'top1':i===1?'top2':i===2?'top3':isMe?'me':'';
-      return `<div class="lb-row ${rowClass}">
-        <div class="lb-rank">${i<3?MEDAL[i]:`#${i+1}`}</div>
-        <div class="lb-av" style="background:${lvl.color}">${initials(u.name)}</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-weight:700;font-size:.9rem">${escHtml(u.name)}${isMe?`<span class="chip chip-blue" style="margin-left:6px;font-size:.68rem">Kamu</span>`:''}</div>
-          <div style="font-size:.75rem;color:var(--c-text-sub)">${lvl.icon} ${lvl.title} · ${(u.badges||[]).length} badges</div>
-        </div>
-        <div class="tc"><div class="lb-xp">${(u.xp||0).toLocaleString()}</div><div style="font-size:.7rem;color:var(--c-text-sub)">XP</div></div>
-      </div>`;
-    }).join('')}
-  </div>`;
+// Load profile
+if(sess){
+  (async function(){
+    try{
+      var users=await sbGet('users?id=eq.'+sess.id+'&select=*');
+      var u=users&&users[0]?users[0]:sess;
+      var xp=u.xp||0;
+      var lv=getLevel(xp);
+      var ln=getLevelName(xp);
+      var maxXP=[0,200,500,1000,2000,4000,9999];
+      var minXP=[0,0,200,500,1000,2000,4000];
+      var pct=Math.min(100,Math.round((xp-minXP[lv])/(maxXP[lv]-minXP[lv])*100));
+
+      var roles={owner:'👑 Developer Owner',developer:'🛠 Developer',creator:'✏️ Creator',user:'🎓 User',guest:'👤 Guest'};
+
+      document.getElementById('prof-content').innerHTML=
+        '<div class="prof-card">'+
+          '<div class="prof-av">'+initials(u.name)+'</div>'+
+          '<div style="font-size:1.2rem;font-weight:800">'+u.name+'</div>'+
+          '<div style="font-size:.85rem;opacity:.8;margin-top:2px">'+u.email+'</div>'+
+          '<div class="role-chip">'+(roles[u.role]||u.role)+'</div>'+
+          '<div class="xp-bar"><div class="xp-fill" style="width:'+pct+'%"></div></div>'+
+          '<div style="display:flex;justify-content:space-between;font-size:.75rem;opacity:.7"><span>'+xp+' XP</span><span>Level '+lv+' - '+ln+'</span></div>'+
+        '</div>'+
+        '<div class="info-grid">'+
+          '<div class="info-card"><div class="info-v">'+xp+'</div><div class="info-l">Total XP</div></div>'+
+          '<div class="info-card"><div class="info-v">'+lv+'</div><div class="info-l">Level</div></div>'+
+          '<div class="info-card"><div class="info-v">'+((u.completed_lessons||[]).length||0)+'</div><div class="info-l">Lessons Selesai</div></div>'+
+          '<div class="info-card"><div class="info-v">'+((u.badges||[]).length||0)+'</div><div class="info-l">Badges</div></div>'+
+        '</div>'+
+        '<div style="text-align:center"><button onclick="logout()" style="padding:10px 24px;border:1px solid #fecaca;background:#fef2f2;color:#dc2626;border-radius:8px;font-weight:600;cursor:pointer;font-family:sans-serif">Keluar</button></div>';
+    }catch(e){
+      document.getElementById('prof-content').innerHTML='<div class="empty">Gagal memuat profil.</div>';
+    }
+  })();
 }
 
-function renderBadges() {
-  const fullUser = user?Auth.getUsers().find(u=>u.id===user.id)||user:null;
-  const earned = fullUser?.badges?.length||0;
-  document.getElementById('tab-badges').innerHTML=`
-    <div style="background:var(--c-card);border:1px solid var(--c-border);border-radius:16px;padding:20px">
-      <div class="row" style="margin-bottom:16px">
-        <div style="font-weight:700;font-size:1.1rem">🎖 Achievement Badges</div>
-        <div class="sp"></div>
-        <span class="chip chip-yellow">${earned}/${DEFAULT_BADGES.length} Earned</span>
-      </div>
-      <div class="badge-grid">
-        ${DEFAULT_BADGES.map(b=>{
-          const isEarned=fullUser?.badges?.includes(b.id);
-          return `<div class="badge-item${isEarned?' earned':''}">
-            <div style="font-size:2rem;margin-bottom:8px;filter:${isEarned?'none':'grayscale(1) opacity(.35)'}">${b.icon}</div>
-            <div style="font-size:.8rem;font-weight:700;color:${isEarned?'#D97706':'var(--c-text-sub)'};margin-bottom:3px">${b.name}</div>
-            <div style="font-size:.72rem;color:var(--c-text-sub);margin-bottom:8px;line-height:1.4">${b.desc}</div>
-            <span class="chip chip-yellow" style="${isEarned?'':'opacity:.4'}">+${b.xp} XP</span>
-            ${isEarned?`<div style="font-size:.68rem;font-weight:700;color:#059669;margin-top:6px">✓ EARNED</div>`:''}
-          </div>`;
-        }).join('')}
-      </div>
-    </div>`;
-}
-
-function renderLevels() {
-  const fullUser = user?Auth.getUsers().find(u=>u.id===user.id)||user:null;
-  const curLvl = getLevel(fullUser?.xp||0);
-  document.getElementById('tab-levels').innerHTML=`
-    <div style="background:var(--c-card);border:1px solid var(--c-border);border-radius:16px;padding:20px;margin-bottom:16px">
-      <div style="font-weight:700;font-size:1.1rem;margin-bottom:16px">⭐ Sistem Level</div>
-      ${XP_LEVELS.map(l=>{
-        const isCur=l.level===curLvl.level,isPast=l.level<curLvl.level;
-        return `<div class="level-row${isCur?' current':''}">
-          <div style="width:14px;height:14px;border-radius:50%;background:${l.color};flex-shrink:0"></div>
-          <div style="font-size:1.4rem">${l.icon}</div>
-          <div style="flex:1"><div style="font-weight:700;color:${isCur?'var(--c-primary)':'var(--c-text)'}">${l.title}${isCur?' ← Kamu':''}</div>
-          <div style="font-size:.75rem;color:var(--c-text-sub)">${l.minXP.toLocaleString()} – ${l.maxXP===99999?'∞':l.maxXP.toLocaleString()} XP</div></div>
-          ${isPast?`<span class="chip chip-green">✓</span>`:isCur?`<span class="chip chip-blue">Sekarang</span>`:''}
-        </div>`;
-      }).join('')}
-    </div>
-    <div style="background:var(--c-card);border:1px solid var(--c-border);border-radius:16px;padding:20px">
-      <div style="font-weight:700;margin-bottom:14px">⚡ Cara Mendapatkan XP</div>
-      ${[['📖','Selesaikan Lesson','+10 XP per lesson'],['⚡','Selesaikan Quiz','+20-50 XP tergantung nilai'],['🎮','Main Game','+15-40 XP per game'],['🎓','Selesaikan Course','+100-250 XP'],['💬','Post di Community','+20 XP'],['🎖','Raih Badge','+50-1000 XP per badge']].map(([i,t,d])=>`
-        <div class="row" style="padding:10px 0;border-bottom:1px solid var(--c-border)">
-          <div style="font-size:1.3rem;width:32px;text-align:center">${i}</div>
-          <div style="flex:1"><div style="font-weight:600;font-size:.88rem">${t}</div><div style="font-size:.78rem;color:var(--c-text-sub)">${d}</div></div>
-        </div>`).join('')}
-    </div>`;
-}
-
-renderProfile();
+function logout(){localStorage.removeItem('kaizo:session');location.href='index.html';}
 </script>
-</body></html>
+</body>
+</html>

@@ -15,9 +15,9 @@ h2{font-size:1.3rem;font-weight:800;color:#111;margin-bottom:4px}
 .red{background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 12px;font-size:.82rem;color:#dc2626;margin-bottom:10px;display:none}
 .green{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 12px;font-size:.82rem;color:#166534;margin-bottom:10px;display:none}
 label{display:block;font-size:.8rem;font-weight:600;color:#333;margin-top:12px;margin-bottom:4px}
-input{width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:.9rem;outline:none}
+input{width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:.9rem;outline:none;font-family:sans-serif}
 input:focus{border-color:#2563eb}
-.btn{width:100%;margin-top:16px;padding:12px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:.95rem;font-weight:700;cursor:pointer}
+.btn{width:100%;margin-top:16px;padding:12px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:sans-serif}
 .btn:disabled{opacity:.5}
 .link{text-align:center;margin-top:12px;font-size:.83rem;color:#777}
 .link a{color:#2563eb;font-weight:600;text-decoration:none}
@@ -31,54 +31,99 @@ input:focus{border-color:#2563eb}
   <div class="yellow" id="yw">&#128081; Kamu pengguna pertama, otomatis jadi Developer Owner!</div>
   <div class="red" id="er"></div>
   <div class="green" id="ok"></div>
-  <label>Nama</label><input id="a" placeholder="Nama kamu">
-  <label>Email</label><input id="b" type="email" placeholder="email@kamu.com">
-  <label>Password</label><input id="c" type="password" placeholder="Min. 6 karakter">
-  <label>Ulangi Password</label><input id="d" type="password" placeholder="Sama seperti di atas">
-  <button class="btn" id="btn" onclick="go()">Daftar Sekarang</button>
-  <div class="link">Sudah punya akun? <a href="login.html">Masuk</a></div>
+  <label>Nama</label><input id="nm" placeholder="Nama kamu" autocomplete="name">
+  <label>Email</label><input id="em" type="email" placeholder="email@kamu.com" autocomplete="email">
+  <label>Password</label><input id="pw" type="password" placeholder="Min. 6 karakter" autocomplete="new-password">
+  <label>Ulangi Password</label><input id="pw2" type="password" placeholder="Sama seperti di atas" autocomplete="new-password">
+  <button class="btn" id="btn" onclick="daftar()">Daftar Sekarang</button>
+  <div class="link">Sudah punya akun? <a href="login.html">Masuk di sini</a></div>
 </div>
 <script>
+var SB_URL = 'https://kjcifrrkfpifdrwjufau.supabase.co';
+var SB_KEY = 'sb_publishable_8sk82afIl_YihEiIFkvCwQ_LDz1I5C6';
+
+function showEr(s){var e=document.getElementById('er');e.textContent=s;e.style.display='block';document.getElementById('ok').style.display='none';}
+function showOk(s){var e=document.getElementById('ok');e.textContent=s;e.style.display='block';document.getElementById('er').style.display='none';}
+
+async function sbGet(path){
+  var r=await fetch(SB_URL+'/rest/v1/'+path,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+  return r.json();
+}
+async function sbPost(path,data){
+  var r=await fetch(SB_URL+'/rest/v1/'+path,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify(data)});
+  return {ok:r.ok,status:r.status,data:await r.json()};
+}
+
+function hp(s){var h=5381;for(var i=0;i<s.length;i++)h=((h<<5)+h)^s.charCodeAt(i);return'kz_'+(h>>>0).toString(16);}
+
+// Cek sudah login
 try{if(localStorage.getItem('kaizo:session'))location.href='index.html';}catch(e){}
-try{var u=JSON.parse(localStorage.getItem('kaizo:users')||'[]');if(!u.length)document.getElementById('yw').style.display='block';}catch(e){}
 
-function h(s){var n=0;for(var i=0;i<s.length;i++)n=(n*31+s.charCodeAt(i))&0xffffffff;return'k'+n.toString(16);}
+// Cek user pertama
+(async function(){
+  try{
+    var users=await sbGet('users?select=id&limit=1');
+    if(!users||users.length===0)document.getElementById('yw').style.display='block';
+  }catch(e){}
+})();
 
-function er(s){var e=document.getElementById('er');e.textContent=s;e.style.display='block';document.getElementById('ok').style.display='none';}
-function ok(s){var e=document.getElementById('ok');e.textContent=s;e.style.display='block';document.getElementById('er').style.display='none';}
+document.addEventListener('keydown',function(e){if(e.key==='Enter')daftar();});
 
-function go(){
-  var a=document.getElementById('a').value.trim();
-  var b=document.getElementById('b').value.trim().toLowerCase();
-  var c=document.getElementById('c').value;
-  var d=document.getElementById('d').value;
+async function daftar(){
+  var nm=document.getElementById('nm').value.trim();
+  var em=document.getElementById('em').value.trim().toLowerCase();
+  var pw=document.getElementById('pw').value;
+  var pw2=document.getElementById('pw2').value;
   var btn=document.getElementById('btn');
 
-  if(!a)return er('Nama wajib diisi!');
-  if(!b||b.indexOf('@')<0)return er('Email tidak valid!');
-  if(c.length<6)return er('Password min. 6 karakter!');
-  if(c!==d)return er('Password tidak cocok!');
+  if(!nm)return showEr('Nama wajib diisi!');
+  if(!em||em.indexOf('@')<0)return showEr('Email tidak valid!');
+  if(pw.length<6)return showEr('Password min. 6 karakter!');
+  if(pw!==pw2)return showEr('Password tidak cocok!');
 
   btn.disabled=true;btn.textContent='Memproses...';
 
   try{
-    var users=JSON.parse(localStorage.getItem('kaizo:users')||'[]');
-    for(var i=0;i<users.length;i++){
-      if(users[i].email===b){
-        btn.disabled=false;btn.textContent='Daftar Sekarang';
-        return er('Email sudah terdaftar!');
-      }
+    // Cek email duplikat
+    var existing=await sbGet('users?email=eq.'+encodeURIComponent(em)+'&select=id');
+    if(existing&&existing.length>0){
+      btn.disabled=false;btn.textContent='Daftar Sekarang';
+      return showEr('Email sudah terdaftar!');
     }
-    var user={id:'u'+Date.now(),name:a,email:b,password:h(c),role:users.length===0?'owner':'user',xp:0,badges:[],completedLessons:[],completedCourses:[],quizResults:[],gamesPlayed:0,posts:0,joinDate:new Date().toISOString(),avatar:''};
-    users.push(user);
-    localStorage.setItem('kaizo:users',JSON.stringify(users));
-    var s=JSON.parse(JSON.stringify(user));delete s.password;
-    localStorage.setItem('kaizo:session',JSON.stringify(s));
-    ok('Berhasil! Mengalihkan...');
+
+    // Cek apakah user pertama
+    var allUsers=await sbGet('users?select=id&limit=1');
+    var isFirst=!allUsers||allUsers.length===0;
+
+    var result=await sbPost('users',{
+      name:nm,
+      email:em,
+      password:hp(pw),
+      role:isFirst?'owner':'user',
+      xp:0,
+      badges:[],
+      completed_lessons:[],
+      completed_courses:[],
+      games_played:0,
+      posts:0,
+      avatar:''
+    });
+
+    if(!result.ok){
+      btn.disabled=false;btn.textContent='Daftar Sekarang';
+      return showEr('Gagal daftar: '+(result.data.message||result.data.hint||JSON.stringify(result.data)));
+    }
+
+    var user=Array.isArray(result.data)?result.data[0]:result.data;
+    delete user.password;
+    localStorage.setItem('kaizo:session',JSON.stringify(user));
+
+    showOk('Berhasil! Mengalihkan...');
     setTimeout(function(){location.href='index.html';},1000);
+
   }catch(e){
     btn.disabled=false;btn.textContent='Daftar Sekarang';
-    er('Error: '+e.message);
+    showEr('Error: '+e.message);
   }
 }
 </script>

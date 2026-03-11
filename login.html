@@ -14,9 +14,9 @@ h2{font-size:1.3rem;font-weight:800;color:#111;margin-bottom:4px}
 .red{background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 12px;font-size:.82rem;color:#dc2626;margin-bottom:10px;display:none}
 .green{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 12px;font-size:.82rem;color:#166534;margin-bottom:10px;display:none}
 label{display:block;font-size:.8rem;font-weight:600;color:#333;margin-top:12px;margin-bottom:4px}
-input{width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:.9rem;outline:none}
+input{width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:.9rem;outline:none;font-family:sans-serif}
 input:focus{border-color:#2563eb}
-.btn{width:100%;margin-top:16px;padding:12px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:.95rem;font-weight:700;cursor:pointer}
+.btn{width:100%;margin-top:16px;padding:12px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:sans-serif}
 .btn:disabled{opacity:.5}
 .link{text-align:center;margin-top:12px;font-size:.83rem;color:#777}
 .link a{color:#2563eb;font-weight:600;text-decoration:none}
@@ -29,51 +29,57 @@ input:focus{border-color:#2563eb}
   <div class="gray">Masuk ke akun Kaizo Academic kamu</div>
   <div class="red" id="er"></div>
   <div class="green" id="ok"></div>
-  <label>Email</label><input id="a" type="email" placeholder="email@kamu.com">
-  <label>Password</label><input id="b" type="password" placeholder="Password kamu">
-  <button class="btn" id="btn" onclick="go()">Masuk</button>
+  <label>Email</label><input id="em" type="email" placeholder="email@kamu.com" autocomplete="email">
+  <label>Password</label><input id="pw" type="password" placeholder="Password kamu" autocomplete="current-password">
+  <button class="btn" id="btn" onclick="masuk()">Masuk</button>
   <div class="link">Belum punya akun? <a href="register.html">Daftar</a></div>
 </div>
 <script>
+var SB_URL='https://kjcifrrkfpifdrwjufau.supabase.co';
+var SB_KEY='sb_publishable_8sk82afIl_YihEiIFkvCwQ_LDz1I5C6';
+
+function showEr(s){var e=document.getElementById('er');e.textContent=s;e.style.display='block';document.getElementById('ok').style.display='none';}
+function showOk(s){var e=document.getElementById('ok');e.textContent=s;e.style.display='block';document.getElementById('er').style.display='none';}
+
+async function sbGet(path){
+  var r=await fetch(SB_URL+'/rest/v1/'+path,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+  return r.json();
+}
+
+function hp(s){var h=5381;for(var i=0;i<s.length;i++)h=((h<<5)+h)^s.charCodeAt(i);return'kz_'+(h>>>0).toString(16);}
+
 try{if(localStorage.getItem('kaizo:session'))location.href='index.html';}catch(e){}
+document.addEventListener('keydown',function(e){if(e.key==='Enter')masuk();});
 
-function h(s){var n=0;for(var i=0;i<s.length;i++)n=(n*31+s.charCodeAt(i))&0xffffffff;return'k'+n.toString(16);}
-
-function er(s){var e=document.getElementById('er');e.textContent=s;e.style.display='block';document.getElementById('ok').style.display='none';}
-function ok(s){var e=document.getElementById('ok');e.textContent=s;e.style.display='block';document.getElementById('er').style.display='none';}
-
-function go(){
-  var a=document.getElementById('a').value.trim().toLowerCase();
-  var b=document.getElementById('b').value;
+async function masuk(){
+  var em=document.getElementById('em').value.trim().toLowerCase();
+  var pw=document.getElementById('pw').value;
   var btn=document.getElementById('btn');
 
-  if(!a||a.indexOf('@')<0)return er('Masukkan email yang valid!');
-  if(!b)return er('Password wajib diisi!');
+  if(!em||em.indexOf('@')<0)return showEr('Masukkan email yang valid!');
+  if(!pw)return showEr('Password wajib diisi!');
 
   btn.disabled=true;btn.textContent='Memproses...';
 
   try{
-    var users=JSON.parse(localStorage.getItem('kaizo:users')||'[]');
-    var found=null;
-    var ph=h(b);
-    for(var i=0;i<users.length;i++){
-      if(users[i].email===a && users[i].password===ph){found=users[i];break;}
-    }
-    if(!found){
+    var users=await sbGet('users?email=eq.'+encodeURIComponent(em)+'&password=eq.'+encodeURIComponent(hp(pw))+'&select=*');
+
+    if(!users||users.length===0){
       btn.disabled=false;btn.textContent='Masuk';
-      return er('Email atau password salah!');
+      return showEr('Email atau password salah!');
     }
-    var s=JSON.parse(JSON.stringify(found));delete s.password;
-    localStorage.setItem('kaizo:session',JSON.stringify(s));
-    ok('Berhasil! Mengalihkan...');
+
+    var user=users[0];
+    delete user.password;
+    localStorage.setItem('kaizo:session',JSON.stringify(user));
+    showOk('Berhasil! Mengalihkan...');
     setTimeout(function(){location.href='index.html';},800);
+
   }catch(e){
     btn.disabled=false;btn.textContent='Masuk';
-    er('Error: '+e.message);
+    showEr('Error: '+e.message);
   }
 }
-
-document.addEventListener('keydown',function(e){if(e.key==='Enter')go();});
 </script>
 </body>
 </html>
