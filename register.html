@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Daftar — Kaizo Academic</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#F8FAFC;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{background:#fff;border-radius:20px;padding:40px;width:100%;max-width:440px;box-shadow:0 8px 32px rgba(0,0,0,0.10);border:1px solid #E5E7EB}
+.logo{width:48px;height:48px;background:#2563EB;border-radius:12px;color:#fff;font-size:1.3rem;font-weight:800;display:flex;align-items:center;justify-content:center;margin-bottom:20px}
+h1{font-size:1.5rem;font-weight:800;color:#111827;margin-bottom:4px}
+.sub{font-size:.88rem;color:#6B7280;margin-bottom:24px}
+.owner-note{background:#FEF3C7;border:1px solid #FCD34D;border-radius:10px;padding:12px 14px;font-size:.83rem;font-weight:600;color:#92400E;margin-bottom:16px;display:none}
+.err{background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;padding:12px 14px;font-size:.84rem;color:#DC2626;margin-bottom:12px;display:none;word-break:break-word}
+.ok{background:#ECFDF5;border:1px solid #A7F3D0;border-radius:10px;padding:12px 14px;font-size:.84rem;color:#065F46;margin-bottom:12px;display:none}
+label{display:block;font-size:.82rem;font-weight:600;color:#374151;margin-bottom:5px;margin-top:14px}
+input{width:100%;padding:11px 14px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:.9rem;color:#111827;outline:none;font-family:'Inter',sans-serif;background:#fff;transition:border-color .15s}
+input:focus{border-color:#2563EB;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+input.bad{border-color:#DC2626}
+.pass-wrap{position:relative}
+.eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:.9rem;padding:4px;color:#9CA3AF}
+.btn{width:100%;padding:13px;background:#2563EB;color:#fff;border:none;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;margin-top:18px;transition:background .15s}
+.btn:hover:not(:disabled){background:#1D4ED8}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.links{text-align:center;margin-top:16px;font-size:.85rem;color:#6B7280}
+.links a{color:#2563EB;font-weight:600;text-decoration:none}
+.debug{background:#F9FAFB;border:1px solid #E5E7EB;border-radius:8px;padding:10px 12px;font-size:.72rem;color:#6B7280;margin-top:12px;display:none;word-break:break-all;font-family:monospace;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo" id="logo">K</div>
+  <h1>Buat Akun</h1>
+  <div class="sub" id="sub-txt">Bergabung dengan Kaizo Academic</div>
+
+  <div class="owner-note" id="owner-note">
+    👑 Kamu pengguna pertama — otomatis jadi <strong>Developer Owner</strong>!
+  </div>
+  <div class="err" id="err"></div>
+  <div class="ok"  id="ok"></div>
+
+  <label>Nama Lengkap</label>
+  <input id="f-name" placeholder="Nama kamu" autocomplete="name"/>
+
+  <label>Email</label>
+  <input id="f-email" type="email" placeholder="email@kamu.com" autocomplete="email"/>
+
+  <label>Password</label>
+  <div class="pass-wrap">
+    <input id="f-pass" type="password" placeholder="Min. 6 karakter" style="padding-right:40px" autocomplete="new-password"/>
+    <button class="eye" type="button" onclick="
+      var p=document.getElementById('f-pass');
+      p.type=p.type==='password'?'text':'password';
+    ">👁</button>
+  </div>
+
+  <label>Konfirmasi Password</label>
+  <input id="f-pass2" type="password" placeholder="Ulangi password" autocomplete="new-password"/>
+
+  <button class="btn" id="btn" type="button" onclick="doReg()">Daftar Sekarang →</button>
+
+  <div class="links">
+    Sudah punya akun? <a href="login.html">Masuk</a>
+    &nbsp;·&nbsp; <a href="index.html" style="color:#9CA3AF">Beranda</a>
+  </div>
+
+  <div class="debug" id="debug"></div>
+</div>
+
+<script>
+// ─── Storage helpers (zero dependency) ───────────────────────
+function kget(k){
+  try{ var v=localStorage.getItem('kaizo:'+k); return v?JSON.parse(v):null; }
+  catch(e){ return null; }
+}
+function kset(k,v){
+  try{ localStorage.setItem('kaizo:'+k,JSON.stringify(v)); return true; }
+  catch(e){ return false; }
+}
+
+// ─── Simple hash (no btoa, works with ALL chars) ──────────────
+function hp(s){
+  s=String(s||'');
+  var h=5381;
+  for(var i=0;i<s.length;i++) h=((h<<5)+h)^s.charCodeAt(i);
+  return 'v2_'+(h>>>0).toString(16)+'_'+s.length;
+}
+
+// ─── Init page ────────────────────────────────────────────────
+(function(){
+  try{
+    // If already logged in → go home
+    if(kget('session')){ window.location.href='index.html'; return; }
+    // Load academy name from theme
+    var t=kget('theme')||{};
+    var nm=t.academyName||'Kaizo Academic';
+    document.getElementById('logo').textContent=nm.charAt(0).toUpperCase();
+    document.title='Daftar — '+nm;
+    // Show owner note if first user
+    var users=kget('users')||[];
+    if(users.length===0) document.getElementById('owner-note').style.display='block';
+  }catch(e){
+    dbg('Init error: '+e.message);
+  }
+})();
+
+// ─── UI helpers ───────────────────────────────────────────────
+function showErr(m){
+  var e=document.getElementById('err');
+  e.textContent=m; e.style.display='block';
+  document.getElementById('ok').style.display='none';
+}
+function showOk(m){
+  var e=document.getElementById('ok');
+  e.textContent=m; e.style.display='block';
+  document.getElementById('err').style.display='none';
+}
+function clearMsg(){
+  document.getElementById('err').style.display='none';
+  document.getElementById('ok').style.display='none';
+}
+function dbg(m){
+  var d=document.getElementById('debug');
+  d.style.display='block';
+  d.innerHTML+='['+new Date().toLocaleTimeString()+'] '+m+'<br>';
+}
+
+// ─── Clear error on input ─────────────────────────────────────
+['f-name','f-email','f-pass','f-pass2'].forEach(function(id){
+  var el=document.getElementById(id);
+  el.addEventListener('input',function(){ el.classList.remove('bad'); clearMsg(); });
+  el.addEventListener('keydown',function(e){ if(e.key==='Enter') doReg(); });
+});
+
+// ─── Register ─────────────────────────────────────────────────
+function doReg(){
+  clearMsg();
+
+  var name  = (document.getElementById('f-name').value  ||'').trim();
+  var email = (document.getElementById('f-email').value ||'').trim().toLowerCase();
+  var pass  =  document.getElementById('f-pass').value  ||'';
+  var pass2 =  document.getElementById('f-pass2').value ||'';
+  var btn   =  document.getElementById('btn');
+
+  dbg('Mencoba daftar: name="'+name+'" email="'+email+'" passLen='+pass.length);
+
+  // Validasi
+  if(!name){
+    showErr('Nama wajib diisi!');
+    document.getElementById('f-name').classList.add('bad');
+    document.getElementById('f-name').focus();
+    return;
+  }
+  if(!email){
+    showErr('Email wajib diisi!');
+    document.getElementById('f-email').classList.add('bad');
+    return;
+  }
+  if(!/\S+@\S+\.\S+/.test(email)){
+    showErr('Format email tidak valid!');
+    document.getElementById('f-email').classList.add('bad');
+    return;
+  }
+  if(pass.length<6){
+    showErr('Password minimal 6 karakter!');
+    document.getElementById('f-pass').classList.add('bad');
+    return;
+  }
+  if(pass!==pass2){
+    showErr('Konfirmasi password tidak cocok!');
+    document.getElementById('f-pass2').classList.add('bad');
+    return;
+  }
+
+  btn.disabled=true;
+  btn.textContent='Mendaftarkan...';
+
+  setTimeout(function(){
+    try{
+      var users = kget('users') || [];
+      dbg('Users saat ini: '+users.length);
+
+      // Cek email duplikat
+      for(var i=0;i<users.length;i++){
+        if(users[i].email===email){
+          showErr('Email sudah terdaftar. Pakai email lain.');
+          document.getElementById('f-email').classList.add('bad');
+          btn.disabled=false; btn.textContent='Daftar Sekarang →';
+          return;
+        }
+      }
+
+      var isFirst = (users.length===0);
+      var uid = 'u'+Date.now()+Math.random().toString(36).slice(2,6);
+
+      var newUser = {
+        id       : uid,
+        name     : name,
+        email    : email,
+        password : hp(pass),
+        role     : isFirst ? 'owner' : 'user',
+        xp       : 0,
+        badges   : [],
+        completedLessons  : [],
+        completedCourses  : [],
+        quizResults       : [],
+        gamesPlayed       : 0,
+        posts             : 0,
+        joinDate          : new Date().toISOString(),
+        avatar   : ''
+      };
+
+      dbg('User baru dibuat: '+JSON.stringify({id:uid,role:newUser.role}));
+
+      users.push(newUser);
+      var saved = kset('users', users);
+      dbg('Simpan users: '+(saved?'OK':'GAGAL'));
+
+      if(!saved){
+        showErr('Gagal menyimpan ke localStorage. Coba refresh halaman.');
+        btn.disabled=false; btn.textContent='Daftar Sekarang →';
+        return;
+      }
+
+      // Simpan sesi
+      var sess={};
+      for(var k in newUser){ if(k!=='password') sess[k]=newUser[k]; }
+      var sessOk = kset('session', sess);
+      dbg('Simpan session: '+(sessOk?'OK':'GAGAL'));
+
+      showOk('✓ Akun berhasil dibuat! Mengalihkan...');
+      dbg('Redirect ke index.html dalam 1 detik...');
+
+      setTimeout(function(){
+        window.location.href='index.html';
+      }, 1000);
+
+    }catch(e){
+      dbg('ERROR: '+e.message+' | Stack: '+e.stack);
+      showErr('Terjadi error: '+e.message+'. Lihat debug di bawah.');
+      btn.disabled=false; btn.textContent='Daftar Sekarang →';
+    }
+  }, 200);
+}
+</script>
+</body>
+</html>
