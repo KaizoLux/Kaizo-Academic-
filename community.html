@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Community — Kaizo Academic</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="shared.js"></script>
+<style id="ss"></style>
+<style>
+.community-layout{display:grid;grid-template-columns:1fr 300px;gap:24px;align-items:start}
+.post-card{background:var(--c-card);border:1px solid var(--c-border);border-radius:16px;padding:20px;margin-bottom:12px;transition:.18s}
+.post-card:hover{box-shadow:var(--shadow)}
+.post-author{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.post-avatar{width:38px;height:38px;border-radius:50%;background:var(--c-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:700;flex-shrink:0}
+.post-body{font-size:.92rem;color:var(--c-text);line-height:1.7;margin-bottom:12px}
+.post-actions{display:flex;align-items:center;gap:12px}
+.post-btn{background:none;border:none;cursor:pointer;font-size:.82rem;color:var(--c-text-sub);display:flex;align-items:center;gap:5px;padding:5px 8px;border-radius:8px;transition:.15s;font-family:var(--font-main)}
+.post-btn:hover{background:var(--c-bg2);color:var(--c-text)}
+.post-btn.liked{color:#DC2626}
+.compose-box{background:var(--c-card);border:1px solid var(--c-border);border-radius:16px;padding:20px;margin-bottom:20px}
+.sidebar-widget{background:var(--c-card);border:1px solid var(--c-border);border-radius:16px;padding:20px;margin-bottom:16px}
+.tag-btn{padding:5px 13px;border-radius:999px;font-size:.78rem;font-weight:600;cursor:pointer;border:1px solid var(--c-border);background:var(--c-bg2);color:var(--c-text-sub);transition:.15s}
+.tag-btn:hover,.tag-btn.active{background:var(--c-primary);color:#fff;border-color:var(--c-primary)}
+.reply-box{background:var(--c-bg2);border-radius:10px;padding:14px;margin-top:12px;border:1px solid var(--c-border)}
+.reply-item{display:flex;gap:10px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--c-border)}
+.reply-item:last-child{border-bottom:none;margin-bottom:0}
+@media(max-width:768px){.community-layout{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="nav"></div>
+<main>
+  <div class="page-wrap">
+    <div class="row fadein" style="margin-bottom:28px">
+      <div><div class="section-label">COMMUNITY</div><div class="section-title" style="margin-bottom:0">Forum Diskusi</div></div>
+      <div class="sp"></div>
+      <div id="online-count" class="chip chip-green"></div>
+    </div>
+
+    <div class="community-layout">
+      <!-- FEED -->
+      <div>
+        <!-- COMPOSE -->
+        <div class="compose-box fadein" id="compose-area">
+          <div id="compose-logged-out" style="display:none;text-align:center;padding:8px 0">
+            <div style="font-size:.9rem;color:var(--c-text-sub);margin-bottom:12px">Login untuk ikut berdiskusi</div>
+            <div style="display:flex;gap:10px;justify-content:center">
+              <a href="login.html" class="btn btn-ghost btn-sm">Masuk</a>
+              <a href="register.html" class="btn btn-primary btn-sm">Daftar</a>
+            </div>
+          </div>
+          <div id="compose-form" style="display:none">
+            <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:12px">
+              <div id="compose-avatar" class="post-avatar" style="font-size:.85rem">?</div>
+              <textarea class="ftextarea" id="post-input" placeholder="Bagikan pertanyaan, insight, atau proyek kamu..." style="min-height:90px;flex:1"></textarea>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <div style="display:flex;gap:6px;flex-wrap:wrap" id="tag-selector">
+                <span style="font-size:.78rem;color:var(--c-text-sub);align-self:center">Tag:</span>
+                <button class="tag-btn active" onclick="selectTag('Diskusi',this)">💬 Diskusi</button>
+                <button class="tag-btn" onclick="selectTag('Pertanyaan',this)">❓ Pertanyaan</button>
+                <button class="tag-btn" onclick="selectTag('Project',this)">🛠 Project</button>
+                <button class="tag-btn" onclick="selectTag('Tips',this)">💡 Tips</button>
+              </div>
+              <div class="sp"></div>
+              <button class="btn btn-primary btn-sm" onclick="submitPost()">Kirim Post</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- FILTER -->
+        <div class="row" style="margin-bottom:16px;gap:8px">
+          <button class="tag-btn active" onclick="filterPosts('all',this)">Semua</button>
+          <button class="tag-btn" onclick="filterPosts('Diskusi',this)">💬 Diskusi</button>
+          <button class="tag-btn" onclick="filterPosts('Pertanyaan',this)">❓ Pertanyaan</button>
+          <button class="tag-btn" onclick="filterPosts('Project',this)">🛠 Project</button>
+          <button class="tag-btn" onclick="filterPosts('Tips',this)">💡 Tips</button>
+          <div class="sp"></div>
+          <select class="fselect" style="width:auto;padding:5px 10px;font-size:.78rem" id="sort-select" onchange="renderFeed()">
+            <option value="new">Terbaru</option>
+            <option value="liked">Terpopuler</option>
+          </select>
+        </div>
+
+        <!-- POSTS -->
+        <div id="feed"></div>
+      </div>
+
+      <!-- SIDEBAR -->
+      <div class="fadein fadein-d1">
+        <div class="sidebar-widget">
+          <div style="font-weight:700;margin-bottom:14px;color:var(--c-text)">🏆 Top Contributors</div>
+          <div id="top-contributors"></div>
+        </div>
+        <div class="sidebar-widget">
+          <div style="font-weight:700;margin-bottom:10px;color:var(--c-text)">📊 Statistik Forum</div>
+          <div id="forum-stats"></div>
+        </div>
+        <div class="sidebar-widget">
+          <div style="font-weight:700;margin-bottom:10px;color:var(--c-text)">🔥 Panduan Komunitas</div>
+          <div style="font-size:.82rem;color:var(--c-text-sub);line-height:1.9">
+            ✓ Gunakan bahasa yang sopan<br>
+            ✓ Pertanyaan yang jelas<br>
+            ✓ Berbagi referensi sumber<br>
+            ✓ Hargai pendapat berbeda<br>
+            ✗ Dilarang spam atau promosi
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+<style id="shared-styles"></style>
+<script>
+document.getElementById('ss').textContent = SHARED_CSS;
+document.getElementById('nav').innerHTML = renderNavbar('community.html');
+Theme.init();
+
+const user = Auth.getCurrent();
+let activeTag = 'all', activeFilter = 'all';
+let selectedTag = 'Diskusi';
+
+// Seed posts if empty
+function seedPosts() {
+  if(getPosts().length > 0) return;
+  const sample = [
+    {id:'p1',author:'Admin',authorId:'seed',avatar:'',tag:'Tips',content:'Selamat datang di forum Kaizo Academic! Di sini kamu bisa berdiskusi, bertanya, dan berbagi proyek dengan sesama pelajar. Jangan ragu untuk aktif ya! 🎓',likes:[],comments:[],time:new Date(Date.now()-86400000*2).toISOString()},
+    {id:'p2',author:'Budi S.',authorId:'seed2',avatar:'',tag:'Pertanyaan',content:'Ada yang bisa bantu jelasin perbedaan permintaan dan penawaran? Masih bingung sama konsepnya 😅',likes:[],comments:[{author:'Admin',text:'Permintaan = dari sisi pembeli, penawaran = dari sisi penjual. Keduanya bertemu di harga keseimbangan!',time:new Date(Date.now()-3600000).toISOString()}],time:new Date(Date.now()-86400000).toISOString()},
+    {id:'p3',author:'Siti R.',authorId:'seed3',avatar:'',tag:'Project',content:'Baru selesai nulis rangkuman materi SPLDV 10 halaman. Kalau ada yang mau belajar bareng, yuk diskusi di sini! Metode substitusi dan eliminasi ternyata lebih gampang kalau dipahami konsepnya dulu.',likes:[],comments:[],time:new Date(Date.now()-7200000).toISOString()},
+  ];
+  savePosts(sample);
+}
+seedPosts();
+
+// Compose setup
+if(user) {
+  document.getElementById('compose-form').style.display='block';
+  document.getElementById('compose-avatar').textContent = initials(user.name);
+} else {
+  document.getElementById('compose-logged-out').style.display='block';
+}
+
+document.getElementById('online-count').textContent = '🟢 ' + (Math.floor(Math.random()*15)+3) + ' online';
+
+let selectedTagEl = document.querySelector('#tag-selector .active');
+function selectTag(tag, el) {
+  selectedTag = tag;
+  document.querySelectorAll('#tag-selector .tag-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function filterPosts(f, btn) {
+  activeFilter = f;
+  document.querySelectorAll('.row .tag-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderFeed();
+}
+
+function submitPost() {
+  if(!user) return;
+  const text = document.getElementById('post-input').value.trim();
+  if(!text) { showToast('Tulis sesuatu dulu!', '⚠️'); return; }
+  const posts = getPosts();
+  const newPost = {
+    id:'p'+Date.now(), author:user.name, authorId:user.id,
+    avatar:user.avatar||'', tag:selectedTag,
+    content:text, likes:[], comments:[],
+    time:new Date().toISOString()
+  };
+  posts.unshift(newPost);
+  savePosts(posts);
+  document.getElementById('post-input').value = '';
+  XPSystem.awardCurrent(20, 'Post di community');
+  checkAndAwardBadges(user.id);
+  showToast('+20 XP! Post berhasil dikirim', '✓');
+  renderFeed();
+}
+
+function renderFeed() {
+  let posts = getPosts();
+  if(activeFilter !== 'all') posts = posts.filter(p=>p.tag===activeFilter);
+  const sort = document.getElementById('sort-select').value;
+  if(sort === 'liked') posts = [...posts].sort((a,b)=>(b.likes?.length||0)-(a.likes?.length||0));
+  const tagColors = {Diskusi:'chip-blue',Pertanyaan:'chip-yellow',Project:'chip-purple',Tips:'chip-green'};
+  const tagIcons = {Diskusi:'💬',Pertanyaan:'❓',Project:'🛠',Tips:'💡'};
+
+  document.getElementById('feed').innerHTML = posts.length === 0
+    ? `<div style="text-align:center;padding:60px 0"><div style="font-size:3rem;opacity:.3;margin-bottom:12px">💬</div><div style="color:var(--c-text-sub)">Belum ada post. Jadilah yang pertama!</div></div>`
+    : posts.map(p => {
+      const isLiked = user && p.likes?.includes(user.id);
+      const av = p.avatar ? `<img src="${escHtml(p.avatar)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">` : initials(p.author);
+      return `<div class="post-card fadein">
+        <div class="post-author">
+          <div class="post-avatar">${av}</div>
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:.9rem;color:var(--c-text)">${escHtml(p.author)}</div>
+            <div style="font-size:.76rem;color:var(--c-text-sub)">${timeAgo(p.time)}</div>
+          </div>
+          <span class="chip ${tagColors[p.tag]||'chip-gray'}">${tagIcons[p.tag]||'📌'} ${p.tag||'Umum'}</span>
+        </div>
+        <div class="post-body">${escHtml(p.content)}</div>
+        <div class="post-actions">
+          <button class="post-btn${isLiked?' liked':''}" onclick="toggleLike('${p.id}')">
+            ${isLiked?'❤️':'🤍'} ${p.likes?.length||0}
+          </button>
+          <button class="post-btn" onclick="toggleComments('${p.id}')">
+            💬 ${p.comments?.length||0} komentar
+          </button>
+          ${user&&(p.authorId===user.id||Auth.hasRole('developer'))?`<button class="post-btn" onclick="deletePost('${p.id}')" style="margin-left:auto;color:var(--c-text-sub)">🗑</button>`:''}
+        </div>
+        <div id="comments-${p.id}" style="display:none">
+          <div class="reply-box">
+            ${(p.comments||[]).map(c=>`
+              <div class="reply-item">
+                <div class="post-avatar" style="width:30px;height:30px;font-size:.68rem;flex-shrink:0">${initials(c.author)}</div>
+                <div>
+                  <div style="font-weight:600;font-size:.8rem;color:var(--c-text)">${escHtml(c.author)} <span style="font-weight:400;color:var(--c-text-sub)">${timeAgo(c.time)}</span></div>
+                  <div style="font-size:.85rem;color:var(--c-text-sub);margin-top:2px">${escHtml(c.text)}</div>
+                </div>
+              </div>`).join('')}
+            ${user?`<div style="display:flex;gap:8px;margin-top:${p.comments?.length?'10px':'0'}">
+              <div class="post-avatar" style="width:30px;height:30px;font-size:.68rem;flex-shrink:0">${initials(user.name)}</div>
+              <input class="finput" style="padding:7px 12px;font-size:.82rem" id="reply-${p.id}" placeholder="Balas..."/>
+              <button class="btn btn-primary btn-xs" onclick="sendReply('${p.id}')">Kirim</button>
+            </div>`:`<div style="font-size:.82rem;color:var(--c-text-sub);text-align:center;padding:8px"><a href="login.html" style="color:var(--c-primary)">Login</a> untuk komentar</div>`}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+}
+
+function toggleLike(id) {
+  if(!user) { window.location.href='login.html'; return; }
+  const posts=getPosts(); const p=posts.find(x=>x.id===id); if(!p) return;
+  p.likes=p.likes||[];
+  const idx=p.likes.indexOf(user.id);
+  if(idx>=0) p.likes.splice(idx,1); else p.likes.push(user.id);
+  savePosts(posts); renderFeed();
+}
+
+function toggleComments(id) {
+  const el=document.getElementById('comments-'+id);
+  if(el) el.style.display=el.style.display==='none'?'block':'none';
+}
+
+function sendReply(postId) {
+  if(!user) return;
+  const input=document.getElementById('reply-'+postId);
+  const text=input?.value.trim(); if(!text) return;
+  const posts=getPosts(); const p=posts.find(x=>x.id===postId); if(!p) return;
+  p.comments=p.comments||[];
+  p.comments.push({author:user.name,text,time:new Date().toISOString()});
+  savePosts(posts);
+  renderFeed();
+  setTimeout(()=>{
+    const el=document.getElementById('comments-'+postId);
+    if(el) el.style.display='block';
+  },50);
+}
+
+function deletePost(id) {
+  if(!confirm('Hapus post ini?')) return;
+  savePosts(getPosts().filter(p=>p.id!==id));
+  renderFeed();
+  showToast('Post dihapus','🗑');
+}
+
+// Sidebar: top contributors
+function renderSidebar() {
+  const users=[...Auth.getUsers()].sort((a,b)=>(b.posts||b.xp||0)-(a.posts||a.xp||0)).slice(0,5);
+  document.getElementById('top-contributors').innerHTML = users.length===0
+    ? '<div style="font-size:.82rem;color:var(--c-text-sub)">Belum ada data.</div>'
+    : users.map((u,i)=>`
+      <div class="row" style="padding:7px 0;border-bottom:1px solid var(--c-border)">
+        <div style="font-weight:700;width:20px;font-size:.82rem;color:var(--c-text-sub)">${i+1}</div>
+        <div class="post-avatar" style="width:32px;height:32px;font-size:.72rem;flex-shrink:0">${initials(u.name)}</div>
+        <div style="flex:1;min-width:0"><div style="font-size:.82rem;font-weight:600;color:var(--c-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(u.name)}</div></div>
+        <div style="font-size:.75rem;color:var(--c-primary);font-weight:700">${(u.xp||0).toLocaleString()} XP</div>
+      </div>`).join('');
+
+  const posts=getPosts();
+  document.getElementById('forum-stats').innerHTML = `
+    <div class="row" style="font-size:.82rem;color:var(--c-text-sub);margin-bottom:6px"><span>Total Post</span><div class="sp"></div><strong style="color:var(--c-text)">${posts.length}</strong></div>
+    <div class="row" style="font-size:.82rem;color:var(--c-text-sub);margin-bottom:6px"><span>Total Komentar</span><div class="sp"></div><strong style="color:var(--c-text)">${posts.reduce((s,p)=>s+(p.comments?.length||0),0)}</strong></div>
+    <div class="row" style="font-size:.82rem;color:var(--c-text-sub)"><span>Members</span><div class="sp"></div><strong style="color:var(--c-text)">${Auth.getUsers().length}</strong></div>`;
+}
+
+renderFeed();
+renderSidebar();
+</script>
+</body></html>

@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Developer Panel — Kaizo Academic</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="shared.js"></script>
+<style id="ss"></style>
+<style>
+.dev-layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 60px)}
+.dev-sidebar{background:var(--c-bg2);border-right:1px solid var(--c-border);padding:20px 12px;position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto}
+.dev-nav-section{font-size:.68rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--c-text-sub);padding:12px 10px 6px}
+.dev-nav-item{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:10px;cursor:pointer;font-size:.84rem;font-weight:500;color:var(--c-text-sub);transition:.15s;margin-bottom:2px}
+.dev-nav-item:hover{background:var(--c-card);color:var(--c-text)}
+.dev-nav-item.active{background:var(--c-primary);color:#fff;font-weight:600}
+.dev-main{padding:32px 40px 60px;overflow-y:auto}
+.dev-panel{display:none}.dev-panel.active{display:block}
+.setting-row{display:flex;align-items:center;gap:14px;padding:14px;border:1px solid var(--c-border);border-radius:12px;margin-bottom:8px;background:var(--c-card);transition:.15s}
+.setting-row:hover{border-color:var(--c-primary)}
+.toggle-sw{position:relative;width:44px;height:24px;flex-shrink:0}
+.toggle-sw input{opacity:0;width:0;height:0}
+.toggle-sl{position:absolute;inset:0;background:#D1D5DB;border-radius:999px;cursor:pointer;transition:.2s}
+.toggle-sl::before{content:'';position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle-sw input:checked+.toggle-sl{background:var(--c-primary)}
+.toggle-sw input:checked+.toggle-sl::before{transform:translateX(20px)}
+.color-swatch{width:42px;height:42px;border-radius:10px;overflow:hidden;border:1px solid var(--c-border);cursor:pointer;position:relative;flex-shrink:0}
+.color-swatch input{position:absolute;inset:-4px;width:calc(100%+8px);height:calc(100%+8px);cursor:pointer;border:none;padding:0}
+.role-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:.72rem;font-weight:700}
+.user-row{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--c-border);border-radius:12px;margin-bottom:8px;background:var(--c-card)}
+.save-banner{display:none;position:sticky;top:0;z-index:10;background:#ECFDF5;border:1px solid #A7F3D0;border-radius:10px;padding:10px 16px;font-size:.82rem;font-weight:600;color:#059669;margin-bottom:16px;text-align:center}
+/* THEME PRESETS */
+.preset-card{border:2px solid var(--c-border);border-radius:12px;padding:14px;cursor:pointer;transition:.2s;text-align:center}
+.preset-card:hover{border-color:var(--c-primary);transform:translateY(-2px);box-shadow:var(--shadow)}
+.preset-card.selected{border-color:var(--c-primary);background:#EFF6FF}
+.preset-dots{display:flex;gap:5px;justify-content:center;margin-bottom:8px}
+.preset-dot{width:22px;height:22px;border-radius:50%}
+@media(max-width:768px){.dev-layout{grid-template-columns:1fr}.dev-sidebar{position:static;height:auto;display:flex;flex-wrap:wrap;gap:4px}.dev-main{padding:20px 16px 40px}.dev-nav-section{display:none}}
+</style>
+</head>
+<body>
+<div id="nav"></div>
+
+<!-- PASSWORD GATE -->
+<div class="ov" id="gate" style="display:flex">
+  <div class="modal" style="text-align:center">
+    <div style="font-size:2.5rem;margin-bottom:14px">🛠️</div>
+    <div style="font-size:1.3rem;font-weight:800;color:var(--c-text);margin-bottom:4px">Developer Panel</div>
+    <div style="font-size:.88rem;color:var(--c-text-sub);margin-bottom:24px">Masukkan password untuk akses panel kontrol</div>
+    <input class="finput" type="password" id="gate-pass" placeholder="Password developer" autofocus onkeydown="if(event.key==='Enter')checkGate()"/>
+    <div id="gate-err" style="color:var(--c-danger);font-size:.82rem;font-weight:500;margin:8px 0;display:none"></div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <a href="index.html" class="btn btn-ghost" style="flex:1">← Kembali</a>
+      <button class="btn btn-primary" style="flex:1" onclick="checkGate()">Masuk →</button>
+    </div>
+  </div>
+</div>
+
+<!-- DEV PANEL CONTENT -->
+<div id="dev-content" style="display:none;position:relative;z-index:2">
+<div class="dev-layout">
+  <aside class="dev-sidebar">
+    <div class="dev-nav-section">Dashboard</div>
+    <div class="dev-nav-item active" onclick="showPanel('dashboard',this)">📊 Dashboard</div>
+    <div class="dev-nav-section">Appearance</div>
+    <div class="dev-nav-item" onclick="showPanel('theme',this)">🎨 Theme Editor</div>
+    <div class="dev-nav-item" onclick="showPanel('lobby',this)">🏠 Lobby Manager</div>
+    <div class="dev-nav-item" onclick="showPanel('menu',this)">📋 Menu Manager</div>
+    <div class="dev-nav-section">Content</div>
+    <div class="dev-nav-item" onclick="showPanel('courses',this)">🎓 Course Manager</div>
+    <div class="dev-nav-item" onclick="showPanel('games-mgr',this)">🎮 Game Manager</div>
+    <div class="dev-nav-section">System</div>
+    <div class="dev-nav-item" onclick="showPanel('users',this)">👥 User Manager</div>
+    <div class="dev-nav-item" onclick="showPanel('roles',this)">🔐 Role Manager</div>
+    <div class="dev-nav-item" onclick="showPanel('xp-ctrl',this)">⚡ XP Control</div>
+    <div class="dev-nav-item" onclick="showPanel('features',this)">🧩 Feature Toggle</div>
+    <div class="dev-nav-item" onclick="showPanel('data',this)">💾 Data Manager</div>
+  </aside>
+
+  <div class="dev-main">
+    <div class="save-banner" id="save-banner">✓ Perubahan berhasil disimpan</div>
+
+    <!-- DASHBOARD -->
+    <div class="dev-panel active" id="panel-dashboard">
+      <div class="section-label">DEVELOPER PANEL</div>
+      <div class="section-title" style="margin-bottom:4px">Dashboard</div>
+      <div style="font-size:.88rem;color:var(--c-text-sub);margin-bottom:24px" id="dash-role-label"></div>
+      <div class="grid-4" style="margin-bottom:24px" id="dash-stats"></div>
+      <div class="grid-2" style="gap:20px">
+        <div style="background:var(--c-card);border:1px solid var(--c-border);border-radius:16px;padding:20px">
+          <div style="font-weight:700;margin-bottom:14px">⚡ Quick Actions</div>
+          <div id="quick-actions"></div>
+        </div>
+        <div style="background:var(--c-card);border:1px solid var(--c-border);border-radius:16px;padding:20px">
+          <div style="font-weight:700;margin-bottom:12px">ℹ️ System Info</div>
+          <div id="sys-info" style="font-size:.82rem;color:var(--c-text-sub);line-height:2.2"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- THEME EDITOR -->
+    <div class="dev-panel" id="panel-theme">
+      <div class="section-label">APPEARANCE</div>
+      <div class="section-title" style="margin-bottom:4px">Theme Editor</div>
+      <div style="font-size:.88rem;color:var(--c-text-sub);margin-bottom:24px">Ubah tampilan platform tanpa coding. Perubahan langsung terlihat!</div>
+
+      <!-- PRESETS -->
+      <div style="background:var(--c-card);border:1px solid var(--c-border);border-radius:16px;padding:20px;margin-bottom:16px">
+        <div style="font-weight:700;margin-bottom:14px">🎨 Theme Presets</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px" id="theme-presets"></div>
+      </div>
+
+      <!-- COLORS -->
+      <div style="background:var(--c-card);border:1px solid var(--c-border);border-radius:16px;padding:20px;margin-bottom:16px">
+        <div style="font-weight:700;margin-bottom:14px">🖌️ Warna Kustom</div>
+        <div id="color-settings"></div>
+      </div>
+
+      <!-- FONT & SIZE -->
+      <div style="background:var(--c-card);border:1px solid var(--c-border);border-radius:16px;padding:20px;margin-bottom:16px">
+        <div style="font-weight:700;margin-bottom:14px">🔤 Font & Ukuran</div>
+        <div class="frow">
+          <div class="fgroup">
+            <label class="flabel">Font</label>
+            <select class="fselect" id="font-sel" onchange="applyThemePreview()">
+              ${['Inter','Poppins','Roboto','DM Sans','Space Grotesk','Plus Jakarta Sans'].map(f=>`<option value="${f}">${f}</option>`).join('')}
+            </select>
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Ukuran Teks</label>
+            <select class="fselect" id="size-sel" onchange="applyThemePreview()">
+              <option value="small">Kecil</option>
+              <option value="medium" selected>Normal</option>
+              <option value="large">Besar</option>
+              <option value="xlarge">X-Besar</option>
+            </select>
+          </div>
+        </div>
+        <div class="frow">
+          <div class="fgroup">
+            <label class="flabel">Sudut Kartu (px)</label>
+            <input type="range" id="radius-card" min="0" max="32" value="16" oninput="document.getElementById('radius-card-val').textContent=this.value+'px';applyThemePreview()" style="width:100%;margin-top:8px"/>
+            <div style="font-size:.78rem;color:var(--c-text-sub);margin-top:4px" id="radius-card-val">16px</div>
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Shadow Level</label>
+            <select class="fselect" id="shadow-sel" onchange="applyThemePreview()">
+              <option value="none">Tidak Ada</option>
+              <option value="soft">Lembut</option>
+              <option value="medium" selected>Normal</option>
+              <option value="strong">Kuat</option>
+            </select>
+          </div>
+        </div>
+        <label class="flabel" style="margin-top:8px">Logo URL (opsional)</label>
+        <input class="finput" id="logo-url" placeholder="https://..." oninput="applyThemePreview()"/>
+        <label class="flabel" style="margin-top:12px">Background Image URL (opsional)</label>
+        <input class="finput" id="bg-url" placeholder="https://..." oninput="applyThemePreview()"/>
+      </div>
+      <button class="btn btn-primary btn-full btn-xl" onclick="saveTheme()">💾 Simpan & Terapkan Theme</button>
+    </div>
+
+    <!-- LOBBY MANAGER -->
+    <div class="dev-panel" id="panel-lobby">
+      <div class="section-label">CONTENT</div>
+      <div class="section-title" style="margin-bottom:4px">Lobby Manager</div>
+      <div style="font-size:.88rem;color:var(--c-text-sub);margin-bottom:24px">Edit teks dan konten halaman utama.</div>
+      <div style="background:var(--c-card);border:1px solid var(--c-border);border-radius:16px;padding:24px">
+        <div class="fgroup"><label class="flabel">Nama Academy</label><input class="finput" id="lobby-name" placeholder="KAIZO ACADEMIC"/></div>
+        <div class="fgroup"><label class="flabel">Tagline</label><input class="finput" id="lobby-tagline" placeholder="Learn · Play · Grow"/></div>
+        <div class="fgroup"><label class="flabel">Hero Title</label><input class="finput" id="lobby-hero-title" placeholder="Belajar Lebih Cerdas..."/></div>
+        <div class="fgroup" style="margin-bottom:0"><label class="flabel">Hero Description</label><textarea class="ftextarea" id="lobby-hero-desc" placeholder="Deskripsi singkat..."></textarea></div>
+      </div>
+      <button class="btn btn-primary btn-full" style="margin-top:12px" onclick="saveLobby()">💾 Simpan</button>
+    </div>
+
+    <!-- MENU MANAGER -->
+    <div class="dev-panel" id="panel-menu">
+      <div class="section-label">NAVIGATION</div>
+      <div class="section-title" style="margin-bottom:4px">Menu Manager</div>
+      <div style="font-size:.88rem;color:var(--c-text-sub);margin-bottom:20px">Tambah, hapus, urutkan item navigasi di navbar.</div>
+      <div style="background:var(--c-card);border:1px solid var(--c-border);border-radius:16px;padding:20px;margin-bottom:12px">
+        <div id="menu-list"></div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:8px;width:100%" onclick="addMenuItem()">+ Tambah Item Menu</button>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="saveMenu()">💾 Simpan Menu</button>
+    </div>
+
+    <!-- COURSE MANAGER -->
+    <div class="dev-panel" id="panel-courses">
+      <div class="section-label">CONTENT</div>
+      <div class="section-title" style="margin-bottom:4px">Course Manager</div>
+      <div class="row" style="margin-bottom:16px">
+        <div style="font-size:.88rem;color:var(--c-text-sub)">Kelola semua course di platform.</div>
+        <div class="sp"></div>
+        <button class="btn btn-primary btn-sm" onclick="openCourseEditor(-1)">+ Tambah Course</button>
+      </div>
+      <div id="courses-list"></div>
+      <div id="course-editor" style="display:none"></div>
+    </div>
+
+    <!-- GAME MANAGER -->
+    <div class="dev-panel" id="panel-games-mgr">
+      <div class="section-label">GAMES</div>
+      <div class="section-title" style="margin-bottom:4px">Game Manager</div>
+      <div style="font-size:.88rem;color:var(--c-text-sub);margin-bottom:20px">Kelola pengaturan game dan XP reward.</div>
+      <div id="games-manager-list"></div>
+    </div>
+
+    <!-- USER MANAGER -->
+    <div class="dev-panel" id="panel-users">
+      <div class="section-label">USERS</div>
+      <div class="section-title" style="margin-bottom:4px">User Manager</div>
+      <div style="font-size:.88rem;color:var(--c-text-sub);margin-bottom:20px">Lihat dan kelola semua pengguna terdaftar.</div>
+      <div class="row" style="margin-bottom:16px">
+        <input class="finput" style="max-width:280px" placeholder="Cari pengguna..." id="user-search" oninput="renderUsers()"/>
+        <div class="sp"></div>
+        <div style="font-size:.82rem;color:var(--c-text-sub)" id="user-count-label"></div>
+      </div>
+      <div id="users-list"></div>
+    </div>
+
+    <!-- ROLE MANAGER -->
+    <div class="dev-panel" id="panel-roles">
+      <div class="section-label">PERMISSIONS</div>
+      <div class="section-title" style="margin-bottom:4px">Role Manager</div>
+      <div style="font-size:.88rem;color:var(--c-text-sub);margin-bottom:20px">Ubah peran pengguna. Hanya Developer Owner yang bisa akses ini.</div>
+      <div id="role-users-list"></div>
+    </div>
+
+    <!-- XP CONTROL -->
+    <div class="dev-panel" id="panel-xp-ctrl">
+      <div class="section-label">GAMIFICATION</div>
+      <div class="section-title" style="margin-bottom:4px">XP Control</div>
+      <div style="font-size:.88rem;color:var(--c-text-sub);margin-bottom:24px">Tambah XP ke pengguna tertentu atau semua pengguna sekaligus.</div>
+      <div class="grid-2" style="gap:16px;margin-bottom:20px">
+        <div style="background:var(--c-card);border:1px solid var(--c-border);border-radius:16px;padding:20px">
+          <div style="font-weight:700;margin-bottom:14px">⚡ XP ke Pengguna Tertentu</div>
+          <div class="fgroup">
+            <label class="flabel">Pilih Pengguna</label>
+            <select class="fselect" id="xp-user-sel"><option value="">-- Pilih --</option></select>
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Jumlah XP</label>
+            <input class="finput" type="number" id="xp-amount" placeholder="100" min="1"/>
+          </div>
+          <div class="fgroup" style="margin-bottom:0">
+            <label class="flabel">Alasan</label>
+            <input class="finput" id="xp-reason" placeholder="Bonus event, hadiah, dll"/>
+          </div>
+          <button class="btn btn-primary btn-full" style="margin-top:14px" onclick="giveXP()">⚡ Beri XP</button>
+        </div>
+        <div style="background:var(--c-card);border:1px solid var(--c-border);border-radius:16px;padding:20px">
+          <div style="font-weight:700;margin-bottom:14px">🌐 XP Global Event</div>
+          <div class="fgroup">
+            <label class="flabel">Jumlah XP (semua user)</label>
+            <input class="finput" type="number" id="xp-global" placeholder="50" min="1"/>
+          </div>
+          <div class="fgroup" style="margin-bottom:0">
+            <label class="flabel">Nama Event</label>
+            <input class="finput" id="xp-global-reason" placeholder="Weekend bonus, ulang tahun, dll"/>
+          </div>
+          <button class="btn btn-success btn-full" style="margin-top:36px" onclick="giveGlobalXP()">🌐 Beri ke Semua</button>
+        </div>
+      </div>
+      <!-- XP LOGS -->
+      <div style="background:var(--c-card);border:1px solid var(--c-border);border-radius:16px;padding:20px">
+        <div style="font-weight:700;margin-bottom:14px">📋 Log XP</div>
+        <div id="xp-logs"></div>
+      </div>
+    </div>
+
+    <!-- FEATURES -->
+    <div class="dev-panel" id="panel-features">
+      <div class="section-label">SYSTEM</div>
+      <div class="section-title" style="margin-bottom:4px">Feature Toggle</div>
+      <div style="font-size:.88rem;color:var(--c-text-sub);margin-bottom:20px">Aktifkan atau nonaktifkan fitur platform.</div>
+      <div id="features-list"></div>
+    </div>
+
+    <!-- DATA -->
+    <div class="dev-panel" id="panel-data">
+      <div class="section-label">SYSTEM</div>
+      <div class="section-title" style="margin-bottom:4px">Data Manager</div>
+      <div class="grid-2" style="margin-bottom:16px">
+        <div style="background:var(--c-card);border:1px solid var(--c-border);border-radius:16px;padding:20px;text-align:center">
+          <div style="font-size:2rem;margin-bottom:10px">📤</div>
+          <div style="font-weight:700;margin-bottom:6px">Export Data</div>
+          <div style="font-size:.82rem;color:var(--c-text-sub);margin-bottom:14px">Download backup semua data</div>
+          <button class="btn btn-primary btn-full" onclick="exportData()">Export JSON</button>
+        </div>
+        <div style="background:var(--c-card);border:1px solid var(--c-border);border-radius:16px;padding:20px;text-align:center">
+          <div style="font-size:2rem;margin-bottom:10px">📥</div>
+          <div style="font-weight:700;margin-bottom:6px">Import Data</div>
+          <div style="font-size:.82rem;color:var(--c-text-sub);margin-bottom:14px">Restore dari file backup</div>
+          <input type="file" accept=".json" style="display:none" id="import-file" onchange="importData(this)"/>
+          <button class="btn btn-ghost btn-full" onclick="document.getElementById('import-file').click()">Import JSON</button>
+        </div>
+      </div>
+      <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:16px;padding:20px">
+        <div style="font-weight:700;color:#DC2626;margin-bottom:12px">⚠️ Danger Zone</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-danger btn-sm" onclick="if(confirm('Reset semua progress?')){resetProgress();}">Reset Progress</button>
+          <button class="btn btn-danger btn-sm" onclick="if(confirm('Reset theme ke default?')){resetTheme();}">Reset Theme</button>
+          <button class="btn btn-danger btn-sm" onclick="if(confirm('Hapus semua data? TIDAK BISA DIBATALKAN!')){resetAll();}">💥 Reset Total</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+document.getElementById('ss').textContent = SHARED_CSS;
+document.getElementById('nav').innerHTML = renderNavbar('developer.html');
+Theme.init();
+
+function checkGate() {
+  const pass = document.getElementById('gate-pass').value;
+  const user = Auth.getCurrent();
+  const isOwnerOrDev = user && Auth.hasRole('developer');
+  const passOk = pass === ADMIN_PASS;
+  if(passOk || isOwnerOrDev) {
+    document.getElementById('gate').style.display='none';
+    document.getElementById('dev-content').style.display='block';
+    initDev();
+  } else {
+    document.getElementById('gate-err').textContent='Password salah';
+    document.getElementById('gate-err').style.display='block';
+  }
+}
+document.getElementById('gate-pass').addEventListener('keydown',e=>{if(e.key==='Enter')checkGate();});
+
+let currentTheme = Theme.get();
+let menuItems = [];
+let editingCourseIdx = -1, editingModules = [];
+
+function showPanel(name, btn) {
+  document.querySelectorAll('.dev-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.dev-nav-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  if(btn) btn.classList.add('active');
+}
+function showSave(){const b=document.getElementById('save-banner');b.style.display='block';setTimeout(()=>b.style.display='none',2500);}
+
+function initDev() {
+  currentTheme = Theme.get();
+  menuItems = [...(currentTheme.navItems||DEFAULT_THEME.navItems)];
+  renderDashboard(); renderThemeEditor(); renderMenuEditor();
+  renderLobbyEditor(); renderCourseManager(); renderGamesManager();
+  renderUsers(); renderRoleManager(); renderXPControl();
+  renderFeatures(); renderData();
+}
+
+// DASHBOARD
+function renderDashboard() {
+  const user=Auth.getCurrent();
+  const role=user?ROLES[user.role]||ROLES.user:ROLES.guest;
+  document.getElementById('dash-role-label').innerHTML=`Login sebagai: <strong>${user?.name||'Guest'}</strong> <span class="role-badge" style="background:${role.color}22;color:${role.color};border:1px solid ${role.color}44">${role.icon} ${role.label}</span>`;
+  const courses=getCourses(); const users=Auth.getUsers(); const posts=getPosts();
+  document.getElementById('dash-stats').innerHTML=[
+    ['🎓',courses.length,'Courses','#2563EB'],
+    ['👥',users.length,'Users','#059669'],
+    ['💬',posts.length,'Posts','#7C3AED'],
+    ['⚡',users.reduce((s,u)=>s+(u.xp||0),0).toLocaleString(),'Total XP','#D97706'],
+  ].map(([i,v,l,c])=>`<div style="background:var(--c-card);border:1px solid var(--c-border);border-radius:14px;padding:18px;text-align:center">
+    <div style="font-size:1.5rem;margin-bottom:6px">${i}</div>
+    <div style="font-size:1.4rem;font-weight:800;color:${c}">${v}</div>
+    <div style="font-size:.72rem;color:var(--c-text-sub);margin-top:3px">${l}</div>
+  </div>`).join('');
+  document.getElementById('quick-actions').innerHTML=[
+    ['🎨','Theme Editor','showPanel(\'theme\',null)'],
+    ['📋','Menu Manager','showPanel(\'menu\',null)'],
+    ['🎓','Course Manager','showPanel(\'courses\',null)'],
+    ['⚡','XP Control','showPanel(\'xp-ctrl\',null)'],
+    ['👥','User Manager','showPanel(\'users\',null)'],
+    ['💾','Export Data','exportData()'],
+  ].map(([i,l,fn])=>`<button class="btn btn-ghost btn-full" style="margin-bottom:7px;justify-content:flex-start;gap:10px" onclick="${fn}">${i} ${l}</button>`).join('');
+  document.getElementById('sys-info').innerHTML=[
+    ['Versi','Kaizo Academic v4.0'],
+    ['Users',users.length+' terdaftar'],
+    ['Courses',courses.length+' courses'],
+    ['Theme Font',currentTheme.font||'Inter'],
+    ['Storage','LocalStorage'],
+  ].map(([k,v])=>`<div><span style="color:var(--c-text-sub)">${k}:</span> <strong>${v}</strong></div>`).join('');
+}
+
+// THEME EDITOR
+const PRESETS=[
+  {name:'Default',colors:{colorPrimary:'#2563EB',colorBg:'#FFFFFF',colorBg2:'#F8FAFC',colorText:'#111827',colorBorder:'#E5E7EB'}},
+  {name:'Dark',colors:{colorPrimary:'#3B82F6',colorBg:'#0F172A',colorBg2:'#1E293B',colorText:'#F1F5F9',colorBorder:'#334155'}},
+  {name:'Green',colors:{colorPrimary:'#059669',colorBg:'#FFFFFF',colorBg2:'#F0FDF4',colorText:'#111827',colorBorder:'#D1FAE5'}},
+  {name:'Purple',colors:{colorPrimary:'#7C3AED',colorBg:'#FFFFFF',colorBg2:'#F5F3FF',colorText:'#111827',colorBorder:'#DDD6FE'}},
+  {name:'Warm',colors:{colorPrimary:'#D97706',colorBg:'#FFFBEB',colorBg2:'#FEF3C7',colorText:'#1C1917',colorBorder:'#FDE68A'}},
+  {name:'Neon',colors:{colorPrimary:'#00C8FF',colorBg:'#020408',colorBg2:'#060D1A',colorText:'#E8F4FF',colorBorder:'#1E3A5F'}},
+];
+const COLOR_FIELDS=[
+  ['colorPrimary','Warna Aksen Utama'],['colorBg','Background Utama'],
+  ['colorBg2','Background Sekunder'],['colorText','Warna Teks'],['colorBorder','Warna Border'],
+];
+function renderThemeEditor(){
+  document.getElementById('theme-presets').innerHTML=PRESETS.map((p,i)=>{
+    const isSelected=Object.entries(p.colors).every(([k,v])=>currentTheme[k]===v);
+    return `<div class="preset-card${isSelected?' selected':''}" onclick="applyPreset(${i})">
+      <div class="preset-dots">${Object.values(p.colors).slice(0,3).map(c=>`<div class="preset-dot" style="background:${c};border:1px solid #e5e7eb"></div>`).join('')}</div>
+      <div style="font-size:.78rem;font-weight:600;color:var(--c-text)">${p.name}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('color-settings').innerHTML=COLOR_FIELDS.map(([k,l])=>`
+    <div class="setting-row">
+      <div style="flex:1"><div style="font-weight:600;font-size:.9rem">${l}</div><div style="font-size:.75rem;color:var(--c-text-sub);margin-top:2px" id="cv-${k}">${currentTheme[k]||''}</div></div>
+      <div class="color-swatch" id="cs-${k}" style="background:${currentTheme[k]||'#fff'}">
+        <input type="color" value="${currentTheme[k]||'#2563EB'}" id="cp-${k}" oninput="updateColor('${k}',this.value)"/>
+      </div>
+    </div>`).join('');
+  document.getElementById('font-sel').value=currentTheme.font||'Inter';
+  document.getElementById('size-sel').value=currentTheme.fontSize||'medium';
+  document.getElementById('radius-card').value=currentTheme.cardRadius||'16';
+  document.getElementById('radius-card-val').textContent=(currentTheme.cardRadius||'16')+'px';
+  document.getElementById('shadow-sel').value=currentTheme.shadowLevel||'medium';
+  document.getElementById('logo-url').value=currentTheme.logoUrl||'';
+  document.getElementById('bg-url').value=currentTheme.bgImageUrl||'';
+}
+function applyPreset(i){
+  const p=PRESETS[i];
+  Object.assign(currentTheme,p.colors);
+  Theme.apply(currentTheme);
+  renderThemeEditor();
+}
+function updateColor(k,v){
+  currentTheme[k]=v;
+  document.getElementById('cs-'+k).style.background=v;
+  document.getElementById('cv-'+k).textContent=v;
+  Theme.apply(currentTheme);
+}
+function applyThemePreview(){
+  currentTheme.font=document.getElementById('font-sel').value;
+  currentTheme.fontSize=document.getElementById('size-sel').value;
+  currentTheme.cardRadius=document.getElementById('radius-card').value;
+  currentTheme.shadowLevel=document.getElementById('shadow-sel').value;
+  currentTheme.logoUrl=document.getElementById('logo-url').value;
+  currentTheme.bgImageUrl=document.getElementById('bg-url').value;
+  Theme.apply(currentTheme);
+}
+function saveTheme(){applyThemePreview();Theme.set(currentTheme);showSave();showToast('Theme tersimpan!','🎨');}
+
+// LOBBY
+function renderLobbyEditor(){
+  document.getElementById('lobby-name').value=currentTheme.academyName||'KAIZO ACADEMIC';
+  document.getElementById('lobby-tagline').value=currentTheme.academyTagline||'Learn · Play · Grow';
+  document.getElementById('lobby-hero-title').value=currentTheme.heroTitle||'';
+  document.getElementById('lobby-hero-desc').value=currentTheme.heroDesc||'';
+}
+function saveLobby(){
+  currentTheme.academyName=document.getElementById('lobby-name').value;
+  currentTheme.academyTagline=document.getElementById('lobby-tagline').value;
+  currentTheme.heroTitle=document.getElementById('lobby-hero-title').value;
+  currentTheme.heroDesc=document.getElementById('lobby-hero-desc').value;
+  Theme.set(currentTheme);showSave();
+}
+
+// MENU
+function renderMenuEditor(){
+  document.getElementById('menu-list').innerHTML=menuItems.map((item,i)=>`
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;padding:10px;border:1px solid var(--c-border);border-radius:10px;background:var(--c-bg2)">
+      <input class="finput" style="width:46px;padding:7px 8px;text-align:center" value="${escHtml(item.icon||'')}" placeholder="🏠" oninput="menuItems[${i}].icon=this.value"/>
+      <input class="finput" style="flex:1;padding:7px 10px" value="${escHtml(item.label)}" placeholder="Label" oninput="menuItems[${i}].label=this.value"/>
+      <input class="finput" style="flex:2;padding:7px 10px" value="${escHtml(item.href)}" placeholder="halaman.html" oninput="menuItems[${i}].href=this.value"/>
+      <button class="btn btn-danger btn-xs" onclick="menuItems.splice(${i},1);renderMenuEditor()">✕</button>
+    </div>`).join('');
+}
+function addMenuItem(){menuItems.push({label:'Menu Baru',icon:'🔗',href:'#'});renderMenuEditor();}
+function saveMenu(){currentTheme.navItems=menuItems;Theme.set(currentTheme);showSave();showToast('Menu tersimpan!','📋');}
+
+// COURSE MANAGER
+function renderCourseManager(){
+  const courses=getCourses();
+  document.getElementById('courses-list').style.display='block';
+  document.getElementById('course-editor').style.display='none';
+  document.getElementById('courses-list').innerHTML=courses.map((c,i)=>`
+    <div style="background:var(--c-card);border:1px solid var(--c-border);border-radius:12px;padding:16px;margin-bottom:8px">
+      <div class="row">
+        <div style="font-size:1.8rem;flex-shrink:0">${CAT_ICONS[c.category]||'📚'}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;color:var(--c-text)">${escHtml(c.title)}</div>
+          <div style="font-size:.78rem;color:var(--c-text-sub)">${c.category} · ${c.level} · ${c.modules?.flatMap(m=>m.lessons).length||0} lessons · ⚡ +${c.xpReward} XP</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="openCourseEditor(${i})">✏ Edit</button>
+        <button class="btn btn-danger btn-xs" onclick="delCourse(${i})">🗑</button>
+      </div>
+    </div>`).join('');
+}
+function openCourseEditor(i){
+  const courses=getCourses();
+  editingCourseIdx=i;
+  const c=i===-1?{id:'c'+Date.now(),title:'',instructor:'',category:'Umum',level:'Beginner',duration:'1 jam',xpReward:100,description:'',rating:4.5,students:0,modules:[{id:'m'+Date.now(),title:'Modul 1',lessons:[{id:'l'+Date.now(),title:'Lesson 1',type:'text',duration:'10 min',content:''}]}]}:JSON.parse(JSON.stringify(courses[i]));
+  editingModules=c.modules||[];
+  document.getElementById('courses-list').style.display='none';
+  const ed=document.getElementById('course-editor');
+  ed.style.display='block';
+  ed.innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+      <button class="btn btn-ghost btn-sm" onclick="renderCourseManager()">← Kembali</button>
+      <div style="font-weight:700;color:var(--c-primary)">${i===-1?'TAMBAH COURSE':'EDIT COURSE'}</div>
+    </div>
+    <div style="background:var(--c-card);border:1px solid var(--c-border);border-radius:16px;padding:20px;margin-bottom:12px">
+      <div class="frow">
+        <div class="fgroup"><label class="flabel">Judul Course</label><input class="finput" id="ec-title" value="${escHtml(c.title)}"/></div>
+        <div class="fgroup"><label class="flabel">Instruktur</label><input class="finput" id="ec-inst" value="${escHtml(c.instructor||'')}"/></div>
+      </div>
+      <div class="frow">
+        <div class="fgroup"><label class="flabel">Kategori</label><input class="finput" id="ec-cat" value="${escHtml(c.category)}"/></div>
+        <div class="fgroup"><label class="flabel">Level</label>
+          <select class="fselect" id="ec-lvl"><option${c.level==='Beginner'?' selected':''}>Beginner</option><option${c.level==='Intermediate'?' selected':''}>Intermediate</option><option${c.level==='Advanced'?' selected':''}>Advanced</option></select>
+        </div>
+      </div>
+      <div class="frow">
+        <div class="fgroup"><label class="flabel">Durasi</label><input class="finput" id="ec-dur" value="${escHtml(c.duration)}"/></div>
+        <div class="fgroup"><label class="flabel">XP Reward</label><input class="finput" type="number" id="ec-xp" value="${c.xpReward}"/></div>
+      </div>
+      <div class="fgroup" style="margin-bottom:0"><label class="flabel">Deskripsi</label><textarea class="ftextarea" id="ec-desc">${escHtml(c.description)}</textarea></div>
+    </div>
+    <div style="background:var(--c-card);border:1px solid var(--c-border);border-radius:16px;padding:20px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div style="font-weight:700">📚 Modul & Lesson</div>
+        <button class="btn btn-ghost btn-sm" onclick="addModule()">+ Modul</button>
+      </div>
+      <div id="ec-modules"></div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" onclick="renderCourseManager()">Batal</button>
+      <div class="sp"></div>
+      <button class="btn btn-primary btn-xl" onclick="saveCourse()">💾 Simpan Course</button>
+    </div>`;
+  renderModules();
+}
+function renderModules(){
+  const typeIcon={text:'📄',video:'🎥',quiz:'⚡',pdf:'📑'};
+  document.getElementById('ec-modules').innerHTML=editingModules.map((m,mi)=>`
+    <div style="border:1px solid var(--c-border);border-radius:10px;margin-bottom:10px;overflow:hidden">
+      <div style="background:var(--c-bg2);padding:10px 14px;display:flex;gap:8px;align-items:center">
+        <span style="font-size:.72rem;font-weight:700;color:var(--c-text-sub)">MOD ${mi+1}</span>
+        <input class="finput" style="flex:1;padding:6px 10px;font-size:.82rem" value="${escHtml(m.title)}" oninput="editingModules[${mi}].title=this.value"/>
+        <button class="btn btn-danger btn-xs" onclick="editingModules.splice(${mi},1);renderModules()">🗑</button>
+      </div>
+      <div style="padding:10px">
+        ${m.lessons.map((l,li)=>`
+          <div style="border:1px solid var(--c-border);border-radius:9px;padding:10px;margin-bottom:7px;background:var(--c-card)">
+            <div class="row" style="gap:7px;margin-bottom:7px;flex-wrap:wrap">
+              <span>${typeIcon[l.type]||'📄'}</span>
+              <input class="finput" style="flex:2;min-width:100px;padding:5px 9px;font-size:.8rem" value="${escHtml(l.title)}" oninput="editingModules[${mi}].lessons[${li}].title=this.value"/>
+              <select class="fselect" style="width:auto;padding:5px 8px;font-size:.76rem" onchange="editingModules[${mi}].lessons[${li}].type=this.value">
+                ${['text','video','quiz','pdf'].map(t=>`<option value="${t}"${l.type===t?' selected':''}>${t}</option>`).join('')}
+              </select>
+              <input class="finput" style="width:75px;padding:5px 8px;font-size:.76rem" value="${escHtml(l.duration||'10 min')}" oninput="editingModules[${mi}].lessons[${li}].duration=this.value"/>
+              <button class="btn btn-danger btn-xs" onclick="editingModules[${mi}].lessons.splice(${li},1);renderModules()">✕</button>
+            </div>
+            ${l.type!=='quiz'?`<textarea class="ftextarea" style="min-height:60px;font-size:.8rem" placeholder="Konten lesson..." oninput="editingModules[${mi}].lessons[${li}].content=this.value">${escHtml(l.content||'')}</textarea>`:'<div style="font-size:.75rem;color:var(--c-text-sub);padding:6px;background:var(--c-bg2);border-radius:6px">⚡ Quiz menggunakan bank soal quiz</div>'}
+          </div>`).join('')}
+        <button class="btn btn-ghost btn-xs btn-full" onclick="editingModules[${mi}].lessons.push({id:'l'+Date.now(),title:'Lesson Baru',type:'text',duration:'10 min',content:''});renderModules()">+ Lesson</button>
+      </div>
+    </div>`).join('');
+}
+function addModule(){editingModules.push({id:'m'+Date.now(),title:'Modul Baru',lessons:[{id:'l'+Date.now(),title:'Lesson 1',type:'text',duration:'10 min',content:''}]});renderModules();}
+function saveCourse(){
+  const title=document.getElementById('ec-title').value.trim();
+  if(!title){alert('Judul wajib diisi!');return;}
+  const courses=getCourses();
+  const updated={id:editingCourseIdx===-1?'c'+Date.now():courses[editingCourseIdx].id,title,instructor:document.getElementById('ec-inst').value,category:document.getElementById('ec-cat').value||'Umum',level:document.getElementById('ec-lvl').value,duration:document.getElementById('ec-dur').value,xpReward:parseInt(document.getElementById('ec-xp').value)||100,description:document.getElementById('ec-desc').value,rating:editingCourseIdx===-1?4.5:courses[editingCourseIdx].rating,students:editingCourseIdx===-1?0:courses[editingCourseIdx].students,thumbnail:editingCourseIdx===-1?'':courses[editingCourseIdx].thumbnail,modules:editingModules};
+  if(editingCourseIdx===-1)courses.push(updated);else courses[editingCourseIdx]=updated;
+  KS.set("courses",courses);renderCourseManager();showSave();
+}
+function delCourse(i){if(!confirm('Hapus course ini?'))return;const c=getCourses();c.splice(i,1);KS.set("courses",c);renderCourseManager();}
+
+// GAMES MANAGER
+function renderGamesManager(){
+  const GAMES_LIST=[
+    {id:'quiz-arena',name:'Quiz Arena',icon:'⚡',xp:30},
+    {id:'flashcard',name:'Flashcard Trainer',icon:'🃏',xp:15},
+    {id:'memory-match',name:'Memory Match',icon:'🧠',xp:20},
+    {id:'speed-quiz',name:'Speed Quiz',icon:'🚀',xp:25},
+    {id:'true-false',name:'True or False',icon:'✅',xp:15},
+    {id:'word-builder',name:'Word Builder',icon:'🔤',xp:20},
+    {id:'sequence',name:'Sequence Master',icon:'📋',xp:25},
+    {id:'logic-grid',name:'Logic Grid',icon:'🔲',xp:35},
+    {id:'knowledge-race',name:'Knowledge Race',icon:'🏁',xp:40},
+    {id:'puzzle-build',name:'Puzzle Builder',icon:'🧩',xp:20},
+  ];
+  const cfg=KS.get("games_config")||{};
+  document.getElementById('games-manager-list').innerHTML=GAMES_LIST.map(g=>`
+    <div class="setting-row">
+      <div style="font-size:1.4rem;flex-shrink:0">${g.icon}</div>
+      <div style="flex:1">
+        <div style="font-weight:600">${g.name}</div>
+        <div style="font-size:.75rem;color:var(--c-text-sub)">ID: ${g.id}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <label style="font-size:.78rem;color:var(--c-text-sub)">XP:</label>
+        <input type="number" class="finput" style="width:70px;padding:5px 8px;font-size:.82rem" value="${cfg[g.id]?.xp||g.xp}" 
+          onchange="let c=KS.get('games_config')||{};if(!c['${g.id}'])c['${g.id}']={};c['${g.id}'].xp=parseInt(this.value)||${g.xp};KS.set('games_config',c);showSave()"/>
+        <label class="toggle-sw">
+          <input type="checkbox" ${cfg[g.id]?.enabled!==false?'checked':''} onchange="let c=KS.get('games_config')||{};if(!c['${g.id}'])c['${g.id}']={};c['${g.id}'].enabled=this.checked;KS.set('games_config',c);showSave()"/>
+          <span class="toggle-sl"></span>
+        </label>
+      </div>
+    </div>`).join('');
+}
+
+// USERS
+function renderUsers(){
+  const q=(document.getElementById('user-search')?.value||'').toLowerCase();
+  const users=Auth.getUsers().filter(u=>!q||u.name.toLowerCase().includes(q)||u.email.toLowerCase().includes(q));
+  document.getElementById('user-count-label').textContent=users.length+' pengguna';
+  document.getElementById('users-list').innerHTML=users.map(u=>{
+    const role=ROLES[u.role]||ROLES.user;const lvl=getLevel(u.xp||0);
+    return `<div class="user-row">
+      <div style="width:40px;height:40px;border-radius:50%;background:var(--c-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0">${initials(u.name)}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;color:var(--c-text)">${escHtml(u.name)}</div>
+        <div style="font-size:.75rem;color:var(--c-text-sub)">${escHtml(u.email)}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+        <span class="role-badge" style="background:${role.color}22;color:${role.color};border:1px solid ${role.color}44">${role.icon} ${role.label}</span>
+        <span style="font-size:.72rem;color:var(--c-text-sub)">⚡ ${(u.xp||0).toLocaleString()} XP · ${lvl.title}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ROLE MANAGER
+function renderRoleManager(){
+  const currentUser=Auth.getCurrent();
+  if(!currentUser||!Auth.hasRole('owner')){
+    document.getElementById('role-users-list').innerHTML='<div style="text-align:center;padding:40px;color:var(--c-text-sub)"><div style="font-size:2rem;margin-bottom:10px">🔒</div>Hanya Developer Owner yang bisa mengubah role.</div>';
+    return;
+  }
+  const users=Auth.getUsers();
+  document.getElementById('role-users-list').innerHTML=users.map(u=>{
+    const role=ROLES[u.role]||ROLES.user;
+    return `<div class="user-row">
+      <div style="width:38px;height:38px;border-radius:50%;background:var(--c-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.78rem;flex-shrink:0">${initials(u.name)}</div>
+      <div style="flex:1"><div style="font-weight:600">${escHtml(u.name)}</div><div style="font-size:.75rem;color:var(--c-text-sub)">${escHtml(u.email)}</div></div>
+      <select class="fselect" style="width:auto;padding:6px 10px;font-size:.8rem" onchange="changeRole('${u.id}',this.value)">
+        ${Object.values(ROLES).map(r=>`<option value="${r.id}"${u.role===r.id?' selected':''}>${r.icon} ${r.label}</option>`).join('')}
+      </select>
+    </div>`;
+  }).join('');
+}
+function changeRole(userId,role){
+  const users=Auth.getUsers();const idx=users.findIndex(u=>u.id===userId);if(idx<0)return;
+  users[idx].role=role;Auth.saveUsers(users);
+  const sess=Auth.getCurrent();if(sess?.id===userId)Auth.updateSession({role});
+  showSave();renderRoleManager();
+}
+
+// XP CONTROL
+function renderXPControl(){
+  const users=Auth.getUsers();
+  document.getElementById('xp-user-sel').innerHTML='<option value="">-- Pilih Pengguna --</option>'+users.map(u=>`<option value="${u.id}">${escHtml(u.name)} (${(u.xp||0).toLocaleString()} XP)</option>`).join('');
+  const logs=XPSystem.logs().slice(0,20);
+  document.getElementById('xp-logs').innerHTML=logs.length===0?'<div style="text-align:center;color:var(--c-text-sub);padding:20px">Belum ada log XP</div>':logs.map(l=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:10px;border-bottom:1px solid var(--c-border)">
+      <span style="font-size:1.1rem">${l.amount>0?'➕':'➖'}</span>
+      <div style="flex:1">
+        <div style="font-size:.85rem;font-weight:600">${escHtml(l.userName||'?')} · <span style="color:var(--c-primary)">+${l.amount} XP</span></div>
+        <div style="font-size:.75rem;color:var(--c-text-sub)">${escHtml(l.reason||'-')} · oleh ${escHtml(l.awardedBy||'system')} · ${timeAgo(l.time)}</div>
+      </div>
+    </div>`).join('');
+}
+function giveXP(){
+  const uid=document.getElementById('xp-user-sel').value;
+  const amt=parseInt(document.getElementById('xp-amount').value);
+  const reason=document.getElementById('xp-reason').value;
+  if(!uid||!amt){showToast('Pilih user dan jumlah XP!','⚠️');return;}
+  XPSystem.awardUser(uid,amt,reason||'Manual dari Developer');
+  showToast(`+${amt} XP berhasil diberikan!`,'⚡');
+  renderXPControl();renderUsers();
+}
+function giveGlobalXP(){
+  const amt=parseInt(document.getElementById('xp-global').value);
+  const reason=document.getElementById('xp-global-reason').value;
+  if(!amt){showToast('Masukkan jumlah XP!','⚠️');return;}
+  XPSystem.awardAll(amt,reason||'Global Event');
+  showToast(`+${amt} XP diberikan ke semua user!`,'🌐',4000);
+  renderXPControl();renderUsers();
+}
+
+// FEATURES
+function renderFeatures(){
+  const t=currentTheme;const feats=t.features||DEFAULT_THEME.features;
+  const list=[
+    ['games','🎮','Game Hub','Aktifkan Game Hub di platform'],
+    ['community','💬','Community Forum','Forum diskusi antar pengguna'],
+    ['certificates','🎓','Sertifikat Digital','Sertifikat setelah selesai course'],
+    ['gamification','⚡','Gamifikasi','Sistem XP, badge, leaderboard'],
+  ];
+  document.getElementById('features-list').innerHTML=list.map(([key,icon,title,desc])=>`
+    <div class="setting-row">
+      <div style="font-size:1.4rem;flex-shrink:0">${icon}</div>
+      <div style="flex:1"><div style="font-weight:600">${title}</div><div style="font-size:.78rem;color:var(--c-text-sub)">${desc}</div></div>
+      <label class="toggle-sw">
+        <input type="checkbox" ${feats[key]!==false?'checked':''} onchange="currentTheme.features=currentTheme.features||{};currentTheme.features['${key}']=this.checked;Theme.set(currentTheme);showSave()"/>
+        <span class="toggle-sl"></span>
+      </label>
+    </div>`).join('');
+}
+
+// DATA
+function renderData(){}
+function exportData(){
+  const data={theme:Theme.get(),courses:getCourses(),users:Auth.getUsers().map(u=>({...u,password:undefined})),posts:getPosts(),xp_logs:XPSystem.logs(),exportedAt:new Date().toISOString(),version:'4.0'};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`kaizo_backup_${new Date().toISOString().slice(0,10)}.json`;a.click();
+}
+function importData(input){
+  const file=input.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{const d=JSON.parse(ev.target.result);
+      if(d.theme){KS.set("theme",d.theme);currentTheme=d.theme;Theme.apply(d.theme);}
+      if(d.courses)KS.set("courses",d.courses);
+      if(d.posts)savePosts(d.posts);
+      initDev();showSave();showToast('Data berhasil diimport!','📥');
+    }catch{showToast('File tidak valid!','⚠️');}
+  };r.readAsText(file);
+}
+function resetProgress(){Auth.getUsers().forEach(u=>{u.xp=0;u.badges=[];u.completedLessons=[];u.completedCourses=[];u.quizResults=[];});const u=Auth.getUsers();Auth.saveUsers(u);showSave();showToast('Progress direset','🗑');}
+function resetTheme(){KS.del("theme");currentTheme={...DEFAULT_THEME};Theme.apply(currentTheme);renderThemeEditor();showSave();}
+function resetAll(){for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(k?.startsWith('kaizo:'))localStorage.removeItem(k);}location.reload();}
+</script>
+</body></html>

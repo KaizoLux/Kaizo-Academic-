@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Courses — Kaizo Academic</title>
+<script src="shared.js"></script>
+<style id="shared-styles"></style>
+<style>
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:24px}
+.filter-btn{padding:6px 16px;border-radius:999px;font-size:.82rem;font-weight:500;cursor:pointer;border:1px solid var(--c-border);background:var(--c-card);color:var(--c-text-sub);transition:.18s}
+.filter-btn.active,.filter-btn:hover{border-color:var(--c-primary);color:var(--c-primary);background:rgba(37,99,235,0.06)}
+.search-wrap{position:relative;flex:1;min-width:180px;max-width:320px}
+.search-wrap input{padding-left:36px}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--c-text-sub);pointer-events:none}
+.course-meta-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px}
+.modal-scroll{max-height:65vh;overflow-y:auto}
+.module-acc{border:1px solid var(--c-border);border-radius:12px;overflow:hidden;margin-bottom:10px}
+.module-head{padding:13px 16px;background:var(--c-bg2);display:flex;align-items:center;gap:8px;cursor:pointer}
+.module-head:hover{background:#F3F4F6}
+.lesson-row{display:flex;align-items:center;gap:10px;padding:11px 16px;border-top:1px solid var(--c-border);transition:.15s}
+.lesson-row:hover{background:var(--c-bg2)}
+</style>
+</head>
+<body>
+<div id="nb"></div>
+<!-- COURSE DETAIL MODAL -->
+<div class="ov" id="cmodal" style="display:none">
+  <div class="modal" style="max-width:580px;padding:28px">
+    <div class="row" style="margin-bottom:18px">
+      <div id="m-icon" style="font-size:2.2rem"></div>
+      <div style="flex:1"><div id="m-cat" style="font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--c-primary);margin-bottom:3px"></div><div id="m-title" class="h2"></div></div>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-scroll" id="m-body"></div>
+    <div style="margin-top:18px"><button class="btn btn-primary btn-full btn-xl" id="m-start">🚀 Mulai Belajar</button></div>
+  </div>
+</div>
+
+<main>
+<div class="page-wrap">
+  <div style="margin-bottom:32px;padding-bottom:24px;border-bottom:1px solid var(--c-border)">
+    <div class="section-label">COURSES</div>
+    <div class="section-title">Pilih Course-mu</div>
+    <div class="section-sub" style="margin-bottom:0">Setiap lesson memberimu XP. Selesaikan course untuk mendapat sertifikat!</div>
+  </div>
+
+  <!-- FILTER -->
+  <div class="filter-bar fadein">
+    <div class="search-wrap"><span class="search-icon">🔍</span><input class="finput" id="q" placeholder="Cari course..." oninput="render()"/></div>
+    <div id="cats"></div>
+    <select class="finput" style="width:auto;padding:8px 12px" id="lvl" onchange="render()">
+      <option value="">Semua Level</option><option>Beginner</option><option>Intermediate</option><option>Advanced</option>
+    </select>
+    <div class="sp"></div>
+    <span id="count-lbl" style="font-size:.82rem;color:var(--c-text-sub)"></span>
+  </div>
+
+  <div class="grid-auto" id="grid"></div>
+  <div id="empty" style="display:none;text-align:center;padding:60px 0">
+    <div style="font-size:3rem;margin-bottom:12px;opacity:.3">🔍</div>
+    <div style="font-size:.88rem;color:var(--c-text-sub)">Tidak ada course yang cocok</div>
+  </div>
+</div>
+</main>
+<script>
+document.getElementById('shared-styles').textContent = SHARED_CSS;
+document.getElementById('nb').innerHTML = renderNavbar('courses.html');
+const user = Auth.getCurrent();
+let courses = KS.get("courses")||DEFAULT_COURSES;
+let activeCat='all';
+
+// Build category buttons
+const cats=['all',...new Set(courses.map(c=>c.category))];
+document.getElementById('cats').innerHTML = cats.map(c=>
+  `<button class="filter-btn${c==='all'?' active':''}" onclick="setCat('${c}',this)">${c==='all'?'Semua':c}</button>`).join('');
+
+function setCat(c,el){activeCat=c;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');render();}
+
+function render(){
+  const q=document.getElementById('q').value.toLowerCase();
+  const lvl=document.getElementById('lvl').value;
+  let list=courses.filter(c=>{
+    if(activeCat!=='all'&&c.category!==activeCat) return false;
+    if(lvl&&c.level!==lvl) return false;
+    if(q&&!c.title.toLowerCase().includes(q)&&!c.description?.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  document.getElementById('count-lbl').textContent=`${list.length} course`;
+  document.getElementById('empty').style.display=list.length?'none':'block';
+  document.getElementById('grid').innerHTML=list.map(c=>{
+    const p=user?getCourseProgress(c.id):0;
+    const done=p===100;
+    const lvlClass={Beginner:'level-beginner',Intermediate:'level-intermediate',Advanced:'level-advanced'}[c.level]||'level-beginner';
+    const total=c.modules.flatMap(m=>m.lessons).length;
+    return `<div class="course-card fadein" onclick="openModal('${c.id}')">
+      <div class="course-thumb" style="${done?'border-bottom:2px solid #10B981':''}">
+        ${c.thumbnail?`<img src="${c.thumbnail}">`:`<span>${catIcons[c.category]||'📚'}</span>`}
+        ${done?`<div style="position:absolute;top:10px;right:10px;background:#ECFDF5;border:1px solid #6EE7B7;border-radius:999px;padding:3px 10px;font-size:.7rem;font-weight:600;color:#059669">✓ Selesai</div>`:''}
+      </div>
+      <div class="course-body">
+        <div class="course-cat">${escHtml(c.category)}</div>
+        <div class="course-title">${escHtml(c.title)}</div>
+        <div style="font-size:.8rem;color:var(--c-text-sub);line-height:1.5;margin-bottom:10px">${escHtml((c.description||'').slice(0,70))}...</div>
+        <div class="course-meta-row">
+          <span class="course-level ${lvlClass}">${c.level}</span>
+          <span style="font-size:.75rem;color:var(--c-text-sub)">📖 ${total}</span>
+          <span style="font-size:.75rem;color:var(--c-text-sub)">⏱ ${c.duration}</span>
+          <span class="chip chip-blue" style="margin-left:auto">+${c.xpReward} XP</span>
+        </div>
+        ${p>0?`<div class="prog" style="margin-top:10px"><div class="progf" style="width:${p}%;${done?'background:#10B981':''}"></div></div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openModal(id){
+  const c=courses.find(x=>x.id===id); if(!c) return;
+  document.getElementById('m-icon').textContent=catIcons[c.category]||'📚';
+  document.getElementById('m-cat').textContent=c.category+' · '+c.level;
+  document.getElementById('m-title').textContent=c.title;
+  document.getElementById('m-start').onclick=()=>location.href='learn.html?course='+id;
+  const total=c.modules.flatMap(m=>m.lessons).length;
+  const typeIco={text:'📄',video:'🎥',quiz:'⚡',pdf:'📑',assignment:'📝'};
+  document.getElementById('m-body').innerHTML=`
+    <p style="font-size:.88rem;color:var(--c-text-sub);line-height:1.7;margin-bottom:16px">${escHtml(c.description||'')}</p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px">
+      ${[['⏱',c.duration],['📖',total+' Lessons'],['⭐',c.rating],['⚡','+'+c.xpReward+' XP']].map(([i,v])=>`
+      <div style="background:var(--c-bg2);border:1px solid var(--c-border);border-radius:10px;padding:10px 14px;text-align:center">
+        <div>${i}</div><div style="font-size:.78rem;font-weight:600;color:var(--c-primary);margin-top:3px">${v}</div>
+      </div>`).join('')}
+    </div>
+    <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--c-text-sub);margin-bottom:10px">Kurikulum</div>
+    ${c.modules.map(m=>`
+    <div class="module-acc">
+      <div class="module-head"><span style="font-weight:600;flex:1">${escHtml(m.title)}</span><span style="font-size:.75rem;color:var(--c-text-sub)">${m.lessons.length} lessons</span></div>
+      ${m.lessons.map(l=>{
+        const done=user?.completedLessons?.includes(c.id+':'+l.id);
+        return `<div class="lesson-row">
+          <span>${typeIco[l.type]||'📄'}</span>
+          <span style="flex:1;font-size:.85rem;color:var(--c-text-sub)">${escHtml(l.title)}</span>
+          <span style="font-size:.75rem;color:var(--c-text-sub)">${l.duration||''}</span>
+          ${done?`<span style="color:#10B981;font-size:.8rem">✓</span>`:''}
+        </div>`;
+      }).join('')}
+    </div>`).join('')}`;
+  document.getElementById('cmodal').style.display='flex';
+}
+function closeModal(){document.getElementById('cmodal').style.display='none';}
+document.getElementById('cmodal').addEventListener('click',e=>{if(e.target===document.getElementById('cmodal'))closeModal();});
+render();
+</script>
+</body>
+</html>

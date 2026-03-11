@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Belajar — Kaizo Academic</title>
+<script src="shared.js"></script>
+<style id="shared-styles"></style>
+<style>
+.learn-layout{display:grid;grid-template-columns:280px 1fr;min-height:calc(100vh - 64px)}
+.sidebar{background:var(--c-card);border-right:1px solid var(--c-border);overflow-y:auto;position:sticky;top:64px;height:calc(100vh - 64px);padding:16px}
+.sb-lesson{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;cursor:pointer;transition:.15s;margin-bottom:3px;border:1px solid transparent}
+.sb-lesson:hover{background:var(--c-bg2)}
+.sb-lesson.active{background:#EFF6FF;border-color:rgba(37,99,235,0.2);color:var(--c-primary)}
+.sb-lesson.done{opacity:.65}
+.sb-ico{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0;background:var(--c-bg2)}
+.sb-lesson.active .sb-ico{background:#DBEAFE}
+.lesson-body{font-size:1rem;color:var(--c-text-sub);line-height:1.9;max-width:660px}
+.lesson-body strong{color:var(--c-text)}
+.lesson-body h2{color:var(--c-text);font-size:1.1rem;margin:20px 0 10px}
+.lesson-body h3{color:var(--c-text);font-size:1rem;margin:16px 0 8px}
+.lesson-body ul{padding-left:22px;margin:10px 0}
+.lesson-body li{margin-bottom:7px}
+.qopt{width:100%;padding:13px 16px;border:1.5px solid var(--c-border);border-radius:11px;background:var(--c-card);font-size:.92rem;text-align:left;cursor:pointer;transition:.18s;margin-bottom:9px;display:flex;align-items:center;gap:12px;font-family:var(--font-main)}
+.qopt:hover{border-color:var(--c-primary);background:#EFF6FF}
+.qopt.cor{border-color:#10B981;background:#ECFDF5;color:#059669;font-weight:600}
+.qopt.wrg{border-color:#EF4444;background:#FEF2F2;color:#DC2626}
+.qkey{width:30px;height:30px;border-radius:7px;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.7rem;flex-shrink:0}
+/* CERT */
+.cert{background:var(--c-card);border:2px solid #F59E0B;border-radius:20px;padding:48px 36px;text-align:center;max-width:540px;margin:0 auto;position:relative}
+.cert::before{content:'';position:absolute;top:6px;left:6px;right:6px;bottom:6px;border:1px solid rgba(245,158,11,.2);border-radius:14px;pointer-events:none}
+@media(max-width:768px){.learn-layout{grid-template-columns:1fr}.sidebar{position:static;height:auto;border-right:none;border-bottom:1px solid var(--c-border)}}
+</style>
+</head>
+<body>
+<div id="nb"></div>
+<!-- CERT MODAL -->
+<div class="ov" id="cert-modal" style="display:none">
+  <div class="cert fadein" id="cert-body"></div>
+</div>
+<main>
+<div class="learn-layout" id="layout">
+  <aside class="sidebar" id="sidebar"><div style="font-size:.82rem;color:var(--c-text-sub);text-align:center;padding:20px">Memuat...</div></aside>
+  <div style="padding:32px 40px 60px" id="main"></div>
+</div>
+</main>
+<script>
+document.getElementById('shared-styles').textContent = SHARED_CSS;
+document.getElementById('nb').innerHTML = renderNavbar('courses.html');
+const params=new URLSearchParams(location.search);
+const courseId=params.get('course');
+const courses=KS.get("courses")||DEFAULT_COURSES;
+const course=courses.find(c=>c.id===courseId);
+const user=Auth.getCurrent();
+
+if(!course){
+  document.getElementById('main').innerHTML=`<div style="text-align:center;padding:80px 20px"><div style="font-size:3rem;opacity:.3;margin-bottom:16px">🔍</div><div style="color:var(--c-text-sub)">Course tidak ditemukan</div><a href="courses.html" class="btn btn-primary" style="margin-top:20px">← Kembali</a></div>`;
+  document.getElementById('sidebar').innerHTML='';
+} else {
+  document.title = course.title+' — Kaizo Academic';
+  const allLessons=course.modules.flatMap(m=>m.lessons.map(l=>({...l,moduleTitle:m.title})));
+  let curIdx=parseInt(params.get('lesson')||'0');
+  if(curIdx>=allLessons.length) curIdx=0;
+
+  function progress(){return getCourseProgress(courseId);}
+
+  function renderSidebar(){
+    let li=0;
+    document.getElementById('sidebar').innerHTML=`
+      <div style="margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--c-border)">
+        <a href="courses.html" style="font-size:.78rem;color:var(--c-text-sub);text-decoration:none;display:flex;align-items:center;gap:5px;margin-bottom:10px">← Courses</a>
+        <div style="font-weight:700;font-size:.88rem;color:var(--c-text);margin-bottom:6px">${escHtml(course.title)}</div>
+        <div class="prog"><div class="progf" style="width:${progress()}%"></div></div>
+        <div style="font-size:.72rem;color:var(--c-text-sub);margin-top:3px">${progress()}% selesai</div>
+      </div>
+      ${course.modules.map(m=>{
+        const mHtml=`<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--c-text-sub);padding:8px 6px 4px">${escHtml(m.title)}</div>
+          ${m.lessons.map(l=>{
+            const i=li++;const done=user?.completedLessons?.includes(courseId+':'+l.id);
+            const typeIco={text:'📄',video:'🎥',quiz:'⚡',pdf:'📑',assignment:'📝'}[l.type]||'📄';
+            return `<div class="sb-lesson${i===curIdx?' active':''}${done?' done':''}" onclick="loadLesson(${i})">
+              <div class="sb-ico">${typeIco}</div>
+              <div style="flex:1;font-size:.82rem;line-height:1.3;color:${i===curIdx?'var(--c-primary)':'var(--c-text-sub)'}">${escHtml(l.title)}</div>
+              ${done?`<span style="color:#10B981;font-size:.8rem">✓</span>`:''}
+            </div>`;
+          }).join('')}`;
+        return mHtml;
+      }).join('')}`;
+  }
+
+  function loadLesson(idx){
+    curIdx=idx;
+    const lesson=allLessons[idx];
+    const typeIco={text:'📄',video:'🎥',quiz:'⚡',pdf:'📑',assignment:'📝'}[lesson.type]||'📄';
+    const isDone=user?.completedLessons?.includes(courseId+':'+lesson.id);
+    const isFirst=idx===0, isLast=idx===allLessons.length-1;
+    let bodyHtml='';
+    if(lesson.type==='text'){
+      bodyHtml=`<div class="lesson-body"><p>${markdownToHtml(lesson.content||'')}</p></div>`;
+    } else if(lesson.type==='video'){
+      bodyHtml=`<div style="aspect-ratio:16/9;background:var(--c-bg2);border:1px solid var(--c-border);border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:20px">
+        <div style="text-align:center;color:var(--c-text-sub)"><div style="font-size:3rem;margin-bottom:8px">🎥</div><div>Video akan tersedia segera</div></div></div>
+        <div class="lesson-body"><p>${markdownToHtml(lesson.content||'')}</p></div>`;
+    } else if(lesson.type==='quiz'){
+      bodyHtml=renderQuiz(lesson);
+    }
+    document.getElementById('main').innerHTML=`
+      <div style="margin-bottom:22px">
+        <div style="font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--c-text-sub);margin-bottom:6px">${escHtml(course.title)} → ${escHtml(lesson.moduleTitle)}</div>
+        <div style="font-size:1.5rem;font-weight:800;color:var(--c-text);margin-bottom:8px;letter-spacing:-.5px">${escHtml(lesson.title)}</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:.78rem;color:var(--c-text-sub)">
+          <span>${typeIco} ${lesson.type}</span><span>⏱ ${lesson.duration||'–'}</span><span>${progress()}% course selesai</span>
+          ${isDone?`<span style="color:#10B981;font-weight:600">✓ Selesai</span>`:''}
+        </div>
+      </div>
+      <div class="prog" style="margin-bottom:24px"><div class="progf" style="width:${progress()}%"></div></div>
+      ${bodyHtml}
+      ${lesson.type!=='quiz'?`
+      <div style="display:flex;gap:10px;margin-top:32px;padding-top:20px;border-top:1px solid var(--c-border)">
+        <button class="btn btn-ghost" onclick="loadLesson(${idx-1})" ${isFirst?'disabled':''}>← Prev</button>
+        <div style="flex:1"></div>
+        ${!isDone?`<button class="btn btn-success" onclick="markDone()">✓ Tandai Selesai</button>`:''}
+        <button class="btn btn-primary" onclick="loadLesson(${idx+1})" ${isLast?'disabled':''}>Next →</button>
+      </div>
+      ${isLast&&progress()===100?`<div style="text-align:center;margin-top:16px"><button class="btn btn-xl" style="background:#FFFBEB;border-color:#F59E0B;color:#D97706" onclick="showCert()">🎓 Lihat Sertifikat</button></div>`:''}
+      `:`<div style="display:flex;gap:10px;margin-top:20px">
+        <button class="btn btn-ghost" onclick="loadLesson(${idx-1})" ${isFirst?'disabled':''}>← Prev</button>
+        <div style="flex:1"></div>
+        <button class="btn btn-primary" onclick="loadLesson(${idx+1})" ${isLast?'disabled':''}>Next →</button>
+      </div>`}`;
+    renderSidebar();
+    window.scrollTo(0,0);
+    history.replaceState(null,'',`?course=${courseId}&lesson=${idx}`);
+    window.markDone=markDone;
+  }
+
+  function markDone(){
+    if(!user){showToast('Login untuk menyimpan progress','ℹ️');return;}
+    const lesson=allLessons[curIdx];
+    const u=Auth.getUsers();const ui=u.findIndex(x=>x.id===user.id);
+    if(ui>=0){
+      u[ui].completedLessons=u[ui].completedLessons||[];
+      const key=courseId+':'+lesson.id;
+      if(!u[ui].completedLessons.includes(key)){
+        u[ui].completedLessons.push(key);
+        u[ui].xp=(u[ui].xp||0)+10;
+        Auth.saveUsers(u);
+        Auth.updateSession({completedLessons:u[ui].completedLessons,xp:u[ui].xp});
+        user.completedLessons=u[ui].completedLessons;
+        user.xp=u[ui].xp;
+        showToast('+10 XP! Lesson selesai 🎉','⚡');
+        checkAndAwardBadges(user.id);
+      }
+      // Check course completion
+      if(getCourseProgress(courseId)===100&&!u[ui].completedCourses?.includes(courseId)){
+        u[ui].completedCourses=u[ui].completedCourses||[];
+        u[ui].completedCourses.push(courseId);
+        u[ui].xp=(u[ui].xp||0)+(course.xpReward||200);
+        Auth.saveUsers(u);
+        Auth.updateSession({completedCourses:u[ui].completedCourses,xp:u[ui].xp});
+        setTimeout(showCert,500);
+      }
+    }
+    loadLesson(curIdx);
+  }
+
+  function renderQuiz(lesson){
+    const qs=QUIZ_BANK.slice(0,5);let qAnswers={};let submitted=false;
+    setTimeout(()=>{
+      window.selectQopt=(qi,oi,ci)=>{if(submitted)return;qAnswers[qi]=oi;
+        document.querySelectorAll(`.qopt[data-q="${qi}"]`).forEach(b=>b.classList.remove('sel'));
+        const sel=document.querySelector(`.qopt[data-q="${qi}"][data-o="${oi}"]`);if(sel)sel.classList.add('sel');};
+      window.submitQuiz=()=>{
+        if(Object.keys(qAnswers).length<qs.length){showToast('Jawab semua soal dulu!','⚠️');return;}
+        submitted=true;let correct=0;
+        qs.forEach((q,qi)=>{const chosen=qAnswers[qi];if(chosen===q.answer)correct++;
+          document.querySelectorAll(`.qopt[data-q="${qi}"]`).forEach(b=>{
+            const oi=parseInt(b.dataset.o);b.classList.remove('sel');
+            if(oi===q.answer)b.classList.add('cor');else if(oi===chosen&&chosen!==q.answer)b.classList.add('wrg');
+          });});
+        const score=Math.round(correct/qs.length*100);const xp=Math.round(score/10)*4+10;
+        document.getElementById('quiz-submit').style.display='none';
+        document.getElementById('quiz-result').innerHTML=`<div style="padding:16px;background:${score>=70?'#ECFDF5':'#FEF2F2'};border:1px solid ${score>=70?'#6EE7B7':'#FCA5A5'};border-radius:12px;text-align:center;margin-top:12px">
+          <div style="font-size:2rem;font-weight:900;color:${score>=70?'#059669':'#DC2626'};margin-bottom:4px">${score}</div>
+          <div style="font-size:.85rem;color:var(--c-text-sub)">${correct}/${qs.length} benar · +${xp} XP</div></div>`;
+        if(user){XPSystem.awardCurrent(xp,'Quiz lesson: '+lesson.title);user.xp=(user.xp||0)+xp;showToast('+'+xp+' XP! Quiz selesai','⚡');markDone();}
+      };
+    },100);
+    return `<div style="margin-bottom:18px;padding:14px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:12px"><div style="font-size:.78rem;font-weight:600;color:#D97706">⚡ Mini Quiz — Jawab semua soal untuk mendapat XP!</div></div>
+      ${qs.map((q,qi)=>`<div style="margin-bottom:20px"><div style="font-weight:600;color:var(--c-text);margin-bottom:10px;line-height:1.6">${qi+1}. ${escHtml(q.text)}</div>
+        ${q.options.map((o,oi)=>`<button class="qopt" data-q="${qi}" data-o="${oi}" onclick="selectQopt(${qi},${oi},${q.answer})">
+          <div class="qkey">${['A','B','C','D'][oi]}</div><span>${escHtml(o)}</span>
+        </button>`).join('')}</div>`).join('')}
+      <button class="btn btn-primary" id="quiz-submit" onclick="submitQuiz()">⚡ Submit Quiz</button>
+      <div id="quiz-result"></div>`;
+  }
+
+  const QUIZ_BANK=[
+    {text:"Apa yang dimaksud kelangkaan?",options:["Banyak barang","Sumber daya terbatas, kebutuhan tak terbatas","Harga mahal","Uang sedikit"],answer:1},
+    {text:"Jika harga naik, maka permintaan...",options:["Naik","Tetap","Turun","Tidak ada"],answer:2},
+    {text:"Mean dari 2, 4, 6, 8 adalah...",options:["4","5","6","7"],answer:1},
+    {text:"2x + 6 = 12, nilai x adalah...",options:["2","3","4","6"],answer:1},
+    {text:"Pilihan kata dalam puisi disebut...",options:["Rima","Diksi","Majas","Alur"],answer:1},
+  ];
+
+  function showCert(){
+    document.getElementById('cert-body').innerHTML=`
+      <div style="position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#F59E0B,#EF4444,#F59E0B)"></div>
+      <div style="font-size:3.5rem;margin-bottom:12px">🎓</div>
+      <div style="font-size:.65rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#D97706;margin-bottom:14px">Sertifikat Penyelesaian</div>
+      <div style="font-size:.9rem;color:var(--c-text-sub);margin-bottom:6px">Diberikan kepada</div>
+      <div style="font-size:1.8rem;font-weight:900;color:var(--c-text);margin-bottom:4px">${escHtml(user?.name||'Peserta')}</div>
+      <div style="font-size:.9rem;color:var(--c-text-sub);margin-bottom:6px">atas keberhasilan menyelesaikan</div>
+      <div style="font-size:1.1rem;font-weight:700;color:var(--c-primary);margin-bottom:16px">${escHtml(course.title)}</div>
+      <div style="border-top:1px solid #FDE68A;padding-top:14px;font-size:.8rem;color:var(--c-text-sub);margin-bottom:20px">
+        ${new Date().toLocaleDateString('id-ID',{year:'numeric',month:'long',day:'numeric'})}<br>Kaizo Academic Platform
+      </div>
+      <div style="display:flex;gap:10px;justify-content:center">
+        <button class="btn" style="background:#FFFBEB;border-color:#F59E0B;color:#D97706" onclick="window.print()">📥 Print</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('cert-modal').style.display='none'">Tutup</button>
+      </div>`;
+    document.getElementById('cert-modal').style.display='flex';
+  }
+  window.showCert=showCert;
+
+  renderSidebar();
+  loadLesson(curIdx);
+}
+</script>
+</body>
+</html>
