@@ -13,50 +13,43 @@ nav{background:#fff;border-bottom:1px solid #E5E7EB;padding:0 24px;position:stic
 .nav-box{width:32px;height:32px;background:#2563EB;border-radius:8px;color:#fff;font-weight:800;font-size:.85rem;display:flex;align-items:center;justify-content:center}
 .sp{flex:1}
 .btn-sm{padding:7px 14px;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;border:1px solid #E5E7EB;background:#fff;color:#6B7280;font-family:'Inter',sans-serif;text-decoration:none;display:inline-flex;align-items:center}
-/* GATE */
 .gate{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:999}
 .gate-box{background:#fff;border-radius:20px;padding:40px 32px;width:100%;max-width:360px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.2)}
 .gate input{width:100%;padding:12px 14px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:.95rem;outline:none;font-family:'Inter',sans-serif;text-align:center;margin-bottom:10px}
 .gate input:focus{border-color:#2563EB}
 .gate-btn{width:100%;padding:13px;background:#2563EB;color:#fff;border:none;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif}
-/* LAYOUT */
 .layout{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 60px)}
 .sidebar{background:#fff;border-right:1px solid #E5E7EB;padding:16px 12px;position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto}
 .sb-sec{font-size:.68rem;font-weight:700;letter-spacing:2px;color:#9CA3AF;text-transform:uppercase;padding:14px 10px 6px}
 .sb-btn{display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:.84rem;font-weight:500;color:#6B7280;transition:.15s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;font-family:'Inter',sans-serif}
 .sb-btn:hover{background:#F3F4F6;color:#111}
 .sb-btn.active{background:#2563EB;color:#fff;font-weight:600}
-/* MAIN */
 .main{padding:32px 36px 80px;overflow-y:auto}
 .panel{display:none}.panel.active{display:block}
 .ptitle{font-size:1.3rem;font-weight:800;margin-bottom:4px}
 .psub{font-size:.85rem;color:#6B7280;margin-bottom:24px}
-/* CARDS */
+.online-badge{display:inline-flex;align-items:center;gap:5px;font-size:.72rem;font-weight:600;color:#059669;background:#ECFDF5;padding:3px 10px;border-radius:999px;border:1px solid #A7F3D0;margin-left:10px}
 .card{background:#fff;border:1px solid #E5E7EB;border-radius:14px;padding:22px;margin-bottom:14px}
-.card-title{font-weight:700;font-size:.95rem;margin-bottom:14px}
-/* STAT */
+.card-title{font-weight:700;font-size:.95rem;margin-bottom:14px;display:flex;align-items:center}
 .stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:20px}
 .stat-card{background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:18px;text-align:center}
 .stat-v{font-size:1.7rem;font-weight:800;color:#2563EB}
 .stat-l{font-size:.75rem;color:#9CA3AF;margin-top:3px}
-/* USER ROW */
 .urow{display:flex;align-items:center;gap:12px;padding:12px 16px;border:1px solid #E5E7EB;border-radius:12px;margin-bottom:8px;background:#fff;transition:.15s}
 .urow:hover{border-color:#BFDBFE;background:#F8FAFC}
 .av{width:40px;height:40px;border-radius:50%;background:#2563EB;color:#fff;font-size:.82rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-/* FORMS */
 label{display:block;font-size:.78rem;font-weight:600;color:#374151;margin-bottom:5px}
 input[type=text],input[type=number],input[type=color],input[type=password],textarea,select{padding:9px 12px;border:1.5px solid #E5E7EB;border-radius:9px;font-size:.88rem;font-family:'Inter',sans-serif;outline:none;background:#fff;width:100%}
 input:focus,textarea:focus,select:focus{border-color:#2563EB}
+input[type=color]{padding:3px 6px;height:40px;cursor:pointer}
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
 .fgroup{margin-bottom:12px}
-/* BUTTONS */
-.btn{padding:9px 18px;border-radius:9px;font-size:.85rem;font-weight:600;cursor:pointer;border:none;font-family:'Inter',sans-serif;display:inline-flex;align-items:center;gap:6px}
-.btn-blue{background:#2563EB;color:#fff}
-.btn-blue:hover{background:#1D4ED8}
+.btn{padding:9px 18px;border-radius:9px;font-size:.85rem;font-weight:600;cursor:pointer;border:none;font-family:'Inter',sans-serif;display:inline-flex;align-items:center;gap:6px;transition:.15s}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-blue{background:#2563EB;color:#fff}.btn-blue:hover:not(:disabled){background:#1D4ED8}
 .btn-green{background:#ECFDF5;border:1px solid #A7F3D0;color:#059669}
 .btn-red{background:#FEF2F2;border:1px solid #FECACA;color:#DC2626}
 .btn-gray{background:#F3F4F6;border:1px solid #E5E7EB;color:#374151}
-/* TOGGLE */
 .toggle-wrap{display:flex;align-items:center;justify-content:space-between;padding:14px;border:1px solid #E5E7EB;border-radius:12px;margin-bottom:8px;background:#fff}
 .toggle{position:relative;width:44px;height:24px;flex-shrink:0}
 .toggle input{opacity:0;width:0;height:0}
@@ -64,22 +57,15 @@ input:focus,textarea:focus,select:focus{border-color:#2563EB}
 .toggle-sl::before{content:'';position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
 .toggle input:checked+.toggle-sl{background:#2563EB}
 .toggle input:checked+.toggle-sl::before{transform:translateX(20px)}
-/* PRESET */
 .preset-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
 .preset{border:2px solid #E5E7EB;border-radius:12px;padding:14px;cursor:pointer;text-align:center;transition:.2s}
 .preset:hover{border-color:#2563EB;transform:translateY(-2px)}
 .preset.sel{border-color:#2563EB;background:#EFF6FF}
 .pdots{display:flex;gap:5px;justify-content:center;margin-bottom:8px}
 .pdot{width:20px;height:20px;border-radius:50%}
-/* NAV ITEM */
-.nav-item-row{display:flex;align-items:center;gap:8px;padding:10px 14px;border:1px solid #E5E7EB;border-radius:10px;margin-bottom:8px;background:#fff}
-/* COURSE MODULE */
-.module-row{border:1px solid #E5E7EB;border-radius:10px;overflow:hidden;margin-bottom:8px}
-.module-head{padding:11px 14px;background:#F8FAFC;font-weight:600;font-size:.88rem;display:flex;align-items:center;justify-content:space-between}
-.lesson-row-edit{padding:10px 14px;border-top:1px solid #E5E7EB;display:flex;align-items:center;gap:8px;font-size:.84rem}
-/* LOG */
+.nav-item-row{display:flex;align-items:center;gap:6px;padding:10px 14px;border:1px solid #E5E7EB;border-radius:10px;margin-bottom:8px;background:#fff}
 .log-item{padding:10px 14px;border:1px solid #E5E7EB;border-radius:8px;margin-bottom:6px;background:#fff;font-size:.82rem}
-/* TOAST */
+.saving{color:#9CA3AF;font-size:.78rem;margin-left:8px}
 .toast{position:fixed;bottom:24px;right:24px;background:#111;color:#fff;padding:12px 20px;border-radius:10px;font-size:.85rem;font-weight:600;z-index:9999;animation:fi .2s}
 @keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:768px){.layout{grid-template-columns:1fr}.sidebar{position:static;height:auto;display:flex;flex-wrap:wrap;gap:4px;padding:8px}.sb-sec{display:none}.sb-btn{padding:7px 10px;font-size:.78rem}.main{padding:20px 16px 60px}.frow{grid-template-columns:1fr}.preset-grid{grid-template-columns:repeat(2,1fr)}}
@@ -87,16 +73,15 @@ input:focus,textarea:focus,select:focus{border-color:#2563EB}
 </head>
 <body>
 
-<!-- GATE -->
 <div class="gate" id="gate">
   <div class="gate-box">
     <div style="font-size:2.8rem;margin-bottom:12px">🛠️</div>
     <div style="font-size:1.3rem;font-weight:800;margin-bottom:4px">Developer Panel</div>
-    <div style="font-size:.86rem;color:#777;margin-bottom:24px">Masukkan password untuk akses panel kontrol</div>
+    <div style="font-size:.86rem;color:#777;margin-bottom:24px">Masukkan password untuk akses</div>
     <input type="password" id="gate-pw" placeholder="Password developer" onkeydown="if(event.key==='Enter')checkGate()">
     <div id="gate-err" style="color:#DC2626;font-size:.82rem;margin-bottom:10px;display:none">❌ Password salah!</div>
     <button class="gate-btn" onclick="checkGate()">Masuk ke Panel →</button>
-    <div style="margin-top:14px"><a href="index.html" style="font-size:.82rem;color:#9CA3AF;text-decoration:none">← Kembali ke beranda</a></div>
+    <div style="margin-top:14px"><a href="index.html" style="font-size:.82rem;color:#9CA3AF;text-decoration:none">← Beranda</a></div>
   </div>
 </div>
 
@@ -105,12 +90,12 @@ input:focus,textarea:focus,select:focus{border-color:#2563EB}
     <a href="index.html" class="nav-logo"><div class="nav-box">K</div><span>KAIZO ACADEMIC</span></a>
     <div class="sp"></div>
     <span style="font-size:.78rem;font-weight:600;color:#7C3AED;background:#F5F3FF;padding:4px 12px;border-radius:999px;border:1px solid #DDD6FE">🛠 Developer Panel</span>
+    <span class="online-badge" id="conn-badge">🔴 Menghubungkan...</span>
     <a href="index.html" class="btn-sm">← Beranda</a>
   </div>
 </nav>
 
 <div class="layout">
-  <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="sb-sec">Overview</div>
     <button class="sb-btn active" onclick="go('dashboard',this)">📊 Dashboard</button>
@@ -130,13 +115,12 @@ input:focus,textarea:focus,select:focus{border-color:#2563EB}
     <button class="sb-btn" onclick="go('data',this)">🗄️ Data Manager</button>
   </div>
 
-  <!-- MAIN CONTENT -->
   <div class="main">
 
     <!-- DASHBOARD -->
     <div class="panel active" id="p-dashboard">
       <div class="ptitle">📊 Dashboard</div>
-      <div class="psub">Overview platform Kaizo Academic</div>
+      <div class="psub">Overview platform Kaizo Academic secara real-time</div>
       <div class="stat-grid">
         <div class="stat-card"><div class="stat-v" id="d-users">-</div><div class="stat-l">Total Users</div></div>
         <div class="stat-card"><div class="stat-v" id="d-owners">-</div><div class="stat-l">Owners</div></div>
@@ -148,38 +132,36 @@ input:focus,textarea:focus,select:focus{border-color:#2563EB}
 
     <!-- THEME EDITOR -->
     <div class="panel" id="p-theme">
-      <div class="ptitle">🎨 Theme Editor</div>
-      <div class="psub">Kustomisasi tampilan akademi</div>
+      <div class="ptitle">🎨 Theme Editor <span class="online-badge">🌐 Online</span></div>
+      <div class="psub">Perubahan langsung berlaku untuk semua user</div>
       <div class="card">
         <div class="card-title">Preset Tema</div>
         <div class="preset-grid" id="preset-grid"></div>
       </div>
       <div class="card">
-        <div class="card-title">Warna Custom</div>
+        <div class="card-title">Warna & Tipografi</div>
         <div class="frow">
-          <div class="fgroup"><label>Warna Utama</label><input type="color" id="t-primary" oninput="previewTheme()"></div>
-          <div class="fgroup"><label>Background</label><input type="color" id="t-bg" oninput="previewTheme()"></div>
-          <div class="fgroup"><label>Background 2</label><input type="color" id="t-bg2" oninput="previewTheme()"></div>
-          <div class="fgroup"><label>Teks</label><input type="color" id="t-text" oninput="previewTheme()"></div>
+          <div class="fgroup"><label>🔵 Warna Utama</label><input type="color" id="t-primary"></div>
+          <div class="fgroup"><label>⬜ Background</label><input type="color" id="t-bg"></div>
+          <div class="fgroup"><label>🔲 Background 2</label><input type="color" id="t-bg2"></div>
+          <div class="fgroup"><label>⬛ Warna Teks</label><input type="color" id="t-text"></div>
         </div>
         <div class="frow">
           <div class="fgroup"><label>Font</label>
-            <select id="t-font" oninput="previewTheme()">
+            <select id="t-font">
               <option value="Inter">Inter</option><option value="Poppins">Poppins</option>
               <option value="Roboto">Roboto</option><option value="system-ui">System UI</option>
-              <option value="Georgia">Georgia</option><option value="monospace">Monospace</option>
             </select>
           </div>
           <div class="fgroup"><label>Ukuran Font</label>
-            <select id="t-size" oninput="previewTheme()">
-              <option value="small">Kecil (14px)</option><option value="medium" selected>Sedang (16px)</option>
-              <option value="large">Besar (18px)</option><option value="xlarge">Sangat Besar (20px)</option>
+            <select id="t-size">
+              <option value="small">Kecil</option><option value="medium">Sedang</option>
+              <option value="large">Besar</option><option value="xlarge">Sangat Besar</option>
             </select>
           </div>
         </div>
-        <div class="fgroup"><label>URL Logo (opsional)</label><input type="text" id="t-logo" placeholder="https://..."></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
-          <button class="btn btn-blue" onclick="saveTheme()">💾 Simpan Tema</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-blue" onclick="saveTheme()" id="btn-theme">💾 Simpan & Terapkan ke Semua</button>
           <button class="btn btn-gray" onclick="resetTheme()">↺ Reset Default</button>
         </div>
       </div>
@@ -187,63 +169,69 @@ input:focus,textarea:focus,select:focus{border-color:#2563EB}
 
     <!-- LOBBY MANAGER -->
     <div class="panel" id="p-lobby">
-      <div class="ptitle">🏠 Lobby Manager</div>
-      <div class="psub">Edit nama dan tampilan halaman utama</div>
+      <div class="ptitle">🏠 Lobby Manager <span class="online-badge">🌐 Online</span></div>
+      <div class="psub">Edit teks halaman utama, berlaku untuk semua user</div>
       <div class="card">
         <div class="fgroup"><label>Nama Akademi</label><input type="text" id="l-name" placeholder="KAIZO ACADEMIC"></div>
         <div class="fgroup"><label>Tagline</label><input type="text" id="l-tag" placeholder="Learn · Play · Grow"></div>
-        <div class="fgroup"><label>Judul Hero</label><input type="text" id="l-hero" placeholder="Belajar Lebih Cerdas, Bukan Lebih Keras"></div>
-        <div class="fgroup"><label>Deskripsi Hero</label><textarea id="l-desc" rows="3" placeholder="Deskripsi platform..."></textarea></div>
-        <button class="btn btn-blue" onclick="saveLobby()">💾 Simpan Lobby</button>
+        <div class="fgroup"><label>Judul Hero (banner besar)</label><input type="text" id="l-hero" placeholder="Belajar Lebih Cerdas, Bukan Lebih Keras"></div>
+        <div class="fgroup"><label>Deskripsi Hero</label><textarea id="l-desc" rows="3" placeholder="Deskripsi singkat platform..."></textarea></div>
+        <div class="fgroup"><label>Teks Tombol Utama</label><input type="text" id="l-btn1" placeholder="🚀 Mulai Belajar Gratis"></div>
+        <div class="fgroup"><label>Teks Tombol Kedua</label><input type="text" id="l-btn2" placeholder="📚 Lihat Courses"></div>
+        <button class="btn btn-blue" onclick="saveLobby()" id="btn-lobby">💾 Simpan & Terapkan</button>
       </div>
     </div>
 
     <!-- MENU MANAGER -->
     <div class="panel" id="p-menu">
-      <div class="ptitle">📌 Menu Manager</div>
-      <div class="psub">Atur item navigasi</div>
+      <div class="ptitle">📌 Menu Manager <span class="online-badge">🌐 Online</span></div>
+      <div class="psub">Atur item navigasi, berlaku untuk semua user</div>
       <div class="card">
         <div id="menu-list"></div>
-        <button class="btn btn-green" onclick="addMenuItem()" style="margin-top:8px">+ Tambah Menu</button>
-        <button class="btn btn-blue" onclick="saveMenu()" style="margin-top:8px;margin-left:8px">💾 Simpan</button>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="btn btn-green" onclick="addMenuItem()">+ Tambah Menu</button>
+          <button class="btn btn-blue" onclick="saveMenu()" id="btn-menu">💾 Simpan & Terapkan</button>
+        </div>
       </div>
     </div>
 
     <!-- COURSE MANAGER -->
     <div class="panel" id="p-courses">
-      <div class="ptitle">🎓 Course Manager</div>
-      <div class="psub">Kelola course dan materi pembelajaran</div>
+      <div class="ptitle">🎓 Course Manager <span class="online-badge">🌐 Online</span></div>
+      <div class="psub">Tambah/edit course, langsung tampil ke semua user</div>
       <div id="course-list"></div>
-      <button class="btn btn-green" onclick="addCourse()">+ Tambah Course</button>
+      <button class="btn btn-green" onclick="addCourse()">+ Tambah Course Baru</button>
     </div>
 
     <!-- GAME MANAGER -->
     <div class="panel" id="p-games">
-      <div class="ptitle">🎮 Game Manager</div>
+      <div class="ptitle">🎮 Game Manager <span class="online-badge">🌐 Online</span></div>
       <div class="psub">Aktifkan/nonaktifkan game dan atur XP reward</div>
-      <div id="game-list"></div>
-      <button class="btn btn-blue" onclick="saveGames()" style="margin-top:8px">💾 Simpan Pengaturan</button>
+      <div class="card">
+        <div id="game-list"></div>
+        <button class="btn btn-blue" onclick="saveGames()" id="btn-games" style="margin-top:8px">💾 Simpan & Terapkan</button>
+      </div>
     </div>
 
     <!-- USER MANAGER -->
     <div class="panel" id="p-users">
-      <div class="ptitle">👥 User Manager</div>
-      <div class="psub">Lihat semua pengguna terdaftar</div>
+      <div class="ptitle">👥 User Manager <span class="online-badge">🌐 Real-time</span></div>
+      <div class="psub">Semua pengguna terdaftar</div>
       <div style="margin-bottom:14px"><input type="text" id="user-search" placeholder="🔍 Cari nama atau email..." oninput="renderUsers()" style="max-width:300px"></div>
       <div id="user-list"><div style="color:#9CA3AF;text-align:center;padding:20px">Memuat...</div></div>
     </div>
 
     <!-- ROLE MANAGER -->
     <div class="panel" id="p-roles">
-      <div class="ptitle">🎭 Role Manager</div>
-      <div class="psub">Ubah role pengguna (hanya Owner)</div>
+      <div class="ptitle">🎭 Role Manager <span class="online-badge">🌐 Real-time</span></div>
+      <div class="psub">Ubah role pengguna — langsung berlaku</div>
       <div id="role-list"><div style="color:#9CA3AF;text-align:center;padding:20px">Memuat...</div></div>
     </div>
 
     <!-- XP CONTROL -->
     <div class="panel" id="p-xp">
-      <div class="ptitle">⚡ XP Control</div>
-      <div class="psub">Berikan XP ke pengguna</div>
+      <div class="ptitle">⚡ XP Control <span class="online-badge">🌐 Real-time</span></div>
+      <div class="psub">Beri XP ke pengguna secara online</div>
       <div class="card">
         <div class="card-title">Beri XP ke User Tertentu</div>
         <div class="frow">
@@ -261,22 +249,22 @@ input:focus,textarea:focus,select:focus{border-color:#2563EB}
         </div>
       </div>
       <div class="card">
-        <div class="card-title">📋 Log XP Terbaru</div>
+        <div class="card-title">📋 Log XP</div>
         <div id="xp-log"></div>
       </div>
     </div>
 
     <!-- FEATURE TOGGLE -->
     <div class="panel" id="p-features">
-      <div class="ptitle">🔧 Feature Toggle</div>
-      <div class="psub">Aktifkan atau nonaktifkan fitur platform</div>
+      <div class="ptitle">🔧 Feature Toggle <span class="online-badge">🌐 Online</span></div>
+      <div class="psub">Aktifkan/nonaktifkan fitur, berlaku semua user</div>
       <div class="card">
-        <div class="toggle-wrap"><div><div style="font-weight:600;font-size:.9rem">🎮 Game Hub</div><div style="font-size:.78rem;color:#9CA3AF">Semua game edukatif</div></div><label class="toggle"><input type="checkbox" id="ft-games" checked><span class="toggle-sl"></span></label></div>
-        <div class="toggle-wrap"><div><div style="font-weight:600;font-size:.9rem">💬 Community</div><div style="font-size:.78rem;color:#9CA3AF">Forum diskusi pengguna</div></div><label class="toggle"><input type="checkbox" id="ft-community" checked><span class="toggle-sl"></span></label></div>
-        <div class="toggle-wrap"><div><div style="font-weight:600;font-size:.9rem">🏅 Sertifikat</div><div style="font-size:.78rem;color:#9CA3AF">Sertifikat digital penyelesaian</div></div><label class="toggle"><input type="checkbox" id="ft-cert" checked><span class="toggle-sl"></span></label></div>
-        <div class="toggle-wrap"><div><div style="font-weight:600;font-size:.9rem">⚡ Gamifikasi</div><div style="font-size:.78rem;color:#9CA3AF">XP, badge, dan leaderboard</div></div><label class="toggle"><input type="checkbox" id="ft-gamify" checked><span class="toggle-sl"></span></label></div>
-        <div class="toggle-wrap"><div><div style="font-weight:600;font-size:.9rem">🔔 Notifikasi</div><div style="font-size:.78rem;color:#9CA3AF">Toast notifikasi aktivitas</div></div><label class="toggle"><input type="checkbox" id="ft-notif" checked><span class="toggle-sl"></span></label></div>
-        <button class="btn btn-blue" onclick="saveFeatures()" style="margin-top:8px">💾 Simpan</button>
+        <div class="toggle-wrap"><div><div style="font-weight:600">🎮 Game Hub</div><div style="font-size:.78rem;color:#9CA3AF">Semua game edukatif</div></div><label class="toggle"><input type="checkbox" id="ft-games" checked><span class="toggle-sl"></span></label></div>
+        <div class="toggle-wrap"><div><div style="font-weight:600">💬 Community</div><div style="font-size:.78rem;color:#9CA3AF">Forum diskusi pengguna</div></div><label class="toggle"><input type="checkbox" id="ft-community" checked><span class="toggle-sl"></span></label></div>
+        <div class="toggle-wrap"><div><div style="font-weight:600">🏅 Sertifikat</div><div style="font-size:.78rem;color:#9CA3AF">Sertifikat digital</div></div><label class="toggle"><input type="checkbox" id="ft-cert" checked><span class="toggle-sl"></span></label></div>
+        <div class="toggle-wrap"><div><div style="font-weight:600">⚡ Gamifikasi</div><div style="font-size:.78rem;color:#9CA3AF">XP, badge, leaderboard</div></div><label class="toggle"><input type="checkbox" id="ft-gamify" checked><span class="toggle-sl"></span></label></div>
+        <div class="toggle-wrap"><div><div style="font-weight:600">🔔 Notifikasi</div><div style="font-size:.78rem;color:#9CA3AF">Toast notifikasi</div></div><label class="toggle"><input type="checkbox" id="ft-notif" checked><span class="toggle-sl"></span></label></div>
+        <button class="btn btn-blue" onclick="saveFeatures()" style="margin-top:8px">💾 Simpan & Terapkan</button>
       </div>
     </div>
 
@@ -288,21 +276,16 @@ input:focus,textarea:focus,select:focus{border-color:#2563EB}
         <div class="card-title">Export Data</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn btn-blue" onclick="exportUsers()">⬇️ Export Users (JSON)</button>
-          <button class="btn btn-gray" onclick="exportSettings()">⬇️ Export Pengaturan</button>
+          <button class="btn btn-gray" onclick="exportSettings()">⬇️ Export Semua Settings</button>
         </div>
-      </div>
-      <div class="card">
-        <div class="card-title">Import Data</div>
-        <div class="fgroup"><label>Import Pengaturan (JSON)</label><input type="file" id="import-file" accept=".json" style="padding:6px"></div>
-        <button class="btn btn-green" onclick="importSettings()">⬆️ Import</button>
       </div>
       <div class="card" style="border-color:#FECACA">
         <div class="card-title" style="color:#DC2626">⚠️ Danger Zone</div>
-        <div style="font-size:.83rem;color:#777;margin-bottom:14px">Tindakan ini tidak bisa dibatalkan!</div>
+        <div style="font-size:.83rem;color:#777;margin-bottom:14px">Tidak bisa dibatalkan!</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn btn-red" onclick="resetProgress()">🗑️ Reset Progress Semua</button>
-          <button class="btn btn-red" onclick="resetThemeData()">🗑️ Reset Tema</button>
-          <button class="btn btn-red" onclick="resetAll()">💀 Reset SEMUA Data</button>
+          <button class="btn btn-red" onclick="resetProgress()">🗑️ Reset Progress Semua User</button>
+          <button class="btn btn-red" onclick="resetAllSettings()">🗑️ Reset Semua Settings</button>
+          <button class="btn btn-red" onclick="resetAll()">💀 Hapus SEMUA User</button>
         </div>
       </div>
     </div>
@@ -315,55 +298,102 @@ var SB='https://kjcifrrkfpifdrwjufau.supabase.co';
 var KEY='sb_publishable_8sk82afIl_YihEiIFkvCwQ_LDz1I5C6';
 var PASS='Kaizzo24$';
 var users=[];
-var xpLogs=JSON.parse(localStorage.getItem('kaizo:xp_logs')||'[]');
+var xpLogs=[];
+var settings={};
 
-// ── Helpers ──
-async function sbGet(p){var r=await fetch(SB+'/rest/v1/'+p,{headers:{'apikey':KEY,'Authorization':'Bearer '+KEY}});return r.json();}
-async function sbPatch(id,d){var r=await fetch(SB+'/rest/v1/users?id=eq.'+id,{method:'PATCH',headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify(d)});return r.ok;}
-async function sbDel(p){var r=await fetch(SB+'/rest/v1/'+p,{method:'DELETE',headers:{'apikey':KEY,'Authorization':'Bearer '+KEY}});return r.ok;}
-function ks(k){try{return JSON.parse(localStorage.getItem('kaizo:'+k)||'null');}catch(e){return null;}}
-function ksSet(k,v){localStorage.setItem('kaizo:'+k,JSON.stringify(v));}
-function ini(n){return(n||'?').split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2);}
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function roleLabel(r){return{owner:'👑 Owner',developer:'🛠 Developer',creator:'✏️ Creator',user:'🎓 User'}[r]||r;}
-function roleColor(r){return{owner:'#D97706',developer:'#0891B2',creator:'#7C3AED',user:'#2563EB'}[r]||'#9CA3AF';}
-function toast(m){var t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(function(){t.remove();},3000);}
+// ── Supabase Helpers ──
+async function sbGet(p){
+  var r=await fetch(SB+'/rest/v1/'+p,{headers:{'apikey':KEY,'Authorization':'Bearer '+KEY}});
+  return r.json();
+}
+async function sbPost(p,d){
+  var r=await fetch(SB+'/rest/v1/'+p,{method:'POST',headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify(d)});
+  return{ok:r.ok,data:await r.json()};
+}
+async function sbPatch(table,filter,d){
+  var r=await fetch(SB+'/rest/v1/'+table+'?'+filter,{method:'PATCH',headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify(d)});
+  return r.ok;
+}
+async function sbUpsert(table,d){
+  var r=await fetch(SB+'/rest/v1/'+table,{method:'POST',headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'},body:JSON.stringify(d)});
+  return r.ok;
+}
+async function sbDel(p){
+  var r=await fetch(SB+'/rest/v1/'+p,{method:'DELETE',headers:{'apikey':KEY,'Authorization':'Bearer '+KEY}});
+  return r.ok;
+}
 
-// ── Gate ──
+// ── Get/Set settings online ──
+async function getSetting(key){
+  try{
+    var d=await sbGet('platform_settings?key=eq.'+key+'&select=value');
+    if(d&&d.length>0)return d[0].value;
+  }catch(e){}
+  return null;
+}
+async function setSetting(key,value){
+  return await sbUpsert('platform_settings',[{key:key,value:value,updated_at:new Date().toISOString()}]);
+}
+async function loadAllSettings(){
+  try{
+    var d=await sbGet('platform_settings?select=key,value');
+    settings={};
+    if(Array.isArray(d))d.forEach(function(r){settings[r.key]=r.value;});
+    document.getElementById('conn-badge').textContent='🟢 Online';
+    document.getElementById('conn-badge').style.color='#059669';
+  }catch(e){
+    document.getElementById('conn-badge').textContent='🔴 Offline';
+  }
+}
+
+// ── Session & Gate ──
+function sess(){try{return JSON.parse(localStorage.getItem('kaizo:session'));}catch(e){return null;}}
 function checkGate(){
   var pw=document.getElementById('gate-pw').value;
-  var sess=ks('session');
-  if(pw===PASS||(sess&&(sess.role==='developer'||sess.role==='owner'))){
-    document.getElementById('gate').style.display='none';loadAll();
+  var s=sess();
+  if(pw===PASS||(s&&(s.role==='developer'||s.role==='owner'))){
+    document.getElementById('gate').style.display='none';
+    loadAll();
   }else{document.getElementById('gate-err').style.display='block';}
 }
-// Auto-unlock for dev/owner
-try{var s=ks('session');if(s&&(s.role==='developer'||s.role==='owner')){document.getElementById('gate').style.display='none';setTimeout(loadAll,100);}}catch(e){}
+try{var _s=sess();if(_s&&(_s.role==='developer'||_s.role==='owner')){document.getElementById('gate').style.display='none';setTimeout(loadAll,100);}}catch(e){}
 
-// ── Navigation ──
+// ── Nav ──
 function go(id,btn){
   document.querySelectorAll('.sb-btn').forEach(function(b){b.classList.remove('active');});
   if(btn)btn.classList.add('active');
   document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
   document.getElementById('p-'+id).classList.add('active');
   if(id==='users')renderUsers();
-  if(id==='roles')renderRoles();
-  if(id==='xp'){renderXPSel();renderXPLog();}
-  if(id==='theme')loadThemeEditor();
-  if(id==='lobby')loadLobby();
-  if(id==='menu')renderMenu();
-  if(id==='courses')renderCourses();
-  if(id==='games')renderGames();
-  if(id==='features')loadFeatures();
+  else if(id==='roles')renderRoles();
+  else if(id==='xp'){renderXPSel();renderXPLog();}
+  else if(id==='theme')loadThemeEditor();
+  else if(id==='lobby')loadLobby();
+  else if(id==='menu')renderMenu();
+  else if(id==='courses')renderCourseMgr();
+  else if(id==='games')renderGames();
+  else if(id==='features')loadFeatures();
 }
 
 // ── Load All ──
 async function loadAll(){
-  try{users=await sbGet('users?select=*&order=created_at.desc');renderDashboard();}
-  catch(e){toast('Gagal memuat: '+e.message);}
+  await loadAllSettings();
+  try{users=await sbGet('users?select=*&order=created_at.desc');}catch(e){users=[];}
+  try{
+    var xl=await sbGet('xp_logs?select=*&order=created_at.desc&limit=50');
+    xpLogs=Array.isArray(xl)?xl:[];
+  }catch(e){xpLogs=[];}
+  renderDashboard();
 }
 
 // ── DASHBOARD ──
+function ini(n){return(n||'?').split(' ').map(function(w){return w[0];}).join('').toUpperCase().slice(0,2);}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+function roleLabel(r){return{owner:'👑 Owner',developer:'🛠 Developer',creator:'✏️ Creator',user:'🎓 User'}[r]||r;}
+function roleColor(r){return{owner:'#D97706',developer:'#0891B2',creator:'#7C3AED',user:'#2563EB'}[r]||'#9CA3AF';}
+function toast(m,c){var t=document.createElement('div');t.className='toast';t.textContent=m;if(c)t.style.background=c;document.body.appendChild(t);setTimeout(function(){t.remove();},3000);}
+function setBtnLoading(id,loading,label){var b=document.getElementById(id);if(!b)return;b.disabled=loading;b.textContent=loading?'⏳ Menyimpan...':label;}
+
 function renderDashboard(){
   document.getElementById('d-users').textContent=users.length;
   document.getElementById('d-owners').textContent=users.filter(function(u){return u.role==='owner';}).length;
@@ -377,112 +407,152 @@ function renderDashboard(){
 
 // ── THEME EDITOR ──
 var PRESETS=[
-  {name:'Default',colors:['#2563EB','#FFFFFF','#F8FAFC','#111827','#E5E7EB']},
-  {name:'Dark',colors:['#60A5FA','#111827','#1F2937','#F9FAFB','#374151']},
-  {name:'Green',colors:['#059669','#FFFFFF','#F0FDF4','#111827','#D1FAE5']},
-  {name:'Purple',colors:['#7C3AED','#FFFFFF','#FAF5FF','#111827','#EDE9FE']},
-  {name:'Warm',colors:['#D97706','#FFFBEB','#FEF3C7','#111827','#FDE68A']},
-  {name:'Neon',colors:['#00FF88','#0A0A0A','#111111','#F0FFF0','#1A1A1A']},
+  {name:'Default',c:['#2563EB','#FFFFFF','#F8FAFC','#111827']},
+  {name:'Dark',c:['#60A5FA','#111827','#1F2937','#F9FAFB']},
+  {name:'Green',c:['#059669','#FFFFFF','#F0FDF4','#111827']},
+  {name:'Purple',c:['#7C3AED','#FFFFFF','#FAF5FF','#111827']},
+  {name:'Warm',c:['#D97706','#FFFBEB','#FEF3C7','#111827']},
+  {name:'Neon',c:['#22C55E','#0A0A0A','#111111','#F0FFF0']},
 ];
 function loadThemeEditor(){
-  var t=ks('theme')||{};
+  var t=settings.theme||{};
   document.getElementById('t-primary').value=t.colorPrimary||'#2563EB';
   document.getElementById('t-bg').value=t.colorBg||'#FFFFFF';
   document.getElementById('t-bg2').value=t.colorBg2||'#F8FAFC';
   document.getElementById('t-text').value=t.colorText||'#111827';
   document.getElementById('t-font').value=t.font||'Inter';
   document.getElementById('t-size').value=t.fontSize||'medium';
-  document.getElementById('t-logo').value=t.logoUrl||'';
   document.getElementById('preset-grid').innerHTML=PRESETS.map(function(p,i){
-    return'<div class="preset" onclick="applyPreset('+i+')"><div class="pdots">'+p.colors.slice(0,3).map(function(c){return'<div class="pdot" style="background:'+c+'"></div>';}).join('')+'</div><div style="font-size:.8rem;font-weight:600">'+p.name+'</div></div>';
+    return'<div class="preset" onclick="applyPreset('+i+')" id="pr'+i+'"><div class="pdots">'+p.c.slice(0,3).map(function(c){return'<div class="pdot" style="background:'+c+';border:1px solid #E5E7EB"></div>';}).join('')+'</div><div style="font-size:.8rem;font-weight:600">'+p.name+'</div></div>';
   }).join('');
 }
 function applyPreset(i){
   var p=PRESETS[i];
-  document.getElementById('t-primary').value=p.colors[0];
-  document.getElementById('t-bg').value=p.colors[1];
-  document.getElementById('t-bg2').value=p.colors[2];
-  document.getElementById('t-text').value=p.colors[3];
+  document.getElementById('t-primary').value=p.c[0];
+  document.getElementById('t-bg').value=p.c[1];
+  document.getElementById('t-bg2').value=p.c[2];
+  document.getElementById('t-text').value=p.c[3];
   document.querySelectorAll('.preset').forEach(function(el,j){el.classList.toggle('sel',j===i);});
-  previewTheme();
 }
-function previewTheme(){
-  var r=document.documentElement;
-  r.style.setProperty('--c-primary',document.getElementById('t-primary').value);
-}
-function saveTheme(){
-  var t=ks('theme')||{};
+async function saveTheme(){
+  setBtnLoading('btn-theme',true,'');
+  var t=settings.theme||{};
   t.colorPrimary=document.getElementById('t-primary').value;
   t.colorBg=document.getElementById('t-bg').value;
   t.colorBg2=document.getElementById('t-bg2').value;
   t.colorText=document.getElementById('t-text').value;
   t.font=document.getElementById('t-font').value;
   t.fontSize=document.getElementById('t-size').value;
-  t.logoUrl=document.getElementById('t-logo').value;
-  ksSet('theme',t);toast('✅ Tema berhasil disimpan!');
+  var ok=await setSetting('theme',t);
+  if(ok){settings.theme=t;toast('✅ Tema disimpan! Semua user akan melihat perubahan.',  '#059669');}
+  else toast('❌ Gagal menyimpan!','#DC2626');
+  setBtnLoading('btn-theme',false,'💾 Simpan & Terapkan ke Semua');
 }
-function resetTheme(){ksSet('theme',{});loadThemeEditor();toast('Tema direset ke default.');}
+async function resetTheme(){
+  var def={colorPrimary:'#2563EB',colorBg:'#FFFFFF',colorBg2:'#F8FAFC',colorText:'#111827',font:'Inter',fontSize:'medium'};
+  await setSetting('theme',def);settings.theme=def;loadThemeEditor();toast('Tema direset ke default.');
+}
 
 // ── LOBBY MANAGER ──
 function loadLobby(){
-  var l=ks('lobby')||{};
-  var t=ks('theme')||{};
+  var t=settings.theme||{};
+  var l=settings.lobby||{};
   document.getElementById('l-name').value=t.academyName||'KAIZO ACADEMIC';
   document.getElementById('l-tag').value=t.academyTagline||'Learn · Play · Grow';
   document.getElementById('l-hero').value=l.heroTitle||'Belajar Lebih Cerdas, Bukan Lebih Keras';
   document.getElementById('l-desc').value=l.heroDesc||'Platform akademi modern dengan course interaktif, 10 game edukatif, sistem XP, dan sertifikat digital.';
+  document.getElementById('l-btn1').value=l.btn1||'🚀 Mulai Belajar Gratis';
+  document.getElementById('l-btn2').value=l.btn2||'📚 Lihat Courses';
 }
-function saveLobby(){
-  var t=ks('theme')||{};
-  t.academyName=document.getElementById('l-name').value;
-  t.academyTagline=document.getElementById('l-tag').value;
-  ksSet('theme',t);
-  ksSet('lobby',{heroTitle:document.getElementById('l-hero').value,heroDesc:document.getElementById('l-desc').value});
-  toast('✅ Lobby berhasil disimpan!');
+async function saveLobby(){
+  setBtnLoading('btn-lobby',true,'');
+  var t=settings.theme||{};
+  t.academyName=document.getElementById('l-name').value||'KAIZO ACADEMIC';
+  t.academyTagline=document.getElementById('l-tag').value||'Learn · Play · Grow';
+  var l={
+    heroTitle:document.getElementById('l-hero').value,
+    heroDesc:document.getElementById('l-desc').value,
+    btn1:document.getElementById('l-btn1').value,
+    btn2:document.getElementById('l-btn2').value,
+  };
+  var ok1=await setSetting('theme',t);
+  var ok2=await setSetting('lobby',l);
+  if(ok1&&ok2){settings.theme=t;settings.lobby=l;toast('✅ Lobby disimpan! Berlaku untuk semua user.','#059669');}
+  else toast('❌ Gagal menyimpan!','#DC2626');
+  setBtnLoading('btn-lobby',false,'💾 Simpan & Terapkan');
 }
 
 // ── MENU MANAGER ──
 var menuItems=[];
 function renderMenu(){
-  menuItems=ks('theme')?.navItems||[{label:'Home',icon:'🏠',href:'index.html'},{label:'Courses',icon:'🎓',href:'courses.html'},{label:'Games',icon:'🎮',href:'games.html'},{label:'Community',icon:'💬',href:'community.html'},{label:'Leaderboard',icon:'🏆',href:'leaderboard.html'}];
+  menuItems=settings.nav_items||[{label:'Home',icon:'🏠',href:'index.html'},{label:'Courses',icon:'🎓',href:'courses.html'},{label:'Games',icon:'🎮',href:'games.html'},{label:'Community',icon:'💬',href:'community.html'},{label:'Leaderboard',icon:'🏆',href:'leaderboard.html'}];
   document.getElementById('menu-list').innerHTML=menuItems.map(function(item,i){
-    return'<div class="nav-item-row"><span>'+item.icon+'</span><input value="'+esc(item.label)+'" oninput="menuItems['+i+'].label=this.value" style="flex:1;margin:0 6px;border-radius:6px;padding:6px 10px;border:1px solid #E5E7EB;font-size:.84rem;font-family:\'Inter\',sans-serif"><input value="'+esc(item.href)+'" oninput="menuItems['+i+'].href=this.value" style="flex:1.5;margin-right:6px;border-radius:6px;padding:6px 10px;border:1px solid #E5E7EB;font-size:.84rem;font-family:\'Inter\',sans-serif"><button onclick="delMenuItem('+i+')" style="background:#FEF2F2;border:1px solid #FECACA;border-radius:6px;padding:5px 10px;cursor:pointer;color:#DC2626;font-size:.8rem">✕</button></div>';
+    return'<div class="nav-item-row">'
+      +'<input value="'+esc(item.icon||'')+'" oninput="menuItems['+i+'].icon=this.value" style="width:48px;text-align:center;font-size:1.1rem;padding:6px;border:1px solid #E5E7EB;border-radius:8px;font-family:\'Inter\',sans-serif">'
+      +'<input value="'+esc(item.label||'')+'" oninput="menuItems['+i+'].label=this.value" placeholder="Label" style="flex:1;margin:0 6px;border-radius:8px;padding:7px 10px;border:1px solid #E5E7EB;font-size:.84rem;font-family:\'Inter\',sans-serif">'
+      +'<input value="'+esc(item.href||'')+'" oninput="menuItems['+i+'].href=this.value" placeholder="URL" style="flex:1.5;margin-right:6px;border-radius:8px;padding:7px 10px;border:1px solid #E5E7EB;font-size:.84rem;font-family:\'Inter\',sans-serif">'
+      +'<button onclick="delMenuItem('+i+')" style="background:#FEF2F2;border:1px solid #FECACA;border-radius:7px;padding:6px 11px;cursor:pointer;color:#DC2626;font-size:.82rem;font-family:\'Inter\',sans-serif">✕</button>'
+    +'</div>';
   }).join('');
 }
 function addMenuItem(){menuItems.push({label:'Menu Baru',icon:'📄',href:'#'});renderMenu();}
 function delMenuItem(i){menuItems.splice(i,1);renderMenu();}
-function saveMenu(){var t=ks('theme')||{};t.navItems=menuItems;ksSet('theme',t);toast('✅ Menu disimpan!');}
+async function saveMenu(){
+  setBtnLoading('btn-menu',true,'');
+  var ok=await setSetting('nav_items',menuItems);
+  if(ok){settings.nav_items=menuItems;toast('✅ Menu disimpan!','#059669');}
+  else toast('❌ Gagal!','#DC2626');
+  setBtnLoading('btn-menu',false,'💾 Simpan & Terapkan');
+}
 
 // ── COURSE MANAGER ──
 var coursesData=[];
-function renderCourses(){
-  coursesData=ks('courses')||getDefaultCourses();
+function renderCourseMgr(){
+  coursesData=settings.courses||getDefaultCourses();
   document.getElementById('course-list').innerHTML=coursesData.map(function(c,ci){
-    return'<div class="card" style="margin-bottom:12px">'
-      +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">'
-        +'<input value="'+esc(c.icon||'📚')+'" oninput="coursesData['+ci+'].icon=this.value" style="width:50px;text-align:center;font-size:1.2rem;padding:6px;border:1px solid #E5E7EB;border-radius:8px;font-family:\'Inter\',sans-serif">'
-        +'<input value="'+esc(c.title)+'" oninput="coursesData['+ci+'].title=this.value" style="flex:1;font-weight:700;font-size:.95rem;padding:8px 12px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:\'Inter\',sans-serif" placeholder="Judul Course">'
-        +'<button onclick="delCourse('+ci+')" style="padding:7px 12px;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;cursor:pointer;color:#DC2626;font-family:\'Inter\',sans-serif;font-size:.8rem">Hapus</button>'
+    return'<div class="card" style="margin-bottom:14px">'
+      +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">'
+        +'<input value="'+esc(c.icon||'📚')+'" oninput="coursesData['+ci+'].icon=this.value" style="width:50px;text-align:center;font-size:1.3rem;padding:6px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:\'Inter\',sans-serif" placeholder="📚">'
+        +'<input value="'+esc(c.title||'')+'" oninput="coursesData['+ci+'].title=this.value" placeholder="Judul Course" style="flex:1;font-weight:700;font-size:.95rem;padding:9px 12px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:\'Inter\',sans-serif">'
+        +'<button onclick="saveSingleCourse('+ci+')" style="padding:8px 14px;background:#ECFDF5;border:1px solid #A7F3D0;border-radius:8px;cursor:pointer;color:#059669;font-family:\'Inter\',sans-serif;font-size:.82rem;white-space:nowrap">💾 Simpan</button>'
+        +'<button onclick="delCourse('+ci+')" style="padding:8px 12px;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;cursor:pointer;color:#DC2626;font-family:\'Inter\',sans-serif;font-size:.82rem">✕</button>'
       +'</div>'
       +'<div class="frow">'
-        +'<div class="fgroup"><label>Kategori</label><input value="'+esc(c.category||c.cat||'')+'" oninput="coursesData['+ci+'].category=this.value"></div>'
-        +'<div class="fgroup"><label>Level</label><select oninput="coursesData['+ci+'].level=this.value"><option'+(c.level==='Beginner'?' selected':'')+'>Beginner</option><option'+(c.level==='Intermediate'?' selected':'')+'>Intermediate</option><option'+(c.level==='Advanced'?' selected':'')+'>Advanced</option></select></div>'
+        +'<div class="fgroup"><label>Kategori</label><input value="'+esc(c.category||c.cat||'')+'" oninput="coursesData['+ci+'].category=this.value" placeholder="Ekonomi"></div>'
+        +'<div class="fgroup"><label>Level</label>'
+          +'<select onchange="coursesData['+ci+'].level=this.value">'
+            +'<option value="Beginner"'+(c.level==='Beginner'?' selected':'')+'>Beginner</option>'
+            +'<option value="Intermediate"'+(c.level==='Intermediate'?' selected':'')+'>Intermediate</option>'
+            +'<option value="Advanced"'+(c.level==='Advanced'?' selected':'')+'>Advanced</option>'
+          +'</select>'
+        +'</div>'
         +'<div class="fgroup"><label>Durasi</label><input value="'+esc(c.duration||'')+'" oninput="coursesData['+ci+'].duration=this.value" placeholder="3 jam"></div>'
-        +'<div class="fgroup"><label>XP Reward</label><input type="number" value="'+(c.xpReward||c.xp||200)+'" oninput="coursesData['+ci+'].xpReward=parseInt(this.value)"></div>'
+        +'<div class="fgroup"><label>XP Reward</label><input type="number" value="'+(c.xpReward||c.xp||100)+'" oninput="coursesData['+ci+'].xpReward=parseInt(this.value)||0" min="0"></div>'
       +'</div>'
-      +'<div class="fgroup"><label>Deskripsi</label><textarea oninput="coursesData['+ci+'].desc=this.value" rows="2">'+esc(c.description||c.desc||'')+'</textarea></div>'
-      +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
-        +'<button class="btn btn-blue" onclick="saveCourse('+ci+')">💾 Simpan</button>'
-      +'</div>'
+      +'<div class="fgroup"><label>Rating (1-5)</label><input type="number" value="'+(c.rating||4.5)+'" oninput="coursesData['+ci+'].rating=parseFloat(this.value)||4.5" min="1" max="5" step="0.1" style="max-width:120px"></div>'
+      +'<div class="fgroup"><label>Deskripsi</label><textarea oninput="coursesData['+ci+'].description=this.value;coursesData['+ci+'].desc=this.value" rows="2" placeholder="Deskripsi course...">'+esc(c.description||c.desc||'')+'</textarea></div>'
     +'</div>';
-  }).join('');
+  }).join('')||'<div style="color:#9CA3AF;text-align:center;padding:20px">Belum ada course. Klik tambah di bawah.</div>';
+}
+async function saveSingleCourse(i){
+  var ok=await setSetting('courses',coursesData);
+  if(ok){settings.courses=coursesData;toast('✅ Course disimpan ke semua user!','#059669');}
+  else toast('❌ Gagal menyimpan!','#DC2626');
 }
 function addCourse(){
-  coursesData.push({id:'c'+Date.now(),title:'Course Baru',icon:'📚',category:'Umum',level:'Beginner',duration:'2 jam',xpReward:100,description:'Deskripsi course baru.',modules:[]});
-  renderCourses();
+  coursesData.push({id:'c'+Date.now(),title:'Course Baru',icon:'📚',category:'Umum',level:'Beginner',duration:'2 jam',xpReward:100,rating:4.5,description:'Deskripsi course baru.'});
+  renderCourseMgr();
 }
-function delCourse(i){if(confirm('Hapus course ini?')){coursesData.splice(i,1);ksSet('courses',coursesData);renderCourses();toast('Course dihapus.');}}
-function saveCourse(i){ksSet('courses',coursesData);toast('✅ Course disimpan!');}
+async function delCourse(i){
+  if(!confirm('Hapus course ini?'))return;
+  coursesData.splice(i,1);
+  await setSetting('courses',coursesData);settings.courses=coursesData;
+  renderCourseMgr();toast('Course dihapus.');
+}
+function getDefaultCourses(){return[
+  {id:'c1',title:'IPS Ekonomi Dasar',icon:'📊',category:'Ekonomi',level:'Beginner',duration:'3 jam',xpReward:200,rating:4.8,description:'Pelajari dasar-dasar ilmu ekonomi.'},
+  {id:'c2',title:'Matematika Kelas 9',icon:'🧮',category:'Matematika',level:'Beginner',duration:'4 jam',xpReward:250,rating:4.6,description:'Kuasai aljabar, geometri, dan statistika.'},
+];}
 
 // ── GAME MANAGER ──
 var GAME_DEFS=[
@@ -493,31 +563,34 @@ var GAME_DEFS=[
   {id:'race',name:'Knowledge Race',xp:40},{id:'puzzle',name:'Puzzle Builder',xp:20},
 ];
 function renderGames(){
-  var gs=ks('game_settings')||{};
+  var gs=settings.game_settings||{};
   document.getElementById('game-list').innerHTML=GAME_DEFS.map(function(g){
     var enabled=gs[g.id]===undefined?true:gs[g.id].enabled;
-    var xp=gs[g.id]?.xp||g.xp;
+    var xp=(gs[g.id]&&gs[g.id].xp)||g.xp;
     return'<div class="toggle-wrap">'
       +'<div style="flex:1"><div style="font-weight:600;font-size:.9rem">'+g.name+'</div></div>'
       +'<div style="display:flex;align-items:center;gap:10px">'
-        +'<input type="number" value="'+xp+'" min="1" style="width:70px;text-align:center;padding:5px 8px" id="gxp-'+g.id+'" title="XP Reward"> XP'
-        +'<label class="toggle"><input type="checkbox" id="gen-'+g.id+'"'+(enabled?' checked':'')+' ><span class="toggle-sl"></span></label>'
-      +'</div>'
-    +'</div>';
+        +'<input type="number" value="'+xp+'" min="1" style="width:70px;text-align:center;padding:5px 8px;border-radius:8px" id="gxp-'+g.id+'"> XP'
+        +'<label class="toggle"><input type="checkbox" id="gen-'+g.id+'"'+(enabled?' checked':'')+'><span class="toggle-sl"></span></label>'
+      +'</div></div>';
   }).join('');
 }
-function saveGames(){
+async function saveGames(){
+  setBtnLoading('btn-games',true,'');
   var gs={};
   GAME_DEFS.forEach(function(g){gs[g.id]={enabled:document.getElementById('gen-'+g.id).checked,xp:parseInt(document.getElementById('gxp-'+g.id).value)||g.xp};});
-  ksSet('game_settings',gs);toast('✅ Pengaturan game disimpan!');
+  var ok=await setSetting('game_settings',gs);
+  if(ok){settings.game_settings=gs;toast('✅ Pengaturan game disimpan untuk semua user!','#059669');}
+  else toast('❌ Gagal!','#DC2626');
+  setBtnLoading('btn-games',false,'💾 Simpan & Terapkan');
 }
 
 // ── USER MANAGER ──
 function renderUsers(){
   var q=(document.getElementById('user-search')?.value||'').toLowerCase();
-  var list=users.filter(function(u){return!q||u.name.toLowerCase().includes(q)||u.email.toLowerCase().includes(q);});
+  var list=users.filter(function(u){return!q||u.name.toLowerCase().includes(q)||(u.email||'').toLowerCase().includes(q);});
   document.getElementById('user-list').innerHTML=list.map(function(u){
-    return'<div class="urow"><div class="av">'+ini(u.name)+'</div><div><div style="font-weight:700;font-size:.9rem">'+esc(u.name)+'</div><div style="font-size:.75rem;color:#9CA3AF">'+esc(u.email)+' · Bergabung '+new Date(u.created_at||Date.now()).toLocaleDateString('id-ID')+'</div></div><span style="margin-left:auto;padding:3px 10px;border-radius:999px;font-size:.72rem;font-weight:700;background:'+roleColor(u.role)+'22;color:'+roleColor(u.role)+'">'+roleLabel(u.role)+'</span><div style="font-weight:800;color:#2563EB;margin-left:10px;font-size:.9rem">'+(u.xp||0)+' XP</div></div>';
+    return'<div class="urow"><div class="av">'+ini(u.name)+'</div><div><div style="font-weight:700;font-size:.9rem">'+esc(u.name)+'</div><div style="font-size:.75rem;color:#9CA3AF">'+esc(u.email)+' · '+new Date(u.created_at||Date.now()).toLocaleDateString('id-ID')+'</div></div><span style="margin-left:auto;padding:3px 10px;border-radius:999px;font-size:.72rem;font-weight:700;background:'+roleColor(u.role)+'22;color:'+roleColor(u.role)+'">'+roleLabel(u.role)+'</span><div style="font-weight:800;color:#2563EB;margin-left:10px">'+(u.xp||0)+' XP</div></div>';
   }).join('')||'<div style="color:#9CA3AF;text-align:center;padding:20px">Tidak ada user.</div>';
 }
 
@@ -525,7 +598,7 @@ function renderUsers(){
 function renderRoles(){
   document.getElementById('role-list').innerHTML=users.map(function(u){
     return'<div class="urow"><div class="av">'+ini(u.name)+'</div><div><div style="font-weight:700;font-size:.9rem">'+esc(u.name)+'</div><div style="font-size:.75rem;color:#9CA3AF">'+esc(u.email)+'</div></div>'
-      +'<select onchange="changeRole(\''+u.id+'\',this.value)" style="margin-left:auto;padding:6px 10px;border:1px solid #E5E7EB;border-radius:8px;font-family:\'Inter\',sans-serif">'
+      +'<select onchange="changeRole(\''+u.id+'\',this.value)" style="margin-left:auto;padding:7px 10px;border:1px solid #E5E7EB;border-radius:8px;font-family:\'Inter\',sans-serif">'
         +'<option value="user"'+(u.role==='user'?' selected':'')+'>🎓 User</option>'
         +'<option value="creator"'+(u.role==='creator'?' selected':'')+'>✏️ Creator</option>'
         +'<option value="developer"'+(u.role==='developer'?' selected':'')+'>🛠 Developer</option>'
@@ -535,8 +608,8 @@ function renderRoles(){
   }).join('')||'<div style="color:#9CA3AF;text-align:center;padding:20px">Belum ada user.</div>';
 }
 async function changeRole(id,role){
-  var ok=await sbPatch(id,{role:role});
-  if(ok){users=users.map(function(u){return u.id===id?Object.assign({},u,{role:role}):u;});toast('✅ Role berhasil diubah!');}
+  var ok=await sbPatch('users','id=eq.'+id,{role:role});
+  if(ok){users=users.map(function(u){return u.id===id?Object.assign({},u,{role:role}):u;});toast('✅ Role diubah!');}
   else toast('❌ Gagal ubah role.');
 }
 
@@ -546,7 +619,7 @@ function renderXPSel(){
 }
 function renderXPLog(){
   document.getElementById('xp-log').innerHTML=xpLogs.slice(0,15).map(function(l){
-    return'<div class="log-item"><span style="font-weight:600">+'+l.amount+' XP → '+esc(l.name)+(l.reason?' — '+esc(l.reason):'')+'</span><div style="font-size:.72rem;color:#9CA3AF;margin-top:2px">'+new Date(l.time).toLocaleString('id-ID')+'</div></div>';
+    return'<div class="log-item"><span style="font-weight:600">+'+( l.amount||0)+' XP → '+esc(l.user_name||l.name||'-')+(l.reason?' — '+esc(l.reason):'')+'</span><div style="font-size:.72rem;color:#9CA3AF;margin-top:2px">'+new Date(l.created_at||l.time||Date.now()).toLocaleString('id-ID')+'</div></div>';
   }).join('')||'<div style="color:#9CA3AF;font-size:.83rem;padding:10px">Belum ada log.</div>';
 }
 async function giveXP(){
@@ -554,89 +627,83 @@ async function giveXP(){
   var amt=parseInt(document.getElementById('xp-amt').value)||0;
   var reason=document.getElementById('xp-reason').value.trim();
   if(!uid)return toast('Pilih user dulu!');
-  if(amt<=0)return toast('Jumlah XP harus lebih dari 0!');
+  if(amt<=0)return toast('XP harus lebih dari 0!');
   var u=users.find(function(x){return x.id===uid;});if(!u)return;
   var newXP=(u.xp||0)+amt;
-  var ok=await sbPatch(uid,{xp:newXP});
+  var ok=await sbPatch('users','id=eq.'+uid,{xp:newXP});
   if(ok){
     users=users.map(function(x){return x.id===uid?Object.assign({},x,{xp:newXP}):x;});
-    xpLogs.unshift({name:u.name,amount:amt,reason:reason,time:new Date().toISOString()});
-    xpLogs=xpLogs.slice(0,50);ksSet('xp_logs',xpLogs);
-    renderXPSel();renderXPLog();
+    // Log ke Supabase
+    try{await sbPost('xp_logs',[{user_id:uid,user_name:u.name,amount:amt,reason:reason,created_at:new Date().toISOString()}]);}catch(e){}
+    renderXPSel();
+    // Reload log
+    try{var xl=await sbGet('xp_logs?select=*&order=created_at.desc&limit=50');xpLogs=Array.isArray(xl)?xl:[];}catch(e){}
+    renderXPLog();
     document.getElementById('xp-amt').value='';document.getElementById('xp-reason').value='';
-    toast('✅ +'+amt+' XP ke '+u.name+'!');
+    toast('✅ +'+amt+' XP ke '+u.name+'!','#059669');
   }else toast('❌ Gagal.');
 }
 async function giveXPAll(){
   var amt=parseInt(document.getElementById('xp-all').value)||0;
-  if(amt<=0)return toast('Jumlah XP harus > 0!');
+  if(amt<=0)return toast('XP harus > 0!');
   if(!confirm('Beri +'+amt+' XP ke semua '+users.length+' user?'))return;
-  for(var i=0;i<users.length;i++){await sbPatch(users[i].id,{xp:(users[i].xp||0)+amt});}
-  await loadAll();toast('✅ XP diberikan ke semua user!');
+  for(var i=0;i<users.length;i++){
+    await sbPatch('users','id=eq.'+users[i].id,{xp:(users[i].xp||0)+amt});
+  }
+  await loadAll();toast('✅ XP diberikan ke semua user!','#059669');
 }
 
 // ── FEATURES ──
 function loadFeatures(){
-  var f=ks('features')||{games:true,community:true,certificates:true,gamification:true,notifications:true};
+  var f=settings.features||{};
   document.getElementById('ft-games').checked=f.games!==false;
   document.getElementById('ft-community').checked=f.community!==false;
   document.getElementById('ft-cert').checked=f.certificates!==false;
   document.getElementById('ft-gamify').checked=f.gamification!==false;
   document.getElementById('ft-notif').checked=f.notifications!==false;
 }
-function saveFeatures(){
-  ksSet('features',{
+async function saveFeatures(){
+  var f={
     games:document.getElementById('ft-games').checked,
     community:document.getElementById('ft-community').checked,
     certificates:document.getElementById('ft-cert').checked,
     gamification:document.getElementById('ft-gamify').checked,
     notifications:document.getElementById('ft-notif').checked,
-  });toast('✅ Fitur disimpan!');
+  };
+  var ok=await setSetting('features',f);
+  if(ok){settings.features=f;toast('✅ Fitur disimpan untuk semua user!','#059669');}
+  else toast('❌ Gagal!','#DC2626');
 }
 
 // ── DATA MANAGER ──
 async function exportUsers(){
   var d=await sbGet('users?select=id,name,email,role,xp,badges,created_at&order=xp.desc');
   var b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});
-  var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='kaizo_users_'+Date.now()+'.json';a.click();toast('Data di-export!');
+  var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='kaizo_users_'+Date.now()+'.json';a.click();toast('Data user di-export!');
 }
-function exportSettings(){
-  var d={theme:ks('theme'),lobby:ks('lobby'),features:ks('features'),game_settings:ks('game_settings'),courses:ks('courses')};
+async function exportSettings(){
+  var d=await sbGet('platform_settings?select=key,value');
   var b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});
-  var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='kaizo_settings_'+Date.now()+'.json';a.click();toast('Pengaturan di-export!');
-}
-function importSettings(){
-  var file=document.getElementById('import-file').files[0];if(!file)return toast('Pilih file dulu!');
-  var reader=new FileReader();
-  reader.onload=function(e){
-    try{
-      var d=JSON.parse(e.target.result);
-      if(d.theme)ksSet('theme',d.theme);if(d.lobby)ksSet('lobby',d.lobby);
-      if(d.features)ksSet('features',d.features);if(d.game_settings)ksSet('game_settings',d.game_settings);
-      if(d.courses)ksSet('courses',d.courses);
-      toast('✅ Import berhasil!');
-    }catch(err){toast('❌ File tidak valid!');}
-  };reader.readAsText(file);
+  var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='kaizo_settings_'+Date.now()+'.json';a.click();toast('Settings di-export!');
 }
 async function resetProgress(){
-  if(!confirm('Reset progress semua user (XP, badges, lessons)?'))return;
-  for(var i=0;i<users.length;i++){await sbPatch(users[i].id,{xp:0,badges:[],completed_lessons:[],completed_courses:[],games_played:0});}
-  await loadAll();toast('Progress direset.');
+  if(!confirm('Reset XP, badges, dan progress SEMUA user?'))return;
+  for(var i=0;i<users.length;i++){await sbPatch('users','id=eq.'+users[i].id,{xp:0,badges:[],completed_lessons:[],games_played:0});}
+  await loadAll();toast('Progress semua user direset.');
 }
-function resetThemeData(){if(confirm('Reset tema ke default?')){ksSet('theme',{});toast('Tema direset.');}}
+async function resetAllSettings(){
+  if(!confirm('Reset semua settings platform ke default?'))return;
+  await setSetting('theme',{colorPrimary:'#2563EB',colorBg:'#FFFFFF',colorBg2:'#F8FAFC',colorText:'#111827',font:'Inter',fontSize:'medium',academyName:'KAIZO ACADEMIC',academyTagline:'Learn · Play · Grow'});
+  await setSetting('lobby',{heroTitle:'Belajar Lebih Cerdas, Bukan Lebih Keras',heroDesc:'Platform akademi modern.'});
+  await setSetting('features',{games:true,community:true,certificates:true,gamification:true,notifications:true});
+  await loadAllSettings();toast('Settings direset ke default.');
+}
 async function resetAll(){
-  if(!confirm('HAPUS SEMUA DATA? Ini tidak bisa dibatalkan!'))return;
-  if(!confirm('Yakin benar-benar ingin reset semua?'))return;
+  if(!confirm('HAPUS SEMUA USER? Tidak bisa dibatalkan!'))return;
+  if(!confirm('Benar-benar yakin?'))return;
   await sbDel('users?id=neq.00000000-0000-0000-0000-000000000000');
-  ['theme','lobby','features','game_settings','courses','xp_logs','session'].forEach(function(k){ksSet(k,null);});
-  users=[];renderDashboard();toast('Semua data dihapus.');
+  users=[];renderDashboard();toast('Semua user dihapus.');
 }
-
-// ── DEFAULT COURSES ──
-function getDefaultCourses(){return[
-  {id:'c1',title:'IPS Ekonomi Dasar',icon:'📊',category:'Ekonomi',level:'Beginner',duration:'3 jam',xpReward:200,description:'Pelajari dasar-dasar ilmu ekonomi.',modules:[]},
-  {id:'c2',title:'Matematika Kelas 9',icon:'🧮',category:'Matematika',level:'Beginner',duration:'4 jam',xpReward:250,description:'Kuasai aljabar, geometri, dan statistika.',modules:[]},
-];}
 </script>
 </body>
 </html>
