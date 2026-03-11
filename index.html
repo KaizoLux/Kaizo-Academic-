@@ -181,8 +181,17 @@ function kg(k){try{var v=localStorage.getItem('kaizo:'+k);return v?JSON.parse(v)
 // Load theme name
 try{var t=kg('theme')||{};var nm=t.academyName||'KAIZO ACADEMIC';document.getElementById('nav-name').textContent=nm;document.getElementById('nav-logo-char').textContent=nm.charAt(0);}catch(e){}
 
-// User count
-try{var allUsers=kg('users')||[];document.getElementById('s-users').textContent=allUsers.length;}catch(e){}
+// User count dari Supabase
+var SB_URL='https://kjcifrrkfpifdrwjufau.supabase.co';
+var SB_KEY='sb_publishable_8sk82afIl_YihEiIFkvCwQ_LDz1I5C6';
+(async function(){
+  try{
+    var r=await fetch(SB_URL+'/rest/v1/users?select=id',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Prefer':'count=exact'}});
+    var ct=r.headers.get('content-range');
+    if(ct){var n=ct.split('/')[1];if(n)document.getElementById('s-users').textContent=n;}
+    else{var d=await r.json();document.getElementById('s-users').textContent=(d||[]).length;}
+  }catch(e){}
+})();
 
 // Nav: logged in state
 try{
