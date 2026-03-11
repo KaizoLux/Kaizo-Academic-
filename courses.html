@@ -183,7 +183,14 @@ var COURSES=[
 var activeFilter='all';
 var activeCourse=null;
 var done=[];
-try{done=JSON.parse(localStorage.getItem('kaizo:done')||'[]');}catch(e){}
+// Load completed lessons dari Supabase session
+try{
+  if(sess&&sess.completed_lessons){
+    done=Array.isArray(sess.completed_lessons)?sess.completed_lessons:JSON.parse(sess.completed_lessons||'[]');
+  } else {
+    done=JSON.parse(localStorage.getItem('kaizo:done')||'[]');
+  }
+}catch(e){done=[];}
 
 function getProgress(c){
   var all=c.modules.flatMap(function(m){return m.lessons;});
@@ -255,6 +262,15 @@ function doLesson(cid,lid,title,type){
     done.push(key);
     localStorage.setItem('kaizo:done',JSON.stringify(done));
     var xpGain=type==='quiz'?20:10;
+    // Simpan progress ke Supabase
+    if(sess){
+      sess.completed_lessons=done;
+      localStorage.setItem('kaizo:session',JSON.stringify(sess));
+      fetch(SB_URL+'/rest/v1/users?id=eq.'+sess.id,{method:'PATCH',
+        headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'},
+        body:JSON.stringify({completed_lessons:done})
+      });
+    }
     addXP(xpGain,'Selesai: '+title);
     checkBadges();
   }
