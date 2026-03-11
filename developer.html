@@ -315,8 +315,36 @@ async function sbPatch(table,filter,d){
   return r.ok;
 }
 async function sbUpsert(table,d){
-  var r=await fetch(SB+'/rest/v1/'+table,{method:'POST',headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=representation'},body:JSON.stringify(d)});
-  return r.ok;
+  // Upsert: POST with on-conflict merge on primary key
+  var r=await fetch(SB+'/rest/v1/'+table,{
+    method:'POST',
+    headers:{
+      'apikey':KEY,
+      'Authorization':'Bearer '+KEY,
+      'Content-Type':'application/json',
+      'Prefer':'resolution=merge-duplicates,return=minimal'
+    },
+    body:JSON.stringify(Array.isArray(d)?d:[d])
+  });
+  if(!r.ok){
+    // fallback: try PATCH
+    var body=Array.isArray(d)?d[0]:d;
+    var key=body.key;
+    var r2=await fetch(SB+'/rest/v1/'+table+'?key=eq.'+encodeURIComponent(key),{
+      method:'PATCH',
+      headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({value:body.value,updated_at:body.updated_at})
+    });
+    if(r2.ok)return true;
+    // fallback 2: INSERT
+    var r3=await fetch(SB+'/rest/v1/'+table,{
+      method:'POST',
+      headers:{'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify([body])
+    });
+    return r3.ok;
+  }
+  return true;
 }
 async function sbDel(p){
   var r=await fetch(SB+'/rest/v1/'+p,{method:'DELETE',headers:{'apikey':KEY,'Authorization':'Bearer '+KEY}});
@@ -326,13 +354,20 @@ async function sbDel(p){
 // ── Get/Set settings online ──
 async function getSetting(key){
   try{
-    var d=await sbGet('platform_settings?key=eq.'+key+'&select=value');
+    var d=await sbGet('platform_settings?key=eq.'+encodeURIComponent(key)+'&select=value');
     if(d&&d.length>0)return d[0].value;
   }catch(e){}
   return null;
 }
 async function setSetting(key,value){
-  return await sbUpsert('platform_settings',[{key:key,value:value,updated_at:new Date().toISOString()}]);
+  try{
+    var ok=await sbUpsert('platform_settings',{key:key,value:value,updated_at:new Date().toISOString()});
+    if(ok){settings[key]=value;}
+    return ok;
+  }catch(e){
+    console.error('setSetting error:',e);
+    return false;
+  }
 }
 async function loadAllSettings(){
   try{
@@ -508,36 +543,49 @@ async function saveMenu(){
 // ── COURSE MANAGER ──
 var coursesData=[];
 function renderCourseMgr(){
-  coursesData=settings.courses||getDefaultCourses();
-  document.getElementById('course-list').innerHTML=coursesData.map(function(c,ci){
-    return'<div class="card" style="margin-bottom:14px">'
-      +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">'
-        +'<input value="'+esc(c.icon||'📚')+'" oninput="coursesData['+ci+'].icon=this.value" style="width:50px;text-align:center;font-size:1.3rem;padding:6px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:\'Inter\',sans-serif" placeholder="📚">'
-        +'<input value="'+esc(c.title||'')+'" oninput="coursesData['+ci+'].title=this.value" placeholder="Judul Course" style="flex:1;font-weight:700;font-size:.95rem;padding:9px 12px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:\'Inter\',sans-serif">'
-        +'<button onclick="saveSingleCourse('+ci+')" style="padding:8px 14px;background:#ECFDF5;border:1px solid #A7F3D0;border-radius:8px;cursor:pointer;color:#059669;font-family:\'Inter\',sans-serif;font-size:.82rem;white-space:nowrap">💾 Simpan</button>'
-        +'<button onclick="delCourse('+ci+')" style="padding:8px 12px;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;cursor:pointer;color:#DC2626;font-family:\'Inter\',sans-serif;font-size:.82rem">✕</button>'
+  coursesData=JSON.parse(JSON.stringify(settings.courses||getDefaultCourses()));
+  var rows=coursesData.map(function(c,ci){
+    var lvlOpts=['Beginner','Intermediate','Advanced'].map(function(l){return'<option value="'+l+'"'+(c.level===l?' selected':'')+'>'+l+'</option>';}).join('');
+    return '<div class="card" style="margin-bottom:14px" id="ccard-'+ci+'">'  
+      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap">'
+        +'<input id="cc'+ci+'icon" value="'+esc(c.icon||'📚')+'" style="width:48px;text-align:center;font-size:1.2rem;padding:6px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:Inter,sans-serif">'
+        +'<input id="cc'+ci+'title" value="'+esc(c.title||'')+'" placeholder="Judul Course" style="flex:1;min-width:120px;font-weight:700;font-size:.95rem;padding:9px 12px;border:1.5px solid #E5E7EB;border-radius:9px;font-family:Inter,sans-serif">'
+        +'<button onclick="saveSingleCourse('+ci+')" style="padding:8px 13px;background:#ECFDF5;border:1px solid #A7F3D0;border-radius:8px;cursor:pointer;color:#059669;font-family:Inter,sans-serif;font-size:.82rem">💾 Simpan</button>'
+        +'<button onclick="delCourse('+ci+')" style="padding:8px 11px;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;cursor:pointer;color:#DC2626;font-family:Inter,sans-serif;font-size:.82rem">✕ Hapus</button>'
       +'</div>'
-      +'<div class="frow">'
-        +'<div class="fgroup"><label>Kategori</label><input value="'+esc(c.category||c.cat||'')+'" oninput="coursesData['+ci+'].category=this.value" placeholder="Ekonomi"></div>'
-        +'<div class="fgroup"><label>Level</label>'
-          +'<select onchange="coursesData['+ci+'].level=this.value">'
-            +'<option value="Beginner"'+(c.level==='Beginner'?' selected':'')+'>Beginner</option>'
-            +'<option value="Intermediate"'+(c.level==='Intermediate'?' selected':'')+'>Intermediate</option>'
-            +'<option value="Advanced"'+(c.level==='Advanced'?' selected':'')+'>Advanced</option>'
-          +'</select>'
-        +'</div>'
-        +'<div class="fgroup"><label>Durasi</label><input value="'+esc(c.duration||'')+'" oninput="coursesData['+ci+'].duration=this.value" placeholder="3 jam"></div>'
-        +'<div class="fgroup"><label>XP Reward</label><input type="number" value="'+(c.xpReward||c.xp||100)+'" oninput="coursesData['+ci+'].xpReward=parseInt(this.value)||0" min="0"></div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">'
+        +'<div class="fgroup"><label>Kategori</label><input id="cc'+ci+'cat" value="'+esc(c.category||c.cat||'')+'" placeholder="Ekonomi"></div>'
+        +'<div class="fgroup"><label>Level</label><select id="cc'+ci+'level">'+lvlOpts+'</select></div>'
+        +'<div class="fgroup"><label>Durasi</label><input id="cc'+ci+'dur" value="'+esc(c.duration||'')+'" placeholder="3 jam"></div>'
+        +'<div class="fgroup"><label>XP Reward</label><input id="cc'+ci+'xp" type="number" value="'+(c.xpReward||c.xp||100)+'" min="0"></div>'
+        +'<div class="fgroup"><label>Rating (1-5)</label><input id="cc'+ci+'rating" type="number" value="'+(c.rating||4.5)+'" min="1" max="5" step="0.1"></div>'
+        +'<div class="fgroup"><label>Jumlah Lessons</label><input id="cc'+ci+'lessons" type="number" value="'+(c.lessons||0)+'" min="0"></div>'
       +'</div>'
-      +'<div class="fgroup"><label>Rating (1-5)</label><input type="number" value="'+(c.rating||4.5)+'" oninput="coursesData['+ci+'].rating=parseFloat(this.value)||4.5" min="1" max="5" step="0.1" style="max-width:120px"></div>'
-      +'<div class="fgroup"><label>Deskripsi</label><textarea oninput="coursesData['+ci+'].description=this.value;coursesData['+ci+'].desc=this.value" rows="2" placeholder="Deskripsi course...">'+esc(c.description||c.desc||'')+'</textarea></div>'
+      +'<div class="fgroup"><label>Deskripsi</label><textarea id="cc'+ci+'desc" rows="2" placeholder="Deskripsi...">'+esc(c.description||c.desc||'')+'</textarea></div>'
     +'</div>';
-  }).join('')||'<div style="color:#9CA3AF;text-align:center;padding:20px">Belum ada course. Klik tambah di bawah.</div>';
+  }).join('')  ||'<div style="color:#9CA3AF;text-align:center;padding:20px">Belum ada course.</div>';
+  document.getElementById('course-list').innerHTML=rows;
 }
-async function saveSingleCourse(i){
+function readCourseForm(ci){
+  function gv(id){var el=document.getElementById('cc'+ci+id);return el?el.value:'';}
+  coursesData[ci].icon=gv('icon');
+  coursesData[ci].title=gv('title');
+  coursesData[ci].category=gv('cat');
+  coursesData[ci].cat=gv('cat');
+  coursesData[ci].level=gv('level');
+  coursesData[ci].duration=gv('dur');
+  coursesData[ci].xpReward=parseInt(gv('xp'))||0;
+  coursesData[ci].xp=parseInt(gv('xp'))||0;
+  coursesData[ci].rating=parseFloat(gv('rating'))||4.5;
+  coursesData[ci].lessons=parseInt(gv('lessons'))||0;
+  coursesData[ci].description=gv('desc');
+  coursesData[ci].desc=gv('desc');
+}
+async function saveSingleCourse(ci){
+  readCourseForm(ci);
   var ok=await setSetting('courses',coursesData);
-  if(ok){settings.courses=coursesData;toast('✅ Course disimpan ke semua user!','#059669');}
-  else toast('❌ Gagal menyimpan!','#DC2626');
+  if(ok){settings.courses=JSON.parse(JSON.stringify(coursesData));toast('✅ Course disimpan untuk semua user!','#059669');}
+  else toast('❌ Gagal simpan! Cek koneksi.','#DC2626');
 }
 function addCourse(){
   coursesData.push({id:'c'+Date.now(),title:'Course Baru',icon:'📚',category:'Umum',level:'Beginner',duration:'2 jam',xpReward:100,rating:4.5,description:'Deskripsi course baru.'});
