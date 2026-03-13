@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Game — World Monopoly</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-screen" id="loading-screen">
+  <div style="font-size:3rem">🌍</div>
+  <div class="spinner"></div>
+  <div class="loading-text" id="loading-msg">Memuat game...</div>
+</div>
+
+<!-- GAME LAYOUT -->
+<div class="game-layout" id="game-layout" style="display:none">
+
+  <!-- HEADER -->
+  <div class="game-header">
+    <div class="header-left">
+      <span style="font-size:1.1rem;font-weight:800">🌍 World Monopoly</span>
+      <span class="chip chip-blue" id="header-room-code">------</span>
+    </div>
+    <div class="header-center">
+      <div class="turn-indicator" id="turn-indicator">⏳ ...</div>
+      <div class="turn-number" id="turn-number">Ronde 1</div>
+    </div>
+    <div class="header-right">
+      <div id="my-money" style="font-family:var(--mono);font-weight:700">💰 0</div>
+      <div id="my-name-label" style="font-size:.78rem;color:var(--text2)">-</div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="game-main">
+
+    <!-- BOARD -->
+    <div class="board-wrap">
+      <div class="board-grid" id="board-grid"></div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="game-sidebar">
+
+      <!-- DICE -->
+      <div class="dice-panel">
+        <div class="dice-row">
+          <div class="die" id="die1">?</div>
+          <div class="die" id="die2">?</div>
+        </div>
+        <button class="btn btn-primary" id="btn-roll">🎲 Lempar Dadu</button>
+        <button class="btn btn-success" id="btn-end-turn" style="display:none">✓ Akhiri Giliran</button>
+      </div>
+
+      <!-- PLAYERS -->
+      <div class="players-panel" id="players-panel"></div>
+
+      <!-- MY COUNTRIES -->
+      <div class="my-countries-panel">
+        <div style="font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Negaramu</div>
+        <div id="my-countries-list" style="font-size:.8rem;color:var(--text2)">–</div>
+      </div>
+
+      <!-- ACTION BUTTONS -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+        <button class="btn btn-ghost btn-sm" id="btn-rules">📋 Aturan</button>
+        <button class="btn btn-danger btn-sm" id="btn-resign">🏳️ Menyerah</button>
+      </div>
+
+      <!-- CHAT -->
+      <div class="chat-panel">
+        <div class="chat-messages" id="chat-messages"></div>
+        <div class="chat-input-row">
+          <input type="text" id="chat-input" placeholder="Ketik pesan..." maxlength="100">
+          <button class="btn btn-primary btn-sm" id="btn-send-chat">➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ACTION MODAL -->
+<div class="modal-overlay" id="action-modal" style="display:none">
+  <div class="modal">
+    <div class="modal-title" id="action-title"></div>
+    <div class="modal-sub" id="action-sub"></div>
+    <div id="action-content"></div>
+    <div class="modal-btns" id="action-btns"></div>
+  </div>
+</div>
+
+<!-- RULES MODAL -->
+<div class="modal-overlay" id="rules-modal" style="display:none" onclick="this.style.display='none'">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:480px;max-height:80vh;overflow-y:auto">
+    <div class="modal-title">📋 Aturan World Monopoly</div>
+    <div style="font-size:.85rem;line-height:1.7;color:var(--text2)">
+      <p><strong>Tujuan:</strong> Kuasai sebanyak mungkin negara dan buat pemain lain bangkrut!</p>
+      <p><strong>Giliran:</strong> Lempar dadu → Maju sesuai angka → Lakukan aksi di petak.</p>
+      <p><strong>Beli Negara:</strong> Jika petak kosong, kamu bisa membelinya.</p>
+      <p><strong>Bayar Denda:</strong> Jika petak milik pemain lain, kamu harus bayar denda.</p>
+      <p><strong>Bangun Rumah:</strong> Berhenti di negaramu sendiri untuk membangun rumah (menaikkan denda).</p>
+      <p><strong>Penjara:</strong> Masuk penjara jika kena petak "Go to Jail". Butuh double dadu atau kartu untuk bebas.</p>
+      <p><strong>START:</strong> Setiap melewati START mendapat bonus uang.</p>
+      <p><strong>Bangkrut:</strong> Jika uang habis, kamu bangkrut dan keluar dari permainan.</p>
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-primary" onclick="document.getElementById('rules-modal').style.display='none'">Mengerti!</button>
+    </div>
+  </div>
+</div>
+
+<!-- WINNER SCREEN -->
+<div class="modal-overlay" id="winner-screen" style="display:none">
+  <div class="modal" style="text-align:center;max-width:360px">
+    <div style="font-size:4rem" id="winner-emoji">🏆</div>
+    <div class="modal-title" id="winner-name">Pemenang!</div>
+    <div style="font-family:var(--mono);font-size:1.3rem;color:var(--green);margin:8px 0" id="winner-money"></div>
+    <div class="modal-btns">
+      <button class="btn btn-primary" onclick="window.location.href='lobby.html'">🏠 Kembali ke Lobby</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="js/countries.js"></script>
+<script src="js/chance.js"></script>
+<script src="js/community.js"></script>
+<script src="js/houses.js"></script>
+<script src="js/dice.js"></script>
+<script src="js/player.js"></script>
+<script src="js/board.js"></script>
+<script src="js/chat.js"></script>
+<script src="js/voice.js"></script>
+<script src="js/multiplayer.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
