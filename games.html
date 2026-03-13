@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Game Hub — Kaizo Academic</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="shared.js"></script>
+<style id="ss"></style>
+<style>
+.games-hero{background:linear-gradient(135deg,#1D4ED8,#7C3AED);color:#fff;padding:48px 0 56px;margin-bottom:-24px;text-align:center}
+.game-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px}
+.gc{background:var(--c-card);border:1px solid var(--c-border);border-radius:18px;overflow:hidden;cursor:pointer;transition:all .22s;box-shadow:var(--shadow-sm)}
+.gc:hover{box-shadow:var(--shadow-lg);transform:translateY(-4px)}
+.gc-top{height:110px;display:flex;align-items:center;justify-content:center;font-size:3.5rem;position:relative}
+.gc-body{padding:18px}
+.gc-name{font-size:1rem;font-weight:700;color:var(--c-text);margin-bottom:5px}
+.gc-desc{font-size:.82rem;color:var(--c-text-sub);margin-bottom:12px;line-height:1.5}
+.gc-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+/* GAME MODAL */
+.gm-wrap{background:var(--c-card);border-radius:24px;padding:0;max-width:700px;width:96%;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;animation:modal-in .22s ease}
+.gm-header{padding:24px 28px;border-bottom:1px solid var(--c-border);display:flex;align-items:center;gap:14px}
+.gm-body{flex:1;overflow-y:auto;padding:28px}
+/* QUIZ ARENA */
+.qa-opt{width:100%;padding:13px 17px;border:2px solid var(--c-border);border-radius:12px;background:var(--c-card);cursor:pointer;font-size:.92rem;color:var(--c-text);text-align:left;transition:all .18s;margin-bottom:10px;display:flex;align-items:center;gap:12px;font-family:var(--font-main)}
+.qa-opt:hover{border-color:var(--c-primary);background:#EFF6FF;color:var(--c-primary)}
+.qa-opt.sel{border-color:var(--c-primary);background:#EFF6FF;color:var(--c-primary)}
+.qa-opt.cor{border-color:#059669;background:#ECFDF5;color:#059669}
+.qa-opt.wrg{border-color:#DC2626;background:#FEF2F2;color:#DC2626}
+.qa-key{width:30px;height:30px;border-radius:8px;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;flex-shrink:0;background:transparent}
+.timer-ring{position:relative;width:64px;height:64px;flex-shrink:0}
+.timer-ring svg{transform:rotate(-90deg)}
+/* FLASHCARD */
+.fc-card{perspective:800px;height:200px;cursor:pointer}
+.fc-inner{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d}
+.fc-inner.flipped{transform:rotateY(180deg)}
+.fc-face{position:absolute;inset:0;border-radius:16px;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;backface-visibility:hidden}
+.fc-front{background:linear-gradient(135deg,#1D4ED8,#7C3AED);color:#fff;font-size:1.2rem;font-weight:700;line-height:1.5}
+.fc-back{background:var(--c-bg2);border:2px solid var(--c-border);color:var(--c-text);font-size:.95rem;line-height:1.7;transform:rotateY(180deg)}
+/* MEMORY MATCH */
+.mem-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.mem-card{height:80px;border-radius:12px;border:2px solid var(--c-border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.6rem;background:var(--c-bg2);transition:all .2s;user-select:none}
+.mem-card.flipped{background:var(--c-primary);border-color:var(--c-primary);transform:scale(1.05)}
+.mem-card.matched{background:#ECFDF5;border-color:#059669;opacity:.7}
+/* WORD BUILDER */
+.wb-letter{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border:2px solid var(--c-border);border-radius:9px;font-size:1rem;font-weight:700;cursor:pointer;transition:.15s;user-select:none;background:var(--c-card);color:var(--c-text);margin:3px}
+.wb-letter:hover{border-color:var(--c-primary);background:#EFF6FF;color:var(--c-primary)}
+.wb-letter.used{opacity:.3;pointer-events:none}
+.wb-answer-slot{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-bottom:2px solid var(--c-primary);margin:3px;font-size:1rem;font-weight:700;color:var(--c-text);vertical-align:middle}
+/* RESULT */
+.result-circle{width:100px;height:100px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 16px}
+</style>
+</head>
+<body>
+<div id="nav"></div>
+
+<!-- GAMES HERO -->
+<div class="games-hero">
+  <div class="page-wrap-sm">
+    <div style="font-size:.78rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;opacity:.75;margin-bottom:10px">🎮 GAME HUB</div>
+    <h1 style="font-size:2.2rem;font-weight:800;letter-spacing:-.5px;margin-bottom:10px">Belajar Sambil Bermain</h1>
+    <p style="opacity:.8;font-size:.95rem;max-width:480px;margin:0 auto">10 game edukatif yang dirancang untuk membuat belajar lebih menyenangkan. Setiap game memberikan XP!</p>
+  </div>
+</div>
+
+<!-- GAME MODAL -->
+<div class="ov" id="game-modal" style="display:none">
+  <div class="gm-wrap">
+    <div class="gm-header">
+      <div style="font-size:2rem" id="gm-icon"></div>
+      <div style="flex:1">
+        <div style="font-size:1.1rem;font-weight:800;color:var(--c-text)" id="gm-title"></div>
+        <div style="font-size:.82rem;color:var(--c-text-sub)" id="gm-desc"></div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="closeGame()">✕ Tutup</button>
+    </div>
+    <div class="gm-body" id="gm-body"></div>
+  </div>
+</div>
+
+<main>
+  <div class="page-wrap" style="padding-top:40px">
+    <!-- FILTER -->
+    <div class="row" style="margin-bottom:24px;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-primary btn-sm" onclick="filterGames('all',this)">Semua</button>
+      <button class="btn btn-ghost btn-sm" onclick="filterGames('quiz',this)">Quiz</button>
+      <button class="btn btn-ghost btn-sm" onclick="filterGames('memory',this)">Memory</button>
+      <button class="btn btn-ghost btn-sm" onclick="filterGames('word',this)">Word</button>
+      <button class="btn btn-ghost btn-sm" onclick="filterGames('challenge',this)">Challenge</button>
+      <button class="btn btn-ghost btn-sm" onclick="filterGames('board',this)">🌍 Board Game</button>
+      <div class="sp"></div>
+      <span style="font-size:.82rem;color:var(--c-text-sub)">⚡ Semua game berikan XP</span>
+    </div>
+    <div class="game-grid" id="game-grid"></div>
+  </div>
+</main>
+
+<style id="shared-styles"></style>
+<script>
+document.getElementById('ss').textContent = SHARED_CSS;
+document.getElementById('nav').innerHTML = renderNavbar('games.html');
+Theme.init();
+
+const GAMES = [
+  {id:'quiz-arena',   name:'Quiz Arena',        icon:'⚡',color:'#2563EB',cat:'quiz',    xp:30, desc:'Quiz berwaktu dengan 10 soal. Jawab cepat untuk poin lebih tinggi!',    players:'Pemain tunggal'},
+  {id:'flashcard',    name:'Flashcard Trainer',  icon:'🃏',color:'#7C3AED',cat:'memory',  xp:15, desc:'Flip kartu untuk mengingat konsep penting.',                           players:'Belajar mandiri'},
+  {id:'memory-match', name:'Memory Match',       icon:'🧠',color:'#059669',cat:'memory',  xp:20, desc:'Cocokkan pasangan konsep yang tersembunyi.',                           players:'Konsentrasi'},
+  {id:'speed-quiz',   name:'Speed Quiz',         icon:'🚀',color:'#D97706',cat:'quiz',    xp:25, desc:'Jawab secepat mungkin! Waktu terus berkurang.',                        players:'Kecepatan'},
+  {id:'true-false',   name:'True or False',      icon:'✅',color:'#0891B2',cat:'quiz',    xp:15, desc:'Benar atau Salah? Jawab pernyataan dengan cepat.',                     players:'Pemula friendly'},
+  {id:'word-builder', name:'Word Builder',       icon:'🔤',color:'#DC2626',cat:'word',    xp:20, desc:'Susun huruf acak menjadi istilah akademik yang benar.',                players:'Kosakata'},
+  {id:'sequence',     name:'Sequence Master',    icon:'📋',color:'#7C3AED',cat:'challenge',xp:25,desc:'Urutkan peristiwa atau langkah dalam urutan yang benar.',              players:'Logika'},
+  {id:'logic-grid',   name:'Logic Grid',         icon:'🔲',color:'#059669',cat:'challenge',xp:35,desc:'Selesaikan teka-teki logika dengan mengisi grid yang tepat.',           players:'Pemikir kritis'},
+  {id:'knowledge-race',name:'Knowledge Race',    icon:'🏁',color:'#D97706',cat:'challenge',xp:40,desc:'Lawan waktu dalam tantangan soal bertingkat. Levelnya makin sulit!',   players:'Level-based'},
+  {id:'puzzle-build',    name:'Puzzle Builder',     icon:'🧩',color:'#2563EB',cat:'memory',  xp:20, desc:'Susun potongan diagram menjadi gambar konsep yang lengkap.',           players:'Visual'},
+  {id:'world-monopoly',  name:'World Monopoly',     icon:'🌍',color:'#059669',cat:'board',   xp:60, desc:'Beli negara, bangun rumah, dan kuasai dunia! Multiplayer online + voice chat 2-4 pemain.', players:'2-4 Pemain Online', external:'world-monopoly/index.html'},
+];
+
+let activeFilter = 'all';
+function filterGames(cat, btn) {
+  activeFilter = cat;
+  document.querySelectorAll('.row .btn').forEach(b=>b.className='btn btn-ghost btn-sm');
+  if(btn) btn.className='btn btn-primary btn-sm';
+  renderGames();
+}
+function renderGames() {
+  const list = activeFilter==='all' ? GAMES : GAMES.filter(g=>g.cat===activeFilter);
+  document.getElementById('game-grid').innerHTML = list.map(g=>`
+    <div class="gc fadein" onclick="openGame('${g.id}')">
+      <div class="gc-top" style="background:linear-gradient(135deg,${g.color}18,${g.color}08);position:relative">
+        <div class="game-top-bar" style="background:${g.color}"></div>
+        <span>${g.icon}</span>
+        ${g.external ? '<span style="position:absolute;top:8px;right:8px;background:#059669;color:#fff;font-size:.6rem;font-weight:800;padding:3px 7px;border-radius:99px;letter-spacing:.5px">🌐 ONLINE</span>' : ''}
+      </div>
+      <div class="gc-body">
+        <div class="gc-name">${g.name}</div>
+        <div class="gc-desc">${g.desc}</div>
+        <div class="gc-meta">
+          <span class="chip" style="background:${g.color}18;color:${g.color}">⚡ +${g.xp} XP</span>
+          <span class="chip chip-gray">${g.players}</span>
+        </div>
+      </div>
+    </div>`).join('');
+}
+renderGames();
+
+// Open game
+function openGame(id) {
+  const g = GAMES.find(x=>x.id===id); if(!g) return;
+  // External games open in new tab
+  if(g.external) { window.open(g.external, '_blank'); return; }
+  document.getElementById('gm-icon').textContent = g.icon;
+  document.getElementById('gm-title').textContent = g.name;
+  document.getElementById('gm-desc').textContent = g.desc;
+  document.getElementById('game-modal').style.display = 'flex';
+  const body = document.getElementById('gm-body');
+  body.innerHTML = '<div style="text-align:center;padding:40px"><div style="font-size:3rem;margin-bottom:12px">⏳</div><div style="color:var(--c-text-sub)">Memuat game...</div></div>';
+  setTimeout(() => { loadGame(id, body, g); }, 300);
+}
+function closeGame() { document.getElementById('game-modal').style.display='none'; }
+document.getElementById('game-modal').addEventListener('click', e=>{ if(e.target===document.getElementById('game-modal')) closeGame(); });
+
+// ─── QUIZ ARENA ───────────────────────────────────────────────
+const QA_QUESTIONS = [
+  {q:"Hukum permintaan menyatakan bahwa...",opts:["Jika harga naik, permintaan naik","Jika harga naik, permintaan turun","Jika harga turun, penawaran turun","Harga tidak mempengaruhi permintaan"],ans:1},
+  {q:"Mean dari data 3, 5, 7, 5, 9 adalah...",opts:["5","5,8","6","7"],ans:1},
+  {q:"Unsur intrinsik puisi meliputi...",opts:["Tema, alur, latar","Diksi, rima, amanat, imaji","Tokoh, sudut pandang","Pengarang, penerbit"],ans:1},
+  {q:"Sistem SPLDV dapat diselesaikan dengan metode...",opts:["Eliminasi dan substitusi","Gradasi dan variasi","Modulasi dan regulasi","Deduktif dan induktif"],ans:0},
+  {q:"Kelangkaan dalam ekonomi berarti...",opts:["Barang sangat mahal","Sumber daya terbatas vs kebutuhan tidak terbatas","Produksi menurun","Inflasi meningkat"],ans:1},
+  {q:"Modus dari data 2,3,3,4,5,3,6 adalah...",opts:["2","3","4","5"],ans:1},
+  {q:"Dalam cerpen, alur maju artinya...",opts:["Cerita mundur ke masa lalu","Cerita berjalan dari awal ke akhir secara kronologis","Cerita bercampur maju mundur","Cerita tanpa urutan waktu"],ans:1},
+  {q:"Biaya kesempatan (opportunity cost) adalah...",opts:["Biaya produksi tambahan","Nilai terbaik dari pilihan yang tidak diambil","Total biaya produksi","Harga pasar barang"],ans:1},
+  {q:"Persamaan 2x + 4 = 12, nilai x adalah...",opts:["3","4","5","6"],ans:1},
+  {q:"Penawaran akan meningkat jika...",opts:["Harga input naik","Teknologi produksi membaik","Pajak meningkat","Permintaan turun"],ans:1},
+];
+
+// ─── FLASHCARD DATA ───────────────────────────────────────────
+const FC_CARDS = [
+  {front:"Kelangkaan",back:"Kondisi dimana sumber daya terbatas tidak dapat memenuhi semua kebutuhan manusia yang tidak terbatas."},
+  {front:"Hukum Permintaan",back:"Jika harga suatu barang naik, ceteris paribus, maka jumlah yang diminta akan turun."},
+  {front:"Median",back:"Nilai tengah dari sekumpulan data yang telah diurutkan dari terkecil ke terbesar."},
+  {front:"Majas",back:"Gaya bahasa yang digunakan pengarang untuk menyampaikan makna secara tidak langsung dan indah."},
+  {front:"SPLDV",back:"Sistem Persamaan Linear Dua Variabel — dua persamaan dengan dua variabel yang tidak diketahui."},
+  {front:"Opportunity Cost",back:"Nilai alternatif terbaik yang dikorbankan ketika membuat sebuah keputusan ekonomi."},
+];
+
+// ─── MEMORY MATCH DATA ────────────────────────────────────────
+const MM_PAIRS = [
+  {a:"📈 Permintaan",b:"Naik jika harga turun"},{a:"📊 Penawaran",b:"Naik jika harga naik"},
+  {a:"🔢 Mean",b:"Jumlah data ÷ banyak data"},{a:"📐 Median",b:"Nilai tengah data"},
+  {a:"✍️ Diksi",b:"Pilihan kata dalam puisi"},{a:"💰 Kelangkaan",b:"Sumber daya terbatas"},
+  {a:"🧮 Substitusi",b:"Ganti satu variabel"},  {a:"📖 Alur Maju",b:"Kronologis awal ke akhir"},
+];
+
+// ─── LOAD GAME FUNCTION ───────────────────────────────────────
+function loadGame(id, body, g) {
+  switch(id) {
+    case 'quiz-arena':    loadQuizArena(body, g); break;
+    case 'speed-quiz':    loadSpeedQuiz(body, g); break;
+    case 'true-false':    loadTrueFalse(body, g); break;
+    case 'flashcard':     loadFlashcard(body, g); break;
+    case 'memory-match':  loadMemoryMatch(body, g); break;
+    case 'word-builder':  loadWordBuilder(body, g); break;
+    case 'sequence':      loadSequence(body, g); break;
+    case 'logic-grid':    loadLogicGrid(body, g); break;
+    case 'knowledge-race':loadKnowledgeRace(body, g); break;
+    case 'puzzle-build':  loadPuzzleBuilder(body, g); break;
+    case 'world-monopoly': loadWorldMonopoly(body, g); break;
+    default: body.innerHTML=`<div class="tc" style="padding:40px;color:var(--c-text-sub)">Game segera tersedia!</div>`;
+  }
+}
+
+function awardXP(g, score) {
+  if(!Auth.isLoggedIn()) return;
+  const xp = Math.round(g.xp * score / 100);
+  XPSystem.awardCurrent(xp, 'Game: '+g.name);
+  Auth.updateSession({gamesPlayed:(Auth.getCurrent().gamesPlayed||0)+1});
+  checkAndAwardBadges(Auth.getCurrent().id);
+  showToast(`+${xp} XP dari ${g.name}!`, '⚡');
+}
+
+function gameResult(body, g, score, correct, total) {
+  const xp = Math.round(g.xp * score / 100);
+  body.innerHTML = `
+    <div style="text-align:center;padding:20px 0">
+      <div style="font-size:4rem;margin-bottom:16px">${score>=80?'🏆':score>=50?'🎯':'💪'}</div>
+      <div style="font-size:2.5rem;font-weight:800;color:${score>=70?'#059669':score>=40?'#D97706':'#DC2626'};margin-bottom:4px">${score}</div>
+      <div style="font-size:.85rem;color:var(--c-text-sub);margin-bottom:16px">Nilai Kamu · ${correct}/${total} benar</div>
+      <div style="display:inline-flex;align-items:center;gap:8px;background:#FFFBEB;border:1px solid #FCD34D;border-radius:999px;padding:8px 20px;font-weight:700;color:#D97706;margin-bottom:24px">⚡ +${xp} XP Didapat</div>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="closeGame()">Selesai</button>
+        <button class="btn btn-ghost" onclick="openGame('${g.id}')">Main Lagi</button>
+      </div>
+    </div>`;
+  awardXP(g, score);
+}
+
+// ─── QUIZ ARENA ───────────────────────────────────────────────
+function loadQuizArena(body, g) {
+  const qs = [...QA_QUESTIONS].sort(()=>Math.random()-.5).slice(0,10);
+  let cur=0, correct=0, timeLeft=20, timer=null, answered=false;
+  function render() {
+    const q = qs[cur];
+    const r=2*Math.PI*28, dash=r*timeLeft/20;
+    body.innerHTML = `
+      <div style="margin-bottom:20px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div><span class="chip chip-blue">${cur+1}/${qs.length}</span></div>
+          <div class="timer-ring">
+            <svg width="64" height="64" viewBox="0 0 64 64">
+              <circle cx="32" cy="32" r="28" fill="none" stroke="#E5E7EB" stroke-width="5"/>
+              <circle cx="32" cy="32" r="28" fill="none" stroke="${timeLeft>7?'#2563EB':timeLeft>4?'#D97706':'#DC2626'}" stroke-width="5"
+                stroke-dasharray="${dash} ${r-dash}" stroke-linecap="round" id="timer-arc"/>
+            </svg>
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:800;color:${timeLeft>7?'#2563EB':timeLeft>4?'#D97706':'#DC2626'}" id="timer-num">${timeLeft}</div>
+          </div>
+        </div>
+        <div class="prog" style="margin-bottom:18px"><div class="progf" style="width:${cur/qs.length*100}%"></div></div>
+        <div style="font-size:1rem;font-weight:600;color:var(--c-text);margin-bottom:16px;line-height:1.6">${q.q}</div>
+        ${q.opts.map((o,i)=>`<button class="qa-opt" id="opt-${i}" onclick="selectOpt(${i},${q.ans})">${['A','B','C','D'][i]&&`<div class="qa-key">${['A','B','C','D'][i]}</div>`}${escHtml(o)}</button>`).join('')}
+      </div>`;
+    if(timer) clearInterval(timer);
+    timer = setInterval(()=>{
+      timeLeft--;
+      const a=document.getElementById('timer-arc'), n=document.getElementById('timer-num');
+      if(a){const d=2*Math.PI*28*timeLeft/20;a.setAttribute('stroke-dasharray',`${d} ${2*Math.PI*28-d}`);a.setAttribute('stroke',timeLeft>7?'#2563EB':timeLeft>4?'#D97706':'#DC2626');}
+      if(n){n.textContent=timeLeft;n.style.color=timeLeft>7?'#2563EB':timeLeft>4?'#D97706':'#DC2626';}
+      if(timeLeft<=0){clearInterval(timer);if(!answered)autoFail();}
+    },1000);
+  }
+  window.selectOpt=function(i,ans){
+    if(answered) return; answered=true; clearInterval(timer);
+    if(i===ans) correct++;
+    document.getElementById('opt-'+i).classList.add(i===ans?'cor':'wrg');
+    if(i!==ans) document.getElementById('opt-'+ans).classList.add('cor');
+    setTimeout(next,900);
+  };
+  function autoFail(){
+    answered=true;
+    document.getElementById('opt-'+qs[cur].ans).classList.add('cor');
+    setTimeout(next,900);
+  }
+  function next(){answered=false;timeLeft=20;cur++;if(cur<qs.length)render();else gameResult(body,g,Math.round(correct/qs.length*100),correct,qs.length);}
+  render();
+}
+
+// ─── SPEED QUIZ ───────────────────────────────────────────────
+function loadSpeedQuiz(body, g) {
+  const qs=[...QA_QUESTIONS].sort(()=>Math.random()-.5).slice(0,8);
+  let cur=0,correct=0,totalTime=0,startT=null,timer=null,globalTime=60;
+  function render(){
+    const q=qs[cur];
+    body.innerHTML=`
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <span class="chip chip-blue">${cur+1}/${qs.length}</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:1.5rem">⏱</span>
+          <span style="font-size:1.5rem;font-weight:800;color:${globalTime>20?'#059669':globalTime>10?'#D97706':'#DC2626'}" id="gt">${globalTime}</span>
+        </div>
+      </div>
+      <div class="prog" style="margin-bottom:18px"><div class="progf" style="width:${cur/qs.length*100}%;transition:none"></div></div>
+      <div style="font-size:1rem;font-weight:600;margin-bottom:14px;line-height:1.6;color:var(--c-text)">${q.q}</div>
+      ${q.opts.map((o,i)=>`<button class="qa-opt" id="so-${i}" onclick="pickSQ(${i},${q.ans})">${escHtml(o)}</button>`).join('')}`;
+    startT=Date.now();
+    if(!timer) timer=setInterval(()=>{globalTime--;const el=document.getElementById('gt');if(el)el.textContent=globalTime;if(globalTime<=0){clearInterval(timer);timer=null;gameResult(body,g,Math.round(correct/qs.length*100),correct,qs.length);}},1000);
+  }
+  window.pickSQ=function(i,ans){
+    const t=(Date.now()-startT)/1000;totalTime+=t;
+    if(i===ans)correct++;
+    document.getElementById('so-'+i).classList.add(i===ans?'cor':'wrg');
+    if(i!==ans)document.getElementById('so-'+ans).classList.add('cor');
+    setTimeout(()=>{cur++;if(cur<qs.length)render();else{clearInterval(timer);gameResult(body,g,Math.round(correct/qs.length*100),correct,qs.length);}},700);
+  };
+  render();
+}
+
+// ─── TRUE OR FALSE ────────────────────────────────────────────
+function loadTrueFalse(body, g) {
+  const stmts=[
+    {s:"Hukum permintaan: jika harga naik, permintaan naik.",a:false},
+    {s:"Mean dari 2,4,6 adalah 4.",a:true},
+    {s:"Diksi adalah pilihan kata dalam puisi.",a:true},
+    {s:"Median adalah nilai yang paling sering muncul.",a:false},
+    {s:"Biaya kesempatan adalah nilai alternatif terbaik yang dikorbankan.",a:true},
+    {s:"Alur maju berarti cerita berjalan mundur ke masa lalu.",a:false},
+    {s:"SPLDV memiliki dua variabel dan dua persamaan.",a:true},
+    {s:"Penawaran naik jika biaya produksi meningkat.",a:false},
+  ];
+  let cur=0,correct=0;
+  function render(){
+    if(cur>=stmts.length){gameResult(body,g,Math.round(correct/stmts.length*100),correct,stmts.length);return;}
+    body.innerHTML=`
+      <div style="text-align:center">
+        <div class="chip chip-blue" style="margin-bottom:16px">${cur+1}/${stmts.length}</div>
+        <div class="prog" style="margin-bottom:24px;max-width:300px;margin-left:auto;margin-right:auto"><div class="progf" style="width:${cur/stmts.length*100}%"></div></div>
+        <div style="font-size:1.05rem;font-weight:600;color:var(--c-text);margin-bottom:32px;line-height:1.7;padding:0 16px">"${stmts[cur].s}"</div>
+        <div style="display:flex;gap:16px;justify-content:center">
+          <button class="btn btn-success btn-xl" style="min-width:120px" onclick="answerTF(true)">✓ Benar</button>
+          <button class="btn btn-danger btn-xl" style="min-width:120px" onclick="answerTF(false)">✗ Salah</button>
+        </div>
+      </div>`;
+  }
+  window.answerTF=function(ans){
+    const isCorrect=ans===stmts[cur].a;
+    if(isCorrect)correct++;
+    const msg=isCorrect?'✓ Benar!':'✗ Salah! Jawaban: '+(stmts[cur].a?'BENAR':'SALAH');
+    body.innerHTML=`<div style="text-align:center;padding:20px"><div style="font-size:2rem;margin-bottom:12px">${isCorrect?'🎉':'😔'}</div><div style="font-size:1.1rem;font-weight:700;color:${isCorrect?'#059669':'#DC2626'};margin-bottom:8px">${msg}</div><div style="font-size:.85rem;color:var(--c-text-sub)">${stmts[cur].s}</div></div>`;
+    cur++;setTimeout(render,1200);
+  };
+  render();
+}
+
+// ─── FLASHCARD ────────────────────────────────────────────────
+function loadFlashcard(body, g) {
+  let cur=0, flipped=false, known=0;
+  const cards=[...FC_CARDS].sort(()=>Math.random()-.5);
+  function render(){
+    if(cur>=cards.length){gameResult(body,g,Math.round(known/cards.length*100),known,cards.length);return;}
+    body.innerHTML=`
+      <div style="text-align:center;margin-bottom:12px">
+        <span class="chip chip-blue">${cur+1}/${cards.length}</span>
+        <div class="prog" style="margin-top:10px;max-width:300px;margin-left:auto;margin-right:auto"><div class="progf" style="width:${cur/cards.length*100}%"></div></div>
+      </div>
+      <div class="fc-card" id="fcard" onclick="flipCard()">
+        <div class="fc-inner" id="fc-inner">
+          <div class="fc-face fc-front"><div style="font-size:.75rem;opacity:.7;margin-bottom:10px;letter-spacing:1px">KONSEP</div>${escHtml(cards[cur].front)}<div style="font-size:.75rem;opacity:.6;margin-top:16px">Klik untuk lihat jawaban</div></div>
+          <div class="fc-face fc-back"><div style="font-size:.72rem;color:var(--c-text-sub);margin-bottom:8px">DEFINISI</div>${escHtml(cards[cur].back)}</div>
+        </div>
+      </div>
+      <div id="fc-btns" style="display:none;margin-top:16px;display:flex;gap:10px;justify-content:center">
+        <button class="btn btn-danger" onclick="fcAnswer(false)">😕 Belum Hafal</button>
+        <button class="btn btn-success" onclick="fcAnswer(true)">😊 Sudah Hafal</button>
+      </div>`;
+    flipped=false;
+    document.getElementById('fc-btns').style.display='none';
+  }
+  window.flipCard=function(){
+    flipped=!flipped;
+    document.getElementById('fc-inner').classList.toggle('flipped',flipped);
+    if(flipped) document.getElementById('fc-btns').style.display='flex';
+  };
+  window.fcAnswer=function(k){if(k)known++;cur++;render();};
+  render();
+}
+
+// ─── MEMORY MATCH ─────────────────────────────────────────────
+function loadMemoryMatch(body, g) {
+  const pairs=[...MM_PAIRS].sort(()=>Math.random()-.5).slice(0,6);
+  let cards=[],flippedIdx=[],matched=[],moves=0;
+  pairs.forEach(p=>{cards.push({text:p.a,pair:p.a});cards.push({text:p.b,pair:p.a});});
+  cards.sort(()=>Math.random()-.5);
+  function render(){
+    const allMatched=matched.length===cards.length;
+    if(allMatched){gameResult(body,g,Math.max(20,100-moves*3),Math.max(0,10-moves+pairs.length*2),cards.length);return;}
+    body.innerHTML=`
+      <div style="display:flex;justify-content:space-between;margin-bottom:16px"><span class="chip chip-gray">Gerakan: ${moves}</span><span class="chip chip-blue">${matched.length/2}/${pairs.length} cocok</span></div>
+      <div class="mem-grid" style="grid-template-columns:repeat(4,1fr)" id="mm-grid">
+        ${cards.map((c,i)=>`
+          <div class="mem-card${flippedIdx.includes(i)||matched.includes(i)?' flipped':''}${matched.includes(i)?' matched':''}" id="mc-${i}" onclick="flipMem(${i})">
+            ${flippedIdx.includes(i)||matched.includes(i)?escHtml(c.text):'?'}
+          </div>`).join('')}
+      </div>`;
+  }
+  window.flipMem=function(i){
+    if(flippedIdx.includes(i)||matched.includes(i)||flippedIdx.length>=2) return;
+    flippedIdx.push(i); render();
+    if(flippedIdx.length===2){
+      moves++;
+      const [a,b]=flippedIdx;
+      if(cards[a].pair===cards[b].pair&&a!==b){matched.push(a,b);flippedIdx=[];setTimeout(render,400);}
+      else{setTimeout(()=>{flippedIdx=[];render();},800);}
+    }
+  };
+  render();
+}
+
+// ─── WORD BUILDER ─────────────────────────────────────────────
+function loadWordBuilder(body, g) {
+  const WORDS=[
+    {word:"EKONOMI",hint:"Ilmu yang mempelajari penggunaan sumber daya"},
+    {word:"PERMINTAAN",hint:"Jumlah barang yang ingin dibeli pada berbagai harga"},
+    {word:"MEDIAN",hint:"Nilai tengah dalam statistika"},
+    {word:"KELANGKAAN",hint:"Sumber daya terbatas vs kebutuhan tidak terbatas"},
+    {word:"PENAWARAN",hint:"Jumlah barang yang ingin dijual pada berbagai harga"},
+  ];
+  let cur=0, score=0, userAns=[];
+  function render(){
+    if(cur>=WORDS.length){gameResult(body,g,Math.round(score/WORDS.length*100),score,WORDS.length);return;}
+    const w=WORDS[cur];
+    const letters=[...w.word].sort(()=>Math.random()-.5);
+    userAns=[];
+    body.innerHTML=`
+      <div style="text-align:center">
+        <div class="chip chip-blue" style="margin-bottom:12px">${cur+1}/${WORDS.length}</div>
+        <div style="font-size:.9rem;color:var(--c-text-sub);margin-bottom:20px;background:var(--c-bg2);padding:12px 16px;border-radius:10px">${w.hint}</div>
+        <div id="wb-answer" style="margin-bottom:20px;min-height:48px;background:var(--c-bg2);border-radius:12px;padding:10px;border:2px dashed var(--c-border)">
+          <span style="color:var(--c-text-sub);font-size:.85rem">Klik huruf untuk menyusun kata</span>
+        </div>
+        <div id="wb-letters">${letters.map((l,i)=>`<span class="wb-letter" id="wl-${i}" onclick="pickLetter('${l}',${i})">${l}</span>`).join('')}</div>
+        <div style="margin-top:16px;display:flex;gap:10px;justify-content:center">
+          <button class="btn btn-ghost btn-sm" onclick="clearWB()">Hapus</button>
+          <button class="btn btn-primary btn-sm" onclick="checkWB('${w.word}')">Cek Jawaban ✓</button>
+        </div>
+        <div id="wb-msg" style="margin-top:12px;font-weight:700;font-size:.9rem"></div>
+      </div>`;
+  }
+  window.pickLetter=function(l,i){
+    userAns.push({l,i});
+    document.getElementById('wl-'+i).classList.add('used');
+    const ans=document.getElementById('wb-answer');
+    ans.innerHTML=userAns.map(x=>`<span class="wb-answer-slot">${x.l}</span>`).join('');
+  };
+  window.clearWB=function(){
+    userAns.forEach(x=>document.getElementById('wl-'+x.i)?.classList.remove('used'));
+    userAns=[];
+    document.getElementById('wb-answer').innerHTML='<span style="color:var(--c-text-sub);font-size:.85rem">Klik huruf untuk menyusun kata</span>';
+  };
+  window.checkWB=function(word){
+    const ans=userAns.map(x=>x.l).join('');
+    const msg=document.getElementById('wb-msg');
+    if(ans===word){score++;msg.style.color='#059669';msg.textContent='✓ Benar! Kata: '+word;setTimeout(()=>{cur++;render();},1000);}
+    else{msg.style.color='#DC2626';msg.textContent='✗ Coba lagi! ('+ans+')';}
+  };
+  render();
+}
+
+// ─── SEQUENCE MASTER ──────────────────────────────────────────
+function loadSequence(body, g) {
+  const SEQS=[
+    {q:"Langkah menyelesaikan SPLDV dengan substitusi:",items:["Tulis kedua persamaan","Pilih salah satu persamaan","Ekspresikan satu variabel","Substitusi ke persamaan lain","Selesaikan, cari nilai kedua variabel"],ans:[0,1,2,3,4]},
+    {q:"Urutan materi dalam pembelajaran ekonomi:",items:["Kelangkaan","Pilihan","Biaya Kesempatan","Permintaan & Penawaran","Harga Keseimbangan"],ans:[0,1,2,3,4]},
+  ];
+  let cur=0,score=0,order=[],dragging=null;
+  function render(){
+    if(cur>=SEQS.length){gameResult(body,g,Math.round(score/SEQS.length*100),score,SEQS.length);return;}
+    const s=SEQS[cur];
+    const shuffled=[...s.items].sort(()=>Math.random()-.5);
+    order=[...shuffled];
+    body.innerHTML=`
+      <div style="font-size:.82rem;color:var(--c-text-sub);margin-bottom:6px">Drag untuk mengurutkan:</div>
+      <div style="font-size:.95rem;font-weight:600;color:var(--c-text);margin-bottom:16px">${s.q}</div>
+      <div id="seq-list">
+        ${order.map((item,i)=>`
+          <div class="setting-row" style="cursor:move;user-select:none;margin-bottom:8px;gap:10px" draggable="true" id="si-${i}"
+            ondragstart="seqDragStart(${i})" ondragover="seqDragOver(event,${i})" ondrop="seqDrop(${i})">
+            <div style="font-weight:700;color:var(--c-text-sub);width:24px;flex-shrink:0">${i+1}</div>
+            <div style="flex:1;font-size:.9rem">${escHtml(item)}</div>
+            <div style="color:var(--c-text-sub);font-size:.9rem">⠿</div>
+          </div>`).join('')}
+      </div>
+      <button class="btn btn-primary btn-full" style="margin-top:8px" onclick="checkSeq(${JSON.stringify(s.items)})">Periksa Urutan ✓</button>`;
+  }
+  window.seqDragStart=function(i){dragging=i;};
+  window.seqDragOver=function(e,i){e.preventDefault();};
+  window.seqDrop=function(i){
+    if(dragging===null||dragging===i)return;
+    const tmp=order[dragging];order[dragging]=order[i];order[i]=tmp;
+    dragging=null;
+    document.getElementById('seq-list').querySelectorAll('[id^="si-"]').forEach((el,idx)=>{
+      el.querySelector('div:first-child').textContent=idx+1;
+      el.querySelector('div:nth-child(2)').textContent=order[idx];
+    });
+  };
+  window.checkSeq=function(correct){
+    const isRight=order.join('|')===correct.join('|');
+    if(isRight)score++;
+    body.innerHTML=`<div style="text-align:center;padding:20px"><div style="font-size:2rem;margin-bottom:12px">${isRight?'🎉':'😔'}</div><div style="font-weight:700;color:${isRight?'#059669':'#DC2626'};margin-bottom:12px">${isRight?'Urutan benar!':'Urutan salah!'}</div><div style="font-size:.82rem;color:var(--c-text-sub);margin-bottom:16px">Jawaban benar:<br>${correct.map((s,i)=>`${i+1}. ${s}`).join('<br>')}</div></div>`;
+    cur++;setTimeout(render,1800);
+  };
+  render();
+}
+
+// ─── LOGIC GRID ───────────────────────────────────────────────
+function loadLogicGrid(body, g) {
+  body.innerHTML=`
+    <div style="text-align:center;padding:16px">
+      <div style="font-size:.92rem;font-weight:600;color:var(--c-text);margin-bottom:16px;line-height:1.6">Isi grid dengan angka 1-4 sehingga setiap baris, kolom tidak memiliki angka yang sama! (Mini Sudoku)</div>
+      <div id="lg-grid" style="display:grid;grid-template-columns:repeat(4,52px);gap:4px;justify-content:center;margin-bottom:20px"></div>
+      <div id="lg-msg" style="font-weight:700;margin-bottom:12px;min-height:24px"></div>
+      <div style="display:flex;gap:10px;justify-content:center">
+        <button class="btn btn-ghost btn-sm" onclick="lgReset()">Reset</button>
+        <button class="btn btn-primary btn-sm" onclick="lgCheck()">Periksa ✓</button>
+      </div>
+    </div>`;
+  const solution=[[1,2,3,4],[3,4,1,2],[2,1,4,3],[4,3,2,1]];
+  const given=[[1,0,3,0],[0,4,0,2],[2,0,0,3],[0,3,2,0]];
+  let grid=given.map(r=>[...r]);
+  function renderGrid(){
+    document.getElementById('lg-grid').innerHTML=grid.flat().map((v,i)=>{
+      const r=Math.floor(i/4),c=i%4,isGiven=given[r][c]!==0;
+      return `<input type="number" min="1" max="4" value="${v||''}" ${isGiven?'disabled':''} 
+        style="width:52px;height:52px;text-align:center;border:2px solid ${isGiven?'#D1D5DB':'#93C5FD'};border-radius:10px;font-size:1.1rem;font-weight:700;color:${isGiven?'#374151':'#1D4ED8'};background:${isGiven?'#F9FAFB':'#EFF6FF'};outline:none;padding:0"
+        oninput="grid[${r}][${c}]=parseInt(this.value)||0"/>`;
+    }).join('');
+  }
+  window.lgReset=function(){grid=given.map(r=>[...r]);renderGrid();document.getElementById('lg-msg').textContent='';};
+  window.lgCheck=function(){
+    const correct=grid.every((row,r)=>row.every((v,c)=>v===solution[r][c]));
+    const msg=document.getElementById('lg-msg');
+    if(correct){msg.style.color='#059669';msg.textContent='✓ Grid benar! Sempurna!';awardXP({name:'Logic Grid',xp:35},100);}
+    else{msg.style.color='#DC2626';msg.textContent='✗ Ada yang salah, coba lagi!';}
+  };
+  renderGrid();
+}
+
+// ─── KNOWLEDGE RACE ───────────────────────────────────────────
+function loadKnowledgeRace(body, g) {
+  let level=1,cur=0,correct=0,lives=3;
+  const qsByLevel=[[...QA_QUESTIONS].slice(0,4),[...QA_QUESTIONS].slice(4,7),[...QA_QUESTIONS].slice(7,10)];
+  function render(){
+    const qs=qsByLevel[Math.min(level-1,2)];
+    if(cur>=qs.length){
+      if(level<3){level++;cur=0;body.innerHTML=`<div style="text-align:center;padding:30px"><div style="font-size:2.5rem;margin-bottom:12px">🏁</div><div style="font-size:1.2rem;font-weight:700;color:#059669">Level ${level-1} Selesai!</div><div style="color:var(--c-text-sub);margin:8px 0 20px">Siap ke Level ${level}?</div><button class="btn btn-primary" onclick="krNext()">Lanjut →</button></div>`;
+      } else {gameResult(body,g,Math.round(correct/(qsByLevel.flat().length)*100),correct,qsByLevel.flat().length);}
+      return;
+    }
+    const q=qs[cur];
+    body.innerHTML=`
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="display:flex;gap:6px">${Array.from({length:3}).map((_,i)=>`<span style="font-size:1.2rem">${i<lives?'❤️':'🖤'}</span>`).join('')}</div>
+        <div class="chip" style="background:linear-gradient(90deg,#D97706,#F59E0B);color:#fff">LEVEL ${level}</div>
+        <div style="font-size:.82rem;color:var(--c-text-sub)">${cur+1}/${qs.length}</div>
+      </div>
+      <div style="font-size:1rem;font-weight:600;color:var(--c-text);margin-bottom:16px;line-height:1.6">${q.q}</div>
+      ${q.opts.map((o,i)=>`<button class="qa-opt" id="kr-${i}" onclick="pickKR(${i},${q.ans})">${escHtml(o)}</button>`).join('')}`;
+  }
+  window.krNext=function(){render();};
+  window.pickKR=function(i,ans){
+    const ok=i===ans;
+    if(ok)correct++;else{lives--;if(lives<=0){gameResult(body,g,Math.round(correct/(qsByLevel.flat().length)*100),correct,qsByLevel.flat().length);return;}}
+    document.getElementById('kr-'+i).classList.add(ok?'cor':'wrg');
+    if(!ok)document.getElementById('kr-'+ans).classList.add('cor');
+    cur++;setTimeout(render,900);
+  };
+  render();
+}
+
+// ─── PUZZLE BUILDER ───────────────────────────────────────────
+function loadPuzzleBuilder(body, g) {
+  const PUZZLES=[
+    {title:"Faktor Permintaan",pieces:["Harga Barang","Pendapatan","Selera Konsumen","Harga Barang Lain","Ekspektasi"],grid:["","","","",""]},
+    {title:"Unsur Intrinsik Puisi",pieces:["Tema","Diksi","Imaji","Majas","Rima","Amanat"],grid:["","","","","",""]},
+  ];
+  let cur=0,score=0,placed=[],draggingPiece=null;
+  function render(){
+    if(cur>=PUZZLES.length){gameResult(body,g,Math.round(score/PUZZLES.length*100),score,PUZZLES.length);return;}
+    const p=PUZZLES[cur];
+    const shuffled=[...p.pieces].sort(()=>Math.random()-.5);
+    placed=new Array(p.grid.length).fill('');
+    body.innerHTML=`
+      <div style="font-size:.9rem;font-weight:600;margin-bottom:14px">Susun konsep: <strong>${p.title}</strong></div>
+      <div style="margin-bottom:16px">
+        <div style="font-size:.75rem;font-weight:600;color:var(--c-text-sub);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Taruh di sini:</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px" id="pb-slots">
+          ${p.grid.map((_,i)=>`<div id="ps-${i}" ondragover="event.preventDefault()" ondrop="pbDrop(${i})"
+            style="width:130px;height:44px;border:2px dashed #93C5FD;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.78rem;color:#93C5FD;background:#EFF6FF">${i+1}</div>`).join('')}
+        </div>
+      </div>
+      <div style="font-size:.75rem;font-weight:600;color:var(--c-text-sub);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Pilihan:</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px" id="pb-pieces">
+        ${shuffled.map((piece,i)=>`<div class="chip chip-blue" draggable="true" id="pp-${i}" style="cursor:grab;padding:8px 14px;font-size:.82rem"
+          ondragstart="pbDragStart('${piece}',${i})">${escHtml(piece)}</div>`).join('')}
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="pbCheck(${JSON.stringify(p.pieces)})">Periksa ✓</button>`;
+  }
+  window.pbDragStart=function(piece,i){draggingPiece={piece,i};};
+  window.pbDrop=function(slotIdx){
+    if(!draggingPiece)return;
+    placed[slotIdx]=draggingPiece.piece;
+    const slot=document.getElementById('ps-'+slotIdx);
+    slot.textContent=draggingPiece.piece;slot.style.color='#1D4ED8';slot.style.borderColor='#3B82F6';slot.style.borderStyle='solid';
+    document.getElementById('pp-'+draggingPiece.i).style.opacity='.3';
+    draggingPiece=null;
+  };
+  window.pbCheck=function(correct){
+    const filled=placed.filter(Boolean).length;
+    const correctCount=placed.filter((p,i)=>p===correct[i]).length;
+    if(correctCount===correct.length)score++;
+    body.innerHTML=`<div style="text-align:center;padding:20px"><div style="font-size:2rem;margin-bottom:10px">${correctCount===correct.length?'🎉':'😔'}</div><div style="font-weight:700;color:${correctCount===correct.length?'#059669':'#D97706'};margin-bottom:12px">${correctCount}/${correct.length} posisi benar</div><div style="font-size:.82rem;color:var(--c-text-sub)">Urutan benar: ${correct.join(' → ')}</div></div>`;
+    cur++;setTimeout(render,1800);
+  };
+  render();
+}
+</script>
+</body></html>
